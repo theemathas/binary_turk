@@ -94,7 +94,7 @@ fn gen_slider_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action 
         Rook => rook_slide,
         Bishop => bishop_slide,
         Queen => queen_slide,
-        _ => unreachable!(),
+        _ => panic!(),
     };
 
     for dir in slide.iter() {
@@ -134,7 +134,7 @@ fn gen_fixed_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
     let fixed = match piece_type {
         King => king_fixed,
         Knight => knight_fixed,
-        _ => unreachable!(),
+        _ => panic!(),
     };
 
     for dir in fixed.iter() {

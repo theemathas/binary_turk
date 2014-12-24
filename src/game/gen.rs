@@ -35,20 +35,20 @@ impl Action {
 
 pub fn receive_psudo_legal(p: Position) -> Receiver<Move> {
     let (tx,rx) = sync_channel(0);
-    Thread::spawn(move || gen_psudo_legal(p, tx)).detach();
+    Thread::spawn(move || gen_psudo_legal(&p, tx)).detach();
     rx
 }
 
-pub fn gen_psudo_legal(p: Position, tx: SyncSender<Move>) {
-    if gen_en_passant(&p, &tx).is_stop() {
+pub fn gen_psudo_legal(p: &Position, tx: SyncSender<Move>) {
+    if gen_en_passant(p, &tx).is_stop() {
         return;
     }
-    if gen_castle(&p, &tx).is_stop() {
+    if gen_castle(p, &tx).is_stop() {
         return;
     }
     for file in range(0,8) {
         for rank in range(0,8) {
-            if gen_move_from(&p, Square::new(File(file),Rank(rank)), &tx).is_stop() {
+            if gen_move_from(p, Square::new(File(file),Rank(rank)), &tx).is_stop() {
                 return;
             }
         }

@@ -6,10 +6,9 @@ use super::square::{Square,File,Rank};
 use super::moves::{Move,Plies};
 use super::pos::{Position,Kingside,Queenside};
 
-pub fn make_move_copy(p: &Position, m: &Move) -> Position {
-    let mut res = (*p).clone();
-    make_move_mut(&mut res, m);
-    res
+pub fn make_move(mut p: Position, m: &Move) -> Position {
+    make_move_mut(&mut p, m);
+    p
 }
 
 pub fn make_move_mut(p: &mut Position, m: &Move) {

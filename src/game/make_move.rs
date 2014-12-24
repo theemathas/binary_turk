@@ -24,8 +24,31 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
     }
 
     if m.is_castle() {
-        //TODO implement castling
-        unimplemented!();
+
+        let castle_color = match from.rank() {
+            Rank(0) => White,
+            Rank(7) => Black,
+            _ => panic!(),
+        };
+        let castle_side = match to.file() {
+            File(2) => Queenside,
+            File(6) => Kingside,
+            _ => panic!(),
+        };
+
+        let (rook_from, rook_to) = match (castle_color, castle_side) {
+            (White, Kingside ) => (Square::new(File(7),Rank(0)), Square::new(File(5),Rank(0))),
+            (White, Queenside) => (Square::new(File(0),Rank(0)), Square::new(File(3),Rank(0))),
+            (Black, Kingside ) => (Square::new(File(7),Rank(7)), Square::new(File(5),Rank(7))),
+            (Black, Queenside) => (Square::new(File(0),Rank(7)), Square::new(File(3),Rank(7))),
+        };
+
+        p.remove_at_mut(from);
+        p.set_at_mut(to, curr_piece);
+        let curr_rook = p.at(rook_from).unwrap();
+        p.remove_at_mut(rook_from);
+        p.set_at_mut(rook_to, curr_rook);
+
     } else if m.is_en_passant() {
         //TODO implement en passant
         unimplemented!();

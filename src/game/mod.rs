@@ -17,3 +17,6 @@ mod legal;
 mod make_move;
 
 mod mate;
+
+#[cfg(test)]
+mod tests;

@@ -41,10 +41,12 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
     decode.insert('b', piece::BB);
     decode.insert('n', piece::BN);
     decode.insert('r', piece::BR);
-    for ch in fields[0].chars() {
+    for ch in pos_str.chars() {
         if ch == '/' {
             rank = rank - 1;
             file = 0;
+        } else if ch == '1' {
+            file = file + 1;
         } else {
             match decode.get(&ch) {
                 None => return Err("Unexpected charactor found."),

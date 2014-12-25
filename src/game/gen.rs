@@ -109,12 +109,8 @@ fn gen_slider_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action 
         //if curr_pos is valid
         if curr_pos.is_some() {
             let to = curr_pos.unwrap();
-            let dest: Option<Piece> = p.at(to);
-            //that square is always occupied
-            let dest_piece: Piece = dest.unwrap();
-            let dest_color = dest_piece.color();
             //if there is an enemy at the destination
-            if dest_color == piece_color.invert() {
+            if p.color_at(to) == Some(piece_color.invert()) {
                 let curr_move = Move::new(from, to).set_capture(true);
                 send!(tx, curr_move);
             }
@@ -142,10 +138,9 @@ fn gen_fixed_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
         let new_pos = shift(from, *dir);
         if new_pos.is_some() {
             let to = new_pos.unwrap();
-            let dest: Option<Piece> = p.at(to);
-            let (is_valid, is_capture) = match dest {
-                Some(val) => {
-                    if val.color() == piece_color { (false, false) }
+            let (is_valid, is_capture) = match p.color_at(to) {
+                Some(c) => {
+                    if c == piece_color { (false, false) }
                     else { (true, true) }
                 },
                 None => (true, false),
@@ -161,7 +156,7 @@ fn gen_fixed_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
 }
 
 fn gen_pawn_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
-    let piece_color = p.at(from).unwrap().color();
+    let piece_color = p.color_at(from).unwrap();
     let (File(_), Rank(from_rank)) = from.to_tuple();
     //rank_up is the 1-based rank from the piece-owner's side.
     let (dy, rank_up): (int, u8) = match piece_color {
@@ -203,12 +198,7 @@ fn gen_pawn_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
             None => continue,
         };
         let dest: Option<Piece> = p.at(capture_to);
-        let dest_piece: Piece = match dest {
-            Some(val) => val,
-            None => continue,
-        };
-        let dest_color = dest_piece.color();
-        if dest_color == piece_color.invert() {
+        if p.color_at(capture_to) == Some(piece_color.invert()) {
             if rank_up == 7 {
                 for new_piece in [Queen, Knight, Rook, Bishop].iter() {
                     let curr_move = Move::new(from, capture_to).set_capture(true);

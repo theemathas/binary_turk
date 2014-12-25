@@ -50,6 +50,10 @@ impl Position {
     pub fn can_castle(&self, side: Side, c: Color) -> bool {
         self.castling.get(side, c)
     }
+    pub fn can_castle_now(&self, side: Side, c: Color) -> bool {
+        //TODO Implement Position.can_castle_now().
+        unimplemented!();
+    }
     pub fn set_castle_mut(&mut self, side:Side, c:Color, val: bool) {
         self.castling.set_mut(side, c, val);
     }

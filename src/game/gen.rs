@@ -255,13 +255,13 @@ fn gen_en_passant(p: &Position, tx: &SyncSender<Move>) -> Action {
 fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
     match p.side_to_move() {
         White => {
-            if p.can_castle(Kingside, White) {
+            if p.can_castle_now(Kingside, White) {
                 let from = Square::new(File(4),Rank(0));
                 let to   = Square::new(File(6),Rank(0));
                 let curr_move = Move::new(from, to).set_castle(true);
                 send!(tx, curr_move);
             }
-            if p.can_castle(Queenside, White) {
+            if p.can_castle_now(Queenside, White) {
                 let from = Square::new(File(4),Rank(0));
                 let to   = Square::new(File(2),Rank(0));
                 let curr_move = Move::new(from, to).set_castle(true);
@@ -269,13 +269,13 @@ fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
             }
         }
         Black => {
-            if p.can_castle(Kingside, Black) {
+            if p.can_castle_now(Kingside, Black) {
                 let from = Square::new(File(4),Rank(7));
                 let to   = Square::new(File(6),Rank(7));
                 let curr_move = Move::new(from, to).set_castle(true);
                 send!(tx, curr_move);
             }
-            if p.can_castle(Queenside, Black) {
+            if p.can_castle_now(Queenside, Black) {
                 let from = Square::new(File(4),Rank(7));
                 let to   = Square::new(File(2),Rank(7));
                 let curr_move = Move::new(from, to).set_castle(true);

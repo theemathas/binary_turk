@@ -32,6 +32,7 @@ fn filter_legal(p: &Position, out: SyncSender<Move>, rx: Receiver<Move>) {
 }
 
 pub fn is_legal(mut p: Position, curr_move: &Move) -> bool {
+    //TODO Implement is_legal() for castling.
     make_move_mut(&mut p, curr_move);
     !can_take_king(&p)
 }

@@ -5,7 +5,7 @@ use super::color::{Color};
 use super::square::{File,Square};
 use super::moves::Plies;
 use super::board::Board;
-use super::castle::{CastlingData,Side};
+use super::castle::{mod,CastlingData,Side};
 
 /// A complete representation of a chess position.
 #[deriving(Clone)]
@@ -44,9 +44,10 @@ impl Position {
     pub fn can_castle(&self, side: Side, c: Color) -> bool {
         self.castling.get(side, c)
     }
+    // Does not check for castling out of check, through check, or into check.
     pub fn can_castle_now(&self, side: Side, c: Color) -> bool {
-        //TODO Implement Position.can_castle_now().
-        unimplemented!();
+        self.can_castle(side, c) &&
+            castle::require_empty_squares(side, c).iter().all( |x| self.at(*x) == None )
     }
     pub fn set_castle_mut(&mut self, side:Side, c:Color, val: bool) {
         self.castling.set_mut(side, c, val);

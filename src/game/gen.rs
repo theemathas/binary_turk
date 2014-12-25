@@ -223,8 +223,33 @@ fn gen_pawn_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
 }
 
 fn gen_en_passant(p: &Position, tx: &SyncSender<Move>) -> Action {
-    //TODO implement en passant generation
-    unimplemented!()
+    let to_file = match p.en_passant() {
+        Some(f) => f,
+        None => return Continue,
+    };
+    let (from_rank, to_rank) = match p.side_to_move() {
+        White => (Rank(4), Rank(5)),
+        Black => (Rank(3), Rank(2)),
+    };
+    let (x, y, z);
+    let from_file_all: &[File] = match to_file {
+        File(0) => { x = [File(1)]; &x },
+        File(7) => { y = [File(6)]; &y },
+        File(f) => { z = [File(f-1), File(f+1)]; &z },
+    };
+
+    let expect_piece = Piece::new(p.side_to_move(), Pawn);
+    let to = Square::new(to_file, to_rank);
+
+    for &from_file in from_file_all.iter() {
+        let from = Square::new(from_file, from_rank);
+        if p.at(from) == Some(expect_piece) {
+            let curr_move = Move::new(from, to).set_en_passant(true);
+            send!(tx, curr_move);
+        }
+    }
+
+    Continue
 }
 
 fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {

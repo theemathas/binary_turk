@@ -74,7 +74,12 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
         p.remove_at_mut(from);
         p.set_at_mut(to, Piece::new(curr_piece.color(), m.promote().unwrap()));
     } else {
-        //TODO set enpassant
+
+        if m.is_pawn_double_move() {
+            p.set_en_passant_mut(Some(to.file()));
+        } else {
+            p.set_en_passant_mut(None);
+        }
         
         //change the board
         if m.is_capture() {

@@ -8,6 +8,7 @@ mod square;
 mod moves;
 
 mod board;
+mod castle;
 mod pos;
 
 mod fen;

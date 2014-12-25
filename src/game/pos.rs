@@ -1,12 +1,11 @@
 //! Implements the game representation
 
 use super::piece::Piece;
-use super::color::{Color,White,Black};
+use super::color::{Color};
 use super::square::{File,Square};
 use super::moves::Plies;
 use super::board::Board;
-
-pub use self::Side::{Kingside,Queenside};
+use super::castle::{CastlingData,Side};
 
 /// A complete representation of a chess position.
 #[deriving(Clone)]
@@ -21,13 +20,8 @@ impl Position {
     pub fn new() -> Position {
         Position {
             data: Board::new(),
-            side_to_move: White,
-            castling: CastlingData {
-                w_kingside: false,
-                w_queenside: false,
-                b_kingside: false,
-                b_queenside: false,
-            },
+            side_to_move: Color::White,
+            castling: CastlingData::new(),
             en_passant: None,
             ply_count: Plies(0),
         }
@@ -71,45 +65,5 @@ impl Position {
     }
     pub fn set_ply_count_mut(&mut self, val: Plies) {
         self.ply_count = val;
-    }
-}
-
-#[deriving(PartialEq,Eq,Copy,Clone)]
-pub enum Side {
-    Kingside,
-    Queenside,
-}
-
-#[deriving(PartialEq,Eq,Copy,Clone)]
-struct CastlingData {
-    w_kingside: bool,
-    w_queenside: bool,
-    b_kingside: bool,
-    b_queenside: bool,
-}
-impl CastlingData {
-    fn get(&self, side: Side, c: Color) -> bool {
-        match (c, side) {
-            (White, Kingside)  => self.w_kingside,
-            (White, Queenside) => self.w_queenside,
-            (Black, Kingside)  => self.b_kingside,
-            (Black, Queenside) => self.b_queenside,
-        }
-    }
-    fn set(self, side: Side, c: Color, val: bool) -> CastlingData {
-        match (c, side) {
-            (White, Kingside)  => CastlingData { w_kingside:  val, ..self },
-            (White, Queenside) => CastlingData { w_queenside: val, ..self },
-            (Black, Kingside)  => CastlingData { b_kingside:  val, ..self },
-            (Black, Queenside) => CastlingData { b_queenside: val, ..self },
-        }
-    }
-    fn set_mut(&mut self, side: Side, c: Color, val: bool) {
-        match (c, side) {
-            (White, Kingside)  => self.w_kingside  = val,
-            (White, Queenside) => self.w_queenside = val,
-            (Black, Kingside)  => self.b_kingside  = val,
-            (Black, Queenside) => self.b_queenside = val,
-        }
     }
 }

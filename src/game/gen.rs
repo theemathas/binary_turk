@@ -7,7 +7,8 @@ use super::moves::Move;
 use super::color::{White,Black};
 use super::piece::Piece;
 use super::piece::Type::{Pawn,King,Queen,Bishop,Knight,Rook};
-use super::pos::{Position,Kingside,Queenside};
+use super::pos::Position;
+use super::castle::{Kingside,Queenside};
 
 use self::Action::{Continue,Stop};
 

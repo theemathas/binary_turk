@@ -1,6 +1,7 @@
 use super::moves::Plies;
 use super::square::{File, Rank, Square};
-use super::pos::{Position, Kingside, Queenside};
+use super::pos::Position;
+use super::castle::{Kingside, Queenside};
 use super::piece;
 use super::color::Color;
 

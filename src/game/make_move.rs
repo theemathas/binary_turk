@@ -4,7 +4,8 @@ use super::color::{White, Black};
 use super::piece::{mod, Piece, WK, WR, BK, BR};
 use super::square::{Square,File,Rank};
 use super::moves::{Move,Plies};
-use super::pos::{Position,Kingside,Queenside};
+use super::pos::Position;
+use super::castle::{Kingside,Queenside};
 
 pub fn make_move(mut p: Position, m: &Move) -> Position {
     make_move_mut(&mut p, m);

@@ -15,3 +15,5 @@ mod gen;
 
 mod legal;
 mod make_move;
+
+mod mate;

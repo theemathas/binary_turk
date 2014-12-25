@@ -183,8 +183,10 @@ fn gen_pawn_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
                 let curr_move = Move::new(from, to);
                 send!(tx, curr_move);
                 let to2: Square = shift(to, move_dir).unwrap();
-                let curr_move2 = Move::new(from, to2).set_pawn_double_move(true);
-                send!(tx, curr_move2);
+                if p.at(to2).is_none() {
+                    let curr_move2 = Move::new(from, to2).set_pawn_double_move(true);
+                    send!(tx, curr_move2);
+                }
             },
             _ => {
                 let curr_move = Move::new(from, to);

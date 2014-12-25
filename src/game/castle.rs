@@ -1,4 +1,5 @@
 use super::color::{Color,White,Black};
+use super::square::{Square,File,Rank};
 
 pub use self::Side::{Kingside,Queenside};
 
@@ -6,6 +7,38 @@ pub use self::Side::{Kingside,Queenside};
 pub enum Side {
     Kingside,
     Queenside,
+}
+
+pub fn require_empty_squares(side: Side, c: Color) -> Vec<Square> {
+    match (c, side) {
+        (White, Kingside)  => vec![Square::new(File(5),Rank(0)),
+                                   Square::new(File(6),Rank(0))],
+        (White, Queenside) => vec![Square::new(File(3),Rank(0)),
+                                   Square::new(File(2),Rank(0)),
+                                   Square::new(File(1),Rank(0))],
+        (Black, Kingside)  => vec![Square::new(File(5),Rank(7)),
+                                   Square::new(File(6),Rank(7))],
+        (Black, Queenside) => vec![Square::new(File(3),Rank(7)),
+                                   Square::new(File(2),Rank(7)),
+                                   Square::new(File(1),Rank(7))],
+    }
+}
+
+pub fn require_no_attack(side: Side, c: Color) -> Vec<Square> {
+    match (c, side) {
+        (White, Kingside)  => vec![Square::new(File(4),Rank(0)),
+                                   Square::new(File(5),Rank(0)),
+                                   Square::new(File(6),Rank(0))],
+        (White, Queenside) => vec![Square::new(File(4),Rank(0)),
+                                   Square::new(File(3),Rank(0)),
+                                   Square::new(File(2),Rank(0))],
+        (Black, Kingside)  => vec![Square::new(File(4),Rank(7)),
+                                   Square::new(File(5),Rank(7)),
+                                   Square::new(File(6),Rank(7))],
+        (Black, Queenside) => vec![Square::new(File(4),Rank(7)),
+                                   Square::new(File(3),Rank(7)),
+                                   Square::new(File(2),Rank(7))],
+    }
 }
 
 #[deriving(PartialEq,Eq,Copy,Clone)]

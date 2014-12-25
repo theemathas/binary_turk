@@ -2,12 +2,13 @@
 
 use super::piece;
 use super::square::Square;
+use super::castle::Side;
 
 pub struct Move {
     from: Square,
     to: Square,
     is_capture: bool,
-    is_castle: bool,
+    castle: Option<Side>,
     is_en_passant: bool,
     promote: Option<piece::Type>,
     is_pawn_double_move: bool,
@@ -18,7 +19,7 @@ impl Move {
             from: from,
             to: to,
             is_capture: false,
-            is_castle: false,
+            castle: None,
             is_en_passant: false,
             promote: None,
             is_pawn_double_move: false,
@@ -36,11 +37,14 @@ impl Move {
     pub fn set_capture(&self, val: bool) -> Move {
         Move { is_capture: val, ..*self }
     }
-    pub fn is_castle(&self) -> bool {
-        self.is_castle
+    pub fn castle(&self) -> Option<Side> {
+        self.castle
     }
-    pub fn set_castle(&self, val: bool) -> Move {
-        Move { is_castle: val, ..*self }
+    pub fn is_castle(&self) -> bool {
+        self.castle.is_some()
+    }
+    pub fn set_castle(&self, val: Option<Side>) -> Move {
+        Move { castle: val, ..*self }
     }
     pub fn is_en_passant(&self) -> bool {
         self.is_en_passant

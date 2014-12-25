@@ -259,13 +259,13 @@ fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
             if p.can_castle_now(Kingside, White) {
                 let from = Square::new(File(4),Rank(0));
                 let to   = Square::new(File(6),Rank(0));
-                let curr_move = Move::new(from, to).set_castle(true);
+                let curr_move = Move::new(from, to).set_castle(Some(Kingside));
                 send!(tx, curr_move);
             }
             if p.can_castle_now(Queenside, White) {
                 let from = Square::new(File(4),Rank(0));
                 let to   = Square::new(File(2),Rank(0));
-                let curr_move = Move::new(from, to).set_castle(true);
+                let curr_move = Move::new(from, to).set_castle(Some(Queenside));
                 send!(tx, curr_move);
             }
         }
@@ -273,13 +273,13 @@ fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
             if p.can_castle_now(Kingside, Black) {
                 let from = Square::new(File(4),Rank(7));
                 let to   = Square::new(File(6),Rank(7));
-                let curr_move = Move::new(from, to).set_castle(true);
+                let curr_move = Move::new(from, to).set_castle(Some(Kingside));
                 send!(tx, curr_move);
             }
             if p.can_castle_now(Queenside, Black) {
                 let from = Square::new(File(4),Rank(7));
                 let to   = Square::new(File(2),Rank(7));
-                let curr_move = Move::new(from, to).set_castle(true);
+                let curr_move = Move::new(from, to).set_castle(Some(Queenside));
                 send!(tx, curr_move);
             }
         }

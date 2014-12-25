@@ -33,11 +33,15 @@ fn filter_legal(p: &Position, out: SyncSender<Move>, rx: Receiver<Move>) {
 
 pub fn is_legal(mut p: Position, curr_move: &Move) -> bool {
     make_move_mut(&mut p, curr_move);
+    !can_take_king(&p)
+}
+
+pub fn can_take_king(p: &Position) -> bool {
     for m in gen::receive_psudo_legal(p.clone()).iter() {
         let dest = p.at(m.to());
         if dest.is_some() && dest.unwrap().piece_type() == King {
-            return false;
+            return true;
         }
     }
-    true
+    false
 }

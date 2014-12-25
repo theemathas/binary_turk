@@ -6,6 +6,10 @@ use super::color::Color;
 
 use std::collections::HashMap;
 
+pub fn start_pos() -> Position {
+    fen_to_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap()
+}
+
 pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
     let fields: Vec<&str> = fen.split(' ').collect();
     if fields.len() < 6 {

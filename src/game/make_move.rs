@@ -25,6 +25,9 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
 
     if m.is_castle() {
 
+        //no en passant
+        p.set_en_passant_mut(None);
+
         let castle_color = match from.rank() {
             Rank(0) => White,
             Rank(7) => Black,

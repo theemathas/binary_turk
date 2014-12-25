@@ -10,6 +10,7 @@ pub struct Move {
     is_castle: bool,
     is_en_passant: bool,
     promote: Option<piece::Type>,
+    is_pawn_double_move: bool,
 }
 impl Move {
     pub fn new(from: Square, to: Square) -> Move {
@@ -20,6 +21,7 @@ impl Move {
             is_castle: false,
             is_en_passant: false,
             promote: None,
+            is_pawn_double_move: false,
         }
     }
     pub fn from(&self) -> Square {
@@ -54,6 +56,12 @@ impl Move {
     }
     pub fn set_promote(&self, val: Option<piece::Type>) -> Move {
         Move { promote: val, ..*self }
+    }
+    pub fn is_pawn_double_move(&self) -> bool {
+        self.is_pawn_double_move
+    }
+    pub fn set_pawn_double_move(&self, val: bool) -> Move {
+        Move { is_pawn_double_move: val, ..*self }
     }
 }
 

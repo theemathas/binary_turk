@@ -3,6 +3,8 @@
 use std::thread::Thread;
 
 use super::piece::King;
+use super::square::Square;
+use super::castle;
 use super::moves::Move;
 use super::pos::Position;
 use super::gen;
@@ -32,9 +34,22 @@ fn filter_legal(p: &Position, out: SyncSender<Move>, rx: Receiver<Move>) {
 }
 
 pub fn is_legal(mut p: Position, curr_move: &Move) -> bool {
-    //TODO Implement is_legal() for castling.
+    let c = p.side_to_move();
     make_move_mut(&mut p, curr_move);
-    !can_take_king(&p)
+    match curr_move.castle() {
+        None => {
+            !can_take_king(&p)
+        },
+        Some(side) => {
+            // Check for castling out of check, through check, and into check.
+            let check_squares: Vec<Square> = castle::require_no_attack(side, c);
+            gen::receive_psudo_legal(p).iter().all(
+                |m| {
+                    check_squares.iter().all( |x| *x != m.to() )
+                }
+            )
+        }
+    }
 }
 
 pub fn can_take_king(p: &Position) -> bool {

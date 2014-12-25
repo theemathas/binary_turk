@@ -18,12 +18,12 @@ impl Board {
         self.data[f as uint][r as uint]
     }
     pub fn set_at_mut(&mut self, s: Square, val: Piece) {
-        debug_assert!(self.at(s).is_none());
+        debug_assert!(self.at(s).is_none(), "set_at_mut(), s = {}", s);
         let (File(f), Rank(r)) = s.to_tuple();
         self.data[f as uint][r as uint] = Some(val);
     }
     pub fn remove_at_mut(&mut self, s: Square) {
-        debug_assert!(self.at(s).is_some());
+        debug_assert!(self.at(s).is_some(), "remove_at_mut(), s = {}", s);
         let (File(f), Rank(r)) = s.to_tuple();
         self.data[f as uint][r as uint] = None;
     }

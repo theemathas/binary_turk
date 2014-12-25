@@ -6,7 +6,7 @@ pub use self::Piece::{WP,WK,WQ,WB,WN,WR};
 pub use self::Piece::{BP,BK,BQ,BB,BN,BR};
 pub use self::Type::{Pawn,King,Queen,Bishop,Knight,Rook};
 
-#[deriving(PartialEq,Eq,Copy)]
+#[deriving(PartialEq,Eq,Copy,Show)]
 pub enum Piece {
     WP,
     WK,

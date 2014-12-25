@@ -1,13 +1,13 @@
 //! The types for files, ranks, and squares
 
 // File and Rank are 0-based.
-#[deriving(PartialEq,Eq,Copy,Clone)]
+#[deriving(PartialEq,Eq,Copy,Clone,Show)]
 pub struct File(pub u8);
 
-#[deriving(PartialEq,Eq,Copy,Clone)]
+#[deriving(PartialEq,Eq,Copy,Clone,Show)]
 pub struct Rank(pub u8);
 
-#[deriving(PartialEq,Eq,Copy,Clone)]
+#[deriving(PartialEq,Eq,Copy,Clone,Show)]
 pub struct Square(File, Rank);
 impl Square {
     pub fn new(f: File, r: Rank) -> Square {

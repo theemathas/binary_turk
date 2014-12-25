@@ -29,6 +29,9 @@ impl Position {
     pub fn at(&self, s: Square) -> Option<Piece> {
         self.data.at(s)
     }
+    pub fn is_empty_at(&self, s: Square) -> bool {
+        self.data.is_empty_at(s)
+    }
     pub fn set_at_mut(&mut self, s: Square, val: Piece) {
         self.data.set_at_mut(s, val);
     }
@@ -47,7 +50,7 @@ impl Position {
     // Does not check for castling out of check, through check, or into check.
     pub fn can_castle_now(&self, side: Side, c: Color) -> bool {
         self.can_castle(side, c) &&
-            castle::require_empty_squares(side, c).iter().all( |x| self.at(*x) == None )
+            castle::require_empty_squares(side, c).iter().all( |x| self.is_empty_at(*x) )
     }
     pub fn set_castle_mut(&mut self, side:Side, c:Color, val: bool) {
         self.castling.set_mut(side, c, val);

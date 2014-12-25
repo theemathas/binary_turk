@@ -101,7 +101,7 @@ fn gen_slider_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action 
     for dir in slide.iter() {
         let mut curr_pos = shift(from, *dir);
         //while curr_pos is valid and there is no piece there.
-        while curr_pos.is_some() && p.at(curr_pos.unwrap()).is_none() {
+        while curr_pos.is_some() && p.is_empty_at(curr_pos.unwrap()) {
             let curr_move = Move::new(from, curr_pos.unwrap());
             send!(tx, curr_move);
             curr_pos = shift(curr_pos.unwrap(), *dir);
@@ -171,7 +171,7 @@ fn gen_pawn_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
     let move_dir: Diff = (0, dy);
     let to: Square = shift(from, move_dir).unwrap();
     // if destination is empty
-    if p.at(to).is_none() {
+    if p.is_empty_at(to) {
         match rank_up {
             7 => {
                 for new_piece in [Queen, Knight, Rook, Bishop].iter() {
@@ -183,7 +183,7 @@ fn gen_pawn_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
                 let curr_move = Move::new(from, to);
                 send!(tx, curr_move);
                 let to2: Square = shift(to, move_dir).unwrap();
-                if p.at(to2).is_none() {
+                if p.is_empty_at(to2) {
                     let curr_move2 = Move::new(from, to2).set_pawn_double_move(true);
                     send!(tx, curr_move2);
                 }

@@ -17,6 +17,9 @@ impl Board {
         let (File(f), Rank(r)) = s.to_tuple();
         self.data[f as uint][r as uint]
     }
+    pub fn is_empty_at(&self, s: Square) -> bool {
+        self.at(s).is_none()
+    }
     pub fn set_at_mut(&mut self, s: Square, val: Piece) {
         debug_assert!(self.at(s).is_none(), "set_at_mut(), s = {}", s);
         let (File(f), Rank(r)) = s.to_tuple();

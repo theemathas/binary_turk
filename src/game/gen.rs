@@ -214,7 +214,7 @@ fn gen_pawn_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
                     send!(tx, curr_move);
                 }
             } else {
-                let curr_move = Move::new(from, to).set_capture(true);
+                let curr_move = Move::new(from, capture_to).set_capture(true);
                 send!(tx, curr_move);
             }
         }

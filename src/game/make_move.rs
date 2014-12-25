@@ -53,8 +53,16 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
         p.set_at_mut(rook_to, curr_rook);
 
     } else if m.is_en_passant() {
-        //TODO implement en passant
-        unimplemented!();
+
+        //no en passant after this
+        p.set_en_passant_mut(None);
+
+        let captured = Square::new(to.file(), from.rank());
+
+        p.remove_at_mut(captured);
+        p.remove_at_mut(from);
+        p.set_at_mut(to, curr_piece);
+
     } else if m.is_promote() {
         //no en passant
         p.set_en_passant_mut(None);

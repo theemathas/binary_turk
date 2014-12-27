@@ -5,7 +5,7 @@ use std::collections::VecMap;
 
 use super::color::{Color, White, Black};
 use super::piece::{Piece, King, WHITE_PIECES, BLACK_PIECES, ALL_PIECES};
-use super::square::{File, Rank, Square};
+use super::square::Square;
 use super::bitboard::BitBoard;
 
 #[deriving(Clone)]
@@ -78,19 +78,12 @@ impl Board {
     }
     pub fn king_square(&self, c: Color) -> Square {
         let curr_king = Piece::new(c, King);
-        let temp = self.iter().find( |x| x.0 == curr_king ).unwrap();
-        temp.1
+        self.piece_data(curr_king).iter().next().unwrap()
     }
     fn piece_vec(&self) -> Vec<(Piece,Square)> {
         let mut ans: Vec<(Piece, Square)> = Vec::new();
-        for f in range::<u8>(0,8) {
-            for r in range::<u8>(0,8) {
-                let s = Square::new(File(f),Rank(r));
-                let x = self.at(s);
-                if x.is_some() {
-                    ans.push((x.unwrap(), s));
-                }
-            }
+        for p in ALL_PIECES.iter() {
+            ans.extend(self.piece_data(*p).iter().map( |s: Square| (*p, s)  ) );
         }
         ans
     }

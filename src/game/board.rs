@@ -41,9 +41,8 @@ impl Board {
     }
     pub fn king_square(&self, c: Color) -> Square {
         let curr_king = Piece::new(c, King);
-        let temp = self.iter().find( |x| match *x { (piece,_) => piece == curr_king } ).unwrap();
-        let ans = match temp { (_,val) => val };
-        ans
+        let temp = self.iter().find( |x| x.0 == curr_king ).unwrap();
+        temp.1
     }
     fn piece_vec(&self) -> Vec<(Piece,Square)> {
         let mut ans: Vec<(Piece, Square)> = Vec::new();
@@ -56,15 +55,15 @@ impl Board {
         }
         ans
     }
-    pub fn iter(&self) -> Iter { Iter { val: self.piece_vec().into_iter() } }
+    pub fn iter(&self) -> Iter { Iter(self.piece_vec().into_iter()) }
 }
 
-pub struct Iter { val: vec::IntoIter<(Piece,Square)> }
+pub struct Iter(vec::IntoIter<(Piece,Square)>);
 impl Iterator<(Piece,Square)> for Iter {
-    fn next(&mut self) -> Option<(Piece,Square)> { self.val.next() }
-    fn size_hint(&self) -> (uint, Option<uint>) { self.val.size_hint() }
+    fn next(&mut self) -> Option<(Piece,Square)> { self.0.next() }
+    fn size_hint(&self) -> (uint, Option<uint>) { self.0.size_hint() }
 }
 impl DoubleEndedIterator<(Piece,Square)> for Iter {
-    fn next_back(&mut self) -> Option<(Piece,Square)> { self.val.next_back() }
+    fn next_back(&mut self) -> Option<(Piece,Square)> { self.0.next_back() }
 }
 impl ExactSizeIterator<(Piece,Square)> for Iter {}

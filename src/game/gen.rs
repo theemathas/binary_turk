@@ -151,7 +151,7 @@ fn gen_fixed_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<M
 
 fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
     let piece_color = piece_id.color();
-    let (File(_), Rank(from_rank)) = from.to_tuple();
+    let from_rank = from.rank().0;
     //rank_up is the 1-based rank from the piece-owner's side.
     let (dy, rank_up): (int, u8) = match piece_color {
         White => ( 1, 1u8 + from_rank ),

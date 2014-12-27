@@ -31,9 +31,7 @@ fn num_from_pos(p: &Position, plies: Plies) -> u64 {
     if !mate::has_legal_moves(p.clone()) {
         return 0;
     }
-    let next_plies = match plies {
-        Plies(val) => Plies(val-1),
-    };
+    let next_plies = Plies(plies.0 - 1);
     let mut ans = 0;
     for m in legal::receive_legal(p.clone()).iter() {
         let new_pos = make_move(p.clone(), &m);

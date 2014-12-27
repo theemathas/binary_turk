@@ -1,27 +1,34 @@
 //! implements the board representation
 
 use std::vec;
+use std::collections::VecMap;
 
 use super::color::Color;
-use super::piece::{Piece,King};
+use super::piece::{Piece, King, WHITE_PIECES, BLACK_PIECES, ALL_PIECES};
 use super::square::{File, Rank, Square};
+use super::bitboard::BitBoard;
 
 #[deriving(Clone)]
-pub struct Board {
-    data: [[Option<Piece>, ..8], ..8],
-}
+pub struct Board(VecMap<BitBoard>);
+
 impl Board {
     pub fn new() -> Board {
-        Board {
-            data: [[None, ..8], ..8],
+        let mut ans = VecMap::new();
+        for x in ALL_PIECES.iter() {
+            ans.insert(*x as uint, BitBoard::new());
         }
+        Board(ans)
     }
     pub fn at(&self, s: Square) -> Option<Piece> {
-        let (File(f), Rank(r)) = s.to_tuple();
-        self.data[f as uint][r as uint]
+        for x in ALL_PIECES.iter() {
+            if self.is_piece_at(*x, s) {
+                return Some(*x);
+            }
+        }
+        None
     }
     pub fn is_piece_at(&self, p: Piece, s: Square) -> bool {
-        self.at(s) == Some(p)
+        self.0.get(&(p as uint)).unwrap().at(s)
     }
     pub fn is_empty_at(&self, s: Square) -> bool {
         self.at(s).is_none()
@@ -30,14 +37,13 @@ impl Board {
         self.at(s).map( |x| x.color() )
     }
     pub fn set_at_mut(&mut self, s: Square, val: Piece) {
-        debug_assert!(self.at(s).is_none(), "set_at_mut(), s = {}", s);
-        let (File(f), Rank(r)) = s.to_tuple();
-        self.data[f as uint][r as uint] = Some(val);
+        debug_assert!(self.is_empty_at(s), "set_at_mut(), s = {}", s);
+        self.0.get_mut(&(val as uint)).unwrap().set_at_mut(s);
     }
     pub fn remove_at_mut(&mut self, s: Square) {
-        debug_assert!(self.at(s).is_some(), "remove_at_mut(), s = {}", s);
-        let (File(f), Rank(r)) = s.to_tuple();
-        self.data[f as uint][r as uint] = None;
+        debug_assert!(!self.is_empty_at(s), "remove_at_mut(), s = {}", s);
+        let val = self.at(s).unwrap();
+        self.0.get_mut(&(val as uint)).unwrap().remove_at_mut(s);
     }
     pub fn king_square(&self, c: Color) -> Square {
         let curr_king = Piece::new(c, King);
@@ -46,10 +52,12 @@ impl Board {
     }
     fn piece_vec(&self) -> Vec<(Piece,Square)> {
         let mut ans: Vec<(Piece, Square)> = Vec::new();
-        for f in range::<uint>(0,8) {
-            for r in range::<uint>(0,8) {
-                if self.data[f][r].is_some() {
-                    ans.push((self.data[f][r].unwrap(), Square::new(File(f as u8), Rank(r as u8))));
+        for f in range::<u8>(0,8) {
+            for r in range::<u8>(0,8) {
+                let s = Square::new(File(f),Rank(r));
+                let x = self.at(s);
+                if x.is_some() {
+                    ans.push((x.unwrap(), s));
                 }
             }
         }

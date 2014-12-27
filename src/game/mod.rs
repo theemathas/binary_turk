@@ -7,6 +7,7 @@ mod piece;
 mod square;
 mod moves;
 
+mod bitboard;
 mod board;
 mod castle;
 mod pos;

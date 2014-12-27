@@ -18,6 +18,9 @@ impl Board {
         let (File(f), Rank(r)) = s.to_tuple();
         self.data[f as uint][r as uint]
     }
+    pub fn is_piece_at(&self, p: Piece, s: Square) -> bool {
+        self.at(s) == Some(p)
+    }
     pub fn is_empty_at(&self, s: Square) -> bool {
         self.at(s).is_none()
     }
@@ -33,5 +36,16 @@ impl Board {
         debug_assert!(self.at(s).is_some(), "remove_at_mut(), s = {}", s);
         let (File(f), Rank(r)) = s.to_tuple();
         self.data[f as uint][r as uint] = None;
+    }
+    pub fn piece_vec(&self) -> Vec<(Piece,Square)> {
+        let mut ans: Vec<(Piece, Square)> = Vec::new();
+        for f in range::<uint>(0,8) {
+            for r in range::<uint>(0,8) {
+                if self.data[f][r].is_some() {
+                    ans.push((self.data[f][r].unwrap(), Square::new(File(f as u8), Rank(r as u8))));
+                }
+            }
+        }
+        ans
     }
 }

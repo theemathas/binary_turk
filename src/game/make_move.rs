@@ -112,6 +112,5 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
         p.set_castle_mut(Kingside , Black, false);
     }
 
-    let next_color = p.side_to_move().invert();
-    p.set_side_to_move_mut(next_color);
+    p.swap_side_to_move_mut();
 }

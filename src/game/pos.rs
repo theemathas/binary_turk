@@ -29,6 +29,9 @@ impl Position {
     pub fn at(&self, s: Square) -> Option<Piece> {
         self.data.at(s)
     }
+    pub fn is_piece_at(&self, p: Piece, s: Square) -> bool {
+        self.data.is_piece_at(p,s)
+    }
     pub fn is_empty_at(&self, s: Square) -> bool {
         self.data.is_empty_at(s)
     }
@@ -46,6 +49,10 @@ impl Position {
     }
     pub fn set_side_to_move_mut(&mut self, c: Color) {
         self.side_to_move = c;
+    }
+    pub fn swap_side_to_move_mut(&mut self) {
+        let c = self.side_to_move.invert();
+        self.set_side_to_move_mut(c);
     }
     pub fn can_castle(&self, side: Side, c: Color) -> bool {
         self.castling.get(side, c)
@@ -72,5 +79,9 @@ impl Position {
     }
     pub fn set_ply_count_mut(&mut self, val: Plies) {
         self.ply_count = val;
+    }
+
+    pub fn piece_vec(&self) -> Vec<(Piece, Square)> {
+        self.data.piece_vec()
     }
 }

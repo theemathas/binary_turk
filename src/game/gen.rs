@@ -47,29 +47,23 @@ pub fn gen_psudo_legal(p: &Position, tx: SyncSender<Move>) {
     if gen_castle(p, &tx).is_stop() {
         return;
     }
-    for file in range(0,8) {
-        for rank in range(0,8) {
-            if gen_move_from(p, Square::new(File(file),Rank(rank)), &tx).is_stop() {
-                return;
-            }
+    for &(piece_id, from) in p.piece_vec().iter() {
+        if gen_move_from(p, piece_id, from, &tx).is_stop() {
+            return;
         }
     }
 }
 
 //Functions below return Err(()) if the receiver hung up.
 
-fn gen_move_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
-    let piece_id = match p.at(from) {
-        None => return Continue,
-        Some(val) => val,
-    };
+fn gen_move_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
     if piece_id.color() != p.side_to_move() {
         return Continue;
     }
     match piece_id.piece_type() {
-        Pawn => gen_pawn_from(p, from, tx),
-        Queen|Bishop|Rook => gen_slider_from(p, from, tx),
-        King|Knight => gen_fixed_from(p, from, tx),
+        Pawn => gen_pawn_from(p, piece_id, from, tx),
+        Queen|Bishop|Rook => gen_slider_from(p, piece_id, from, tx),
+        King|Knight => gen_fixed_from(p, piece_id, from, tx),
     }
 }
 
@@ -82,12 +76,11 @@ fn shift(s: Square, dir: Diff) -> Option<Square> {
     Square::from_int(file as int + dx, rank as int + dy)
 }
 
-fn gen_slider_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
+fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
     let rook_slide:   &[Diff] = &[(1,0), (0,1), (-1,0), (0,-1)];
     let bishop_slide: &[Diff] = &[(1,1), (1,-1), (-1,-1), (-1,1)];
     let queen_slide:  &[Diff] = &[(1,0), (0,1), (-1,0), (0,-1), (1,1), (1,-1), (-1,-1), (-1,1)];
 
-    let piece_id = p.at(from).unwrap();
     let piece_type = piece_id.piece_type();
     let piece_color = piece_id.color();
 
@@ -120,11 +113,10 @@ fn gen_slider_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action 
     Continue
 }
 
-fn gen_fixed_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
+fn gen_fixed_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
     let king_fixed:   &[Diff] = &[(1,0), (0,1), (-1,0), (0,-1), (1,1), (1,-1), (-1,-1), (-1,1)];
     let knight_fixed: &[Diff] = &[(2,1), (2,-1), (-2,-1), (-2,1), (1,2), (1,-2), (-1,-2), (-1,2)];
 
-    let piece_id = p.at(from).unwrap();
     let piece_type = piece_id.piece_type();
     let piece_color = piece_id.color();
 
@@ -155,8 +147,8 @@ fn gen_fixed_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
     Continue
 }
 
-fn gen_pawn_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
-    let piece_color = p.color_at(from).unwrap();
+fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
+    let piece_color = piece_id.color();
     let (File(_), Rank(from_rank)) = from.to_tuple();
     //rank_up is the 1-based rank from the piece-owner's side.
     let (dy, rank_up): (int, u8) = match piece_color {
@@ -197,7 +189,6 @@ fn gen_pawn_from(p: &Position, from: Square, tx: &SyncSender<Move>) -> Action {
             Some(val) => val,
             None => continue,
         };
-        let dest: Option<Piece> = p.at(capture_to);
         if p.color_at(capture_to) == Some(piece_color.invert()) {
             if rank_up == 7 {
                 for new_piece in [Queen, Knight, Rook, Bishop].iter() {
@@ -236,7 +227,7 @@ fn gen_en_passant(p: &Position, tx: &SyncSender<Move>) -> Action {
 
     for &from_file in from_file_all.iter() {
         let from = Square::new(from_file, from_rank);
-        if p.at(from) == Some(expect_piece) {
+        if p.is_piece_at(expect_piece, from) {
             let curr_move = Move::new(from, to).set_en_passant(true);
             send!(tx, curr_move);
         }

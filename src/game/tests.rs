@@ -6,7 +6,7 @@ use super::make_move::make_move;
 use super::mate;
 
 #[test]
-fn perf() {
+fn perf_init_pos_3_plies() {
     //perf_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     //         &[1, 20, 400, 8902, 197281, 4865609]);
     perf_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",

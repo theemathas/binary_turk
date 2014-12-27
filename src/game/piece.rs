@@ -23,8 +23,6 @@ pub enum Piece {
     BR,
 }
 
-pub static WHITE_PIECES: [Piece, ..6] = [WP, WK, WQ, WB, WN, WR];
-pub static BLACK_PIECES: [Piece, ..6] = [BP, BK, BQ, BB, BN, BR];
 pub static ALL_PIECES: [Piece, ..12] = [WP, WK, WQ, WB, WN, WR,
                                         BP, BK, BQ, BB, BN, BR];
 

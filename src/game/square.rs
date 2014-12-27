@@ -13,12 +13,14 @@ impl Square {
     pub fn new(f: File, r: Rank) -> Square {
         Square(f, r)
     }
+
     pub fn file(self) -> File {
         self.0
     }
     pub fn rank(self) -> Rank {
         self.1
     }
+
     pub fn to_tuple(self) -> (File, Rank) {
         let Square(f, r) = self;
         (f, r)
@@ -30,6 +32,7 @@ impl Square {
             None
         }
     }
+
     pub fn to_id(&self) -> u8 {
         let (File(f), Rank(r)) = self.to_tuple();
         f*8 + r

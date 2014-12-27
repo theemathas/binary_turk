@@ -26,6 +26,7 @@ impl Position {
             ply_count: Plies(0),
         }
     }
+
     pub fn at(&self, s: Square) -> Option<Piece> {
         self.data.at(s)
     }
@@ -38,12 +39,14 @@ impl Position {
     pub fn is_color_at(&self, s: Square, c: Color) -> bool {
         self.data.is_color_at(s,c)
     }
+
     pub fn set_at_mut(&mut self, s: Square, p: Piece) {
         self.data.set_at_mut(s, p);
     }
     pub fn remove_at_mut(&mut self, s: Square, p: Piece) {
         self.data.remove_at_mut(s, p);
     }
+
     pub fn king_square(&self, c: Color) -> Square {
         self.data.king_square(c)
     }
@@ -61,6 +64,7 @@ impl Position {
         let c = self.side_to_move.invert();
         self.set_side_to_move_mut(c);
     }
+
     pub fn can_castle(&self, side: Side, c: Color) -> bool {
         self.castling.get(side, c)
     }
@@ -72,6 +76,7 @@ impl Position {
     pub fn set_castle_mut(&mut self, side:Side, c:Color, val: bool) {
         self.castling.set_mut(side, c, val);
     }
+
     pub fn en_passant(&self) -> Option<File> {
         self.en_passant
     }
@@ -81,6 +86,7 @@ impl Position {
     pub fn set_en_passant_mut(&mut self, val: Option<File>) {
         self.en_passant = val;
     }
+
     pub fn ply_count(&self) -> Plies {
         self.ply_count
     }

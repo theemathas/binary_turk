@@ -25,45 +25,33 @@ impl Move {
             is_pawn_double_move: false,
         }
     }
-    pub fn from(&self) -> Square {
-        self.from
-    }
-    pub fn to(&self) -> Square {
-        self.to
-    }
-    pub fn is_capture(&self) -> bool {
-        self.is_capture
-    }
+
+    pub fn from(&self) -> Square { self.from }
+    pub fn to(&self) -> Square { self.to }
+
+    pub fn is_capture(&self) -> bool { self.is_capture }
     pub fn set_capture(&self, val: bool) -> Move {
         Move { is_capture: val, ..*self }
     }
-    pub fn castle(&self) -> Option<Side> {
-        self.castle
-    }
-    pub fn is_castle(&self) -> bool {
-        self.castle.is_some()
-    }
+
+    pub fn castle(&self) -> Option<Side> { self.castle }
+    pub fn is_castle(&self) -> bool { self.castle.is_some() }
     pub fn set_castle(&self, val: Option<Side>) -> Move {
         Move { castle: val, ..*self }
     }
-    pub fn is_en_passant(&self) -> bool {
-        self.is_en_passant
-    }
+
+    pub fn is_en_passant(&self) -> bool { self.is_en_passant }
     pub fn set_en_passant(&self, val: bool) -> Move {
         Move { is_en_passant: val, ..*self }
     }
-    pub fn promote(&self) -> Option<piece::Type> {
-        self.promote
-    }
-    pub fn is_promote(&self) -> bool {
-        self.promote.is_some()
-    }
+
+    pub fn promote(&self) -> Option<piece::Type> { self.promote }
+    pub fn is_promote(&self) -> bool { self.promote.is_some() }
     pub fn set_promote(&self, val: Option<piece::Type>) -> Move {
         Move { promote: val, ..*self }
     }
-    pub fn is_pawn_double_move(&self) -> bool {
-        self.is_pawn_double_move
-    }
+
+    pub fn is_pawn_double_move(&self) -> bool { self.is_pawn_double_move }
     pub fn set_pawn_double_move(&self, val: bool) -> Move {
         Move { is_pawn_double_move: val, ..*self }
     }

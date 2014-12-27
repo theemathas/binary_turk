@@ -9,6 +9,13 @@ use super::square::Square;
 pub struct BitBoard(BitvSet);
 impl BitBoard {
     pub fn new() -> BitBoard { BitBoard(BitvSet::with_capacity(64)) }
+    pub fn new_full() -> BitBoard {
+        let mut ans = BitvSet::with_capacity(64);
+        for i in range(0,64) {
+            ans.insert(i);
+        }
+        BitBoard(ans)
+    }
     pub fn at(&self, s: Square) -> bool { self.0.contains(&(s.to_id() as uint)) }
     pub fn set_at_mut(&mut self, s: Square) { self.0.insert(s.to_id() as uint); }
     pub fn remove_at_mut(&mut self, s: Square) { self.0.remove(&(s.to_id() as uint)); }

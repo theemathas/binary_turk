@@ -65,14 +65,6 @@ impl CastlingData {
             (Black, Queenside) => self.b_queenside,
         }
     }
-    pub fn set(self, side: Side, c: Color, val: bool) -> CastlingData {
-        match (c, side) {
-            (White, Kingside)  => CastlingData { w_kingside:  val, ..self },
-            (White, Queenside) => CastlingData { w_queenside: val, ..self },
-            (Black, Kingside)  => CastlingData { b_kingside:  val, ..self },
-            (Black, Queenside) => CastlingData { b_queenside: val, ..self },
-        }
-    }
     pub fn set_mut(&mut self, side: Side, c: Color, val: bool) {
         match (c, side) {
             (White, Kingside)  => self.w_kingside  = val,

@@ -80,9 +80,6 @@ impl Position {
     pub fn en_passant(&self) -> Option<File> {
         self.en_passant
     }
-    pub fn has_en_passant(&self) -> bool {
-        self.en_passant.is_some()
-    }
     pub fn set_en_passant_mut(&mut self, val: Option<File>) {
         self.en_passant = val;
     }

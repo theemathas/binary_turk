@@ -35,7 +35,6 @@ impl Move {
     }
 
     pub fn castle(&self) -> Option<Side> { self.castle }
-    pub fn is_castle(&self) -> bool { self.castle.is_some() }
     pub fn set_castle(&self, val: Option<Side>) -> Move {
         Move { castle: val, ..*self }
     }
@@ -46,7 +45,6 @@ impl Move {
     }
 
     pub fn promote(&self) -> Option<piece::Type> { self.promote }
-    pub fn is_promote(&self) -> bool { self.promote.is_some() }
     pub fn set_promote(&self, val: Option<piece::Type>) -> Move {
         Move { promote: val, ..*self }
     }

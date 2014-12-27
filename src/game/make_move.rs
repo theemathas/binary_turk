@@ -22,7 +22,7 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
         p.set_ply_count_mut(Plies(temp+1));
     }
 
-    if m.is_castle() {
+    if m.castle().is_some() {
 
         //no en passant
         p.set_en_passant_mut(None);
@@ -63,7 +63,7 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
         p.remove_at_mut(from, curr_piece);
         p.set_at_mut(to, curr_piece);
 
-    } else if m.is_promote() {
+    } else if m.promote().is_some() {
         //no en passant
         p.set_en_passant_mut(None);
 

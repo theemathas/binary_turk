@@ -29,6 +29,12 @@ impl Board {
             empty_data: BitBoard::new_full(),
         }
     }
+    fn piece_data(&self, p: Piece) -> &BitBoard {
+        self.data.get(&(p as uint)).unwrap()
+    }
+    fn piece_data_mut(&mut self, p: Piece) -> &mut BitBoard {
+        self.data.get_mut(&(p as uint)).unwrap()
+    }
     fn color_data(&self, c: Color) -> &BitBoard {
         match c {
             White => &self.white_data,
@@ -50,7 +56,7 @@ impl Board {
         None
     }
     pub fn is_piece_at(&self, p: Piece, s: Square) -> bool {
-        self.data.get(&(p as uint)).unwrap().at(s)
+        self.piece_data(p).at(s)
     }
     pub fn is_empty_at(&self, s: Square) -> bool {
         self.empty_data.at(s)
@@ -60,13 +66,13 @@ impl Board {
     }
     pub fn set_at_mut(&mut self, s: Square, p: Piece) {
         debug_assert!(self.is_empty_at(s), "set_at_mut(), s = {}", s);
-        self.data.get_mut(&(p as uint)).unwrap().set_at_mut(s);
+        self.piece_data_mut(p).set_at_mut(s);
         self.color_data_mut(p.color()).set_at_mut(s);
         self.empty_data.remove_at_mut(s);
     }
     pub fn remove_at_mut(&mut self, s: Square, p: Piece) {
         debug_assert!(self.is_piece_at(p, s), "remove_at_mut(), s = {}", s);
-        self.data.get_mut(&(p as uint)).unwrap().remove_at_mut(s);
+        self.piece_data_mut(p).remove_at_mut(s);
         self.color_data_mut(p.color()).remove_at_mut(s);
         self.empty_data.set_at_mut(s);
     }

@@ -1,5 +1,3 @@
-#![allow(unused_variables)]
-
 use super::color::{White, Black};
 use super::piece::{mod, Piece, WK, WR, BK, BR};
 use super::square::{Square,File,Rank};

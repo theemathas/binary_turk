@@ -1,5 +1,3 @@
-#![allow(unused_variables)]
-
 use std::thread::Thread;
 
 use super::piece::King;

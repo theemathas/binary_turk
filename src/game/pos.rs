@@ -38,11 +38,11 @@ impl Position {
     pub fn is_color_at(&self, s: Square, c: Color) -> bool {
         self.data.is_color_at(s,c)
     }
-    pub fn set_at_mut(&mut self, s: Square, val: Piece) {
-        self.data.set_at_mut(s, val);
+    pub fn set_at_mut(&mut self, s: Square, p: Piece) {
+        self.data.set_at_mut(s, p);
     }
-    pub fn remove_at_mut(&mut self, s: Square, val: Piece) {
-        self.data.remove_at_mut(s, val);
+    pub fn remove_at_mut(&mut self, s: Square, p: Piece) {
+        self.data.remove_at_mut(s, p);
     }
     pub fn king_square(&self, c: Color) -> Square {
         self.data.king_square(c)

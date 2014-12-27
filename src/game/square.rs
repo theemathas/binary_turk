@@ -30,4 +30,12 @@ impl Square {
             None
         }
     }
+    pub fn to_id(&self) -> u8 {
+        let (File(f), Rank(r)) = self.to_tuple();
+        f*8 + r
+    }
+    pub fn from_id(val: u8) -> Square {
+        let (f, r) = (val/8, val%8);
+        Square::new(File(f),Rank(r))
+    }
 }

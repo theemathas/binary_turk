@@ -47,6 +47,10 @@ impl Position {
     pub fn king_square(&self, c: Color) -> Square {
         self.data.king_square(c)
     }
+    pub fn piece_iter(&self) -> board::Iter {
+        self.data.iter()
+    }
+
     pub fn side_to_move(&self) -> Color {
         self.side_to_move
     }
@@ -82,9 +86,5 @@ impl Position {
     }
     pub fn set_ply_count_mut(&mut self, val: Plies) {
         self.ply_count = val;
-    }
-
-    pub fn piece_iter(&self) -> board::Iter {
-        self.data.iter()
     }
 }

@@ -52,7 +52,11 @@ pub fn gen_psudo_legal(p: &Position, tx: SyncSender<Move>) {
     }
 }
 
-//Functions below return Err(()) if the receiver hung up.
+pub fn can_move_to(p: Position, to: Square) -> bool {
+    receive_psudo_legal(p).iter().any( |m| m.to() == to )
+}
+
+//Functions below return Stop if the receiver hung up.
 
 fn gen_move_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
     if piece_id.color() != p.side_to_move() {

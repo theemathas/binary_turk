@@ -10,7 +10,7 @@ fn perf() {
     //perf_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     //         &[1, 20, 400, 8902, 197281, 4865609]);
     perf_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-             &[1, 20, 400, 8902]);
+             &[1, 20, 400]);
 }
 
 fn perf_fen(fen_str: &str, res: &[u64]) {

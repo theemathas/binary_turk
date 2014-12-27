@@ -45,7 +45,7 @@ pub fn gen_psudo_legal(p: &Position, tx: SyncSender<Move>) {
     if gen_castle(p, &tx).is_stop() {
         return;
     }
-    for &(piece_id, from) in p.piece_vec().iter() {
+    for (piece_id, from) in p.piece_iter() {
         if gen_move_from(p, piece_id, from, &tx).is_stop() {
             return;
         }

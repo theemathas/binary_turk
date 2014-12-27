@@ -4,7 +4,7 @@ use super::piece::Piece;
 use super::color::{Color};
 use super::square::{File,Square};
 use super::moves::Plies;
-use super::board::Board;
+use super::board::{mod,Board};
 use super::castle::{mod,CastlingData,Side};
 
 /// A complete representation of a chess position.
@@ -84,7 +84,7 @@ impl Position {
         self.ply_count = val;
     }
 
-    pub fn piece_vec(&self) -> Vec<(Piece, Square)> {
-        self.data.piece_vec()
+    pub fn piece_iter(&self) -> board::Iter {
+        self.data.iter()
     }
 }

@@ -1,5 +1,7 @@
 //! implements the board representation
 
+use std::vec;
+
 use super::color::Color;
 use super::piece::{Piece,King};
 use super::square::{File, Rank, Square};
@@ -39,11 +41,11 @@ impl Board {
     }
     pub fn king_square(&self, c: Color) -> Square {
         let curr_king = Piece::new(c, King);
-        let temp = self.piece_vec().into_iter().find( |x| match *x { (piece,_) => piece == curr_king } ).unwrap();
+        let temp = self.iter().find( |x| match *x { (piece,_) => piece == curr_king } ).unwrap();
         let ans = match temp { (_,val) => val };
         ans
     }
-    pub fn piece_vec(&self) -> Vec<(Piece,Square)> {
+    fn piece_vec(&self) -> Vec<(Piece,Square)> {
         let mut ans: Vec<(Piece, Square)> = Vec::new();
         for f in range::<uint>(0,8) {
             for r in range::<uint>(0,8) {
@@ -54,4 +56,15 @@ impl Board {
         }
         ans
     }
+    pub fn iter(&self) -> Iter { Iter { val: self.piece_vec().into_iter() } }
 }
+
+pub struct Iter { val: vec::IntoIter<(Piece,Square)> }
+impl Iterator<(Piece,Square)> for Iter {
+    fn next(&mut self) -> Option<(Piece,Square)> { self.val.next() }
+    fn size_hint(&self) -> (uint, Option<uint>) { self.val.size_hint() }
+}
+impl DoubleEndedIterator<(Piece,Square)> for Iter {
+    fn next_back(&mut self) -> Option<(Piece,Square)> { self.val.next_back() }
+}
+impl ExactSizeIterator<(Piece,Square)> for Iter {}

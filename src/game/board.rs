@@ -1,7 +1,7 @@
 //! implements the board representation
 
 use super::color::Color;
-use super::piece::Piece;
+use super::piece::{Piece,King};
 use super::square::{File, Rank, Square};
 
 #[deriving(Clone)]
@@ -36,6 +36,12 @@ impl Board {
         debug_assert!(self.at(s).is_some(), "remove_at_mut(), s = {}", s);
         let (File(f), Rank(r)) = s.to_tuple();
         self.data[f as uint][r as uint] = None;
+    }
+    pub fn king_square(&self, c: Color) -> Square {
+        let curr_king = Piece::new(c, King);
+        let temp = self.piece_vec().into_iter().find( |x| match *x { (piece,_) => piece == curr_king } ).unwrap();
+        let ans = match temp { (_,val) => val };
+        ans
     }
     pub fn piece_vec(&self) -> Vec<(Piece,Square)> {
         let mut ans: Vec<(Piece, Square)> = Vec::new();

@@ -1,6 +1,5 @@
 use std::thread::Thread;
 
-use super::piece::King;
 use super::square::Square;
 use super::castle;
 use super::moves::Move;
@@ -36,26 +35,17 @@ pub fn is_legal(mut p: Position, curr_move: &Move) -> bool {
     make_move_mut(&mut p, curr_move);
     match curr_move.castle() {
         None => {
-            !can_take_king(&p)
+            !can_take_king(p)
         },
         Some(side) => {
             // Check for castling out of check, through check, and into check.
             let check_squares: Vec<Square> = castle::require_no_attack(side, c);
-            gen::receive_psudo_legal(p).iter().all(
-                |m| {
-                    check_squares.iter().all( |x| *x != m.to() )
-                }
-            )
+            check_squares.iter().all( |val| !gen::can_move_to(p.clone(), *val) )
         }
     }
 }
 
-pub fn can_take_king(p: &Position) -> bool {
-    for m in gen::receive_psudo_legal(p.clone()).iter() {
-        let dest = p.at(m.to());
-        if dest.is_some() && dest.unwrap().piece_type() == King {
-            return true;
-        }
-    }
-    false
+pub fn can_take_king(p: Position) -> bool {
+    let king_square = p.king_square(p.side_to_move().invert());
+    gen::can_move_to(p, king_square)
 }

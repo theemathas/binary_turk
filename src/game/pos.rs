@@ -44,6 +44,9 @@ impl Position {
     pub fn remove_at_mut(&mut self, s: Square) {
         self.data.remove_at_mut(s);
     }
+    pub fn king_square(&self, c: Color) -> Square {
+        self.data.king_square(c)
+    }
     pub fn side_to_move(&self) -> Color {
         self.side_to_move
     }

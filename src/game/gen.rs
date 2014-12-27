@@ -105,7 +105,7 @@ fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<
         if curr_pos.is_some() {
             let to = curr_pos.unwrap();
             //if there is an enemy at the destination
-            if p.color_at(to) == Some(piece_color.invert()) {
+            if p.is_color_at(to, piece_color.invert()) {
                 let curr_move = Move::new(from, to).set_capture(true);
                 send!(tx, curr_move);
             }
@@ -132,12 +132,14 @@ fn gen_fixed_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<M
         let new_pos = shift(from, *dir);
         if new_pos.is_some() {
             let to = new_pos.unwrap();
-            let (is_valid, is_capture) = match p.color_at(to) {
-                Some(c) => {
-                    if c == piece_color { (false, false) }
-                    else { (true, true) }
-                },
-                None => (true, false),
+            let (is_valid, is_capture) = {
+                if p.is_empty_at(to) {
+                    (true, false)
+                } else if p.is_color_at(to, piece_color) {
+                    (false, false)
+                } else {
+                    (true, true)
+                }
             };
             if is_valid {
                 let curr_move = Move::new(from, to).set_capture(is_capture);
@@ -191,7 +193,7 @@ fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
             Some(val) => val,
             None => continue,
         };
-        if p.color_at(capture_to) == Some(piece_color.invert()) {
+        if p.is_color_at(capture_to, piece_color.invert()) {
             if rank_up == 7 {
                 for new_piece in [Queen, Knight, Rook, Bishop].iter() {
                     let curr_move = Move::new(from, capture_to).set_capture(true);

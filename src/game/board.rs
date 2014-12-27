@@ -33,7 +33,10 @@ impl Board {
     pub fn is_empty_at(&self, s: Square) -> bool {
         self.at(s).is_none()
     }
-    pub fn color_at(&self, s: Square) -> Option<Color> {
+    pub fn is_color_at(&self, s: Square, c: Color) -> bool {
+        self.color_at(s) == Some(c)
+    }
+    fn color_at(&self, s: Square) -> Option<Color> {
         self.at(s).map( |x| x.color() )
     }
     pub fn set_at_mut(&mut self, s: Square, val: Piece) {

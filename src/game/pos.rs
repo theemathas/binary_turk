@@ -35,8 +35,8 @@ impl Position {
     pub fn is_empty_at(&self, s: Square) -> bool {
         self.data.is_empty_at(s)
     }
-    pub fn color_at(&self, s: Square) -> Option<Color> {
-        self.data.color_at(s)
+    pub fn is_color_at(&self, s: Square, c: Color) -> bool {
+        self.data.is_color_at(s,c)
     }
     pub fn set_at_mut(&mut self, s: Square, val: Piece) {
         self.data.set_at_mut(s, val);

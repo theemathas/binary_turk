@@ -40,9 +40,8 @@ impl Board {
         debug_assert!(self.is_empty_at(s), "set_at_mut(), s = {}", s);
         self.0.get_mut(&(val as uint)).unwrap().set_at_mut(s);
     }
-    pub fn remove_at_mut(&mut self, s: Square) {
-        debug_assert!(!self.is_empty_at(s), "remove_at_mut(), s = {}", s);
-        let val = self.at(s).unwrap();
+    pub fn remove_at_mut(&mut self, s: Square, val: Piece) {
+        debug_assert!(self.is_piece_at(val, s), "remove_at_mut(), s = {}", s);
         self.0.get_mut(&(val as uint)).unwrap().remove_at_mut(s);
     }
     pub fn king_square(&self, c: Color) -> Square {

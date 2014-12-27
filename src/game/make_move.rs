@@ -1,5 +1,5 @@
 use super::color::{White, Black};
-use super::piece::{mod, Piece, WK, WR, BK, BR};
+use super::piece::{Piece, WK, WR, BK, BR, Pawn};
 use super::square::{Square,File,Rank};
 use super::moves::{Move,Plies};
 use super::pos::Position;
@@ -15,7 +15,7 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
     let to = m.to();
     let curr_piece = p.at(from).unwrap();
 
-    if m.is_capture() || m.is_en_passant() || curr_piece.piece_type() == piece::Type::Pawn {
+    if m.is_capture() || m.is_en_passant() || curr_piece.piece_type() == Pawn {
         p.set_ply_count_mut(Plies(0));
     } else {
         let Plies(temp) = p.ply_count();
@@ -45,10 +45,10 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
             (Black, Queenside) => (Square::new(File(0),Rank(7)), Square::new(File(3),Rank(7))),
         };
 
-        p.remove_at_mut(from);
+        p.remove_at_mut(from, curr_piece);
         p.set_at_mut(to, curr_piece);
         let curr_rook = p.at(rook_from).unwrap();
-        p.remove_at_mut(rook_from);
+        p.remove_at_mut(rook_from, curr_rook);
         p.set_at_mut(rook_to, curr_rook);
 
     } else if m.is_en_passant() {
@@ -57,9 +57,10 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
         p.set_en_passant_mut(None);
 
         let captured = Square::new(to.file(), from.rank());
+        let captured_piece = Piece::new(p.side_to_move().invert(), Pawn);
 
-        p.remove_at_mut(captured);
-        p.remove_at_mut(from);
+        p.remove_at_mut(captured, captured_piece);
+        p.remove_at_mut(from, curr_piece);
         p.set_at_mut(to, curr_piece);
 
     } else if m.is_promote() {
@@ -68,9 +69,10 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
 
         //change the board and promote
         if m.is_capture() {
-            p.remove_at_mut(to);
+            let captured_piece = p.at(to).unwrap();
+            p.remove_at_mut(to, captured_piece);
         }
-        p.remove_at_mut(from);
+        p.remove_at_mut(from, curr_piece);
         p.set_at_mut(to, Piece::new(curr_piece.color(), m.promote().unwrap()));
     } else {
 
@@ -82,9 +84,10 @@ pub fn make_move_mut(p: &mut Position, m: &Move) {
         
         //change the board
         if m.is_capture() {
-            p.remove_at_mut(to);
+            let captured_piece = p.at(to).unwrap();
+            p.remove_at_mut(to, captured_piece);
         }
-        p.remove_at_mut(from);
+        p.remove_at_mut(from, curr_piece);
         p.set_at_mut(to, curr_piece);
     }
 

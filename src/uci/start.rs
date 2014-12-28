@@ -1,14 +1,14 @@
 use std::io::stdio::{StdinReader, StdWriter};
 use std::io::LineBufferedWriter;
 
-use super::command::{mod, command};
+use super::cmd::{mod, cmd};
 
 pub fn start(input: &mut StdinReader, output: &mut LineBufferedWriter<StdWriter>) {
     let mut inbuf = input.lock();
     for x in inbuf.lines() {
         let s = x.unwrap();
-        let res = command(s.as_slice(), output);
-        if res == command::Result::Quit {
+        let res = cmd(s.as_slice(), output);
+        if res == cmd::Result::Quit {
             return;
         }
     }

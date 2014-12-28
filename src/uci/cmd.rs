@@ -7,7 +7,7 @@ pub enum Result {
     Quit,
 }
 
-pub fn command(s: &str, output: &mut LineBufferedWriter<StdWriter>) -> Result {
+pub fn cmd(s: &str, output: &mut LineBufferedWriter<StdWriter>) -> Result {
     // TODO implement uci command processing
     unimplemented!()
 }

@@ -1,5 +1,7 @@
 //! This module is for statically evaluating a position.
 
+#![allow(dead_code)]
+
 use std::iter::AdditiveIterator;
 
 use super::game::{Position, Color, Piece, PieceType, Plies};

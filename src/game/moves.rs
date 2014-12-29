@@ -1,6 +1,9 @@
 //! The types for moves and plies.
 
-use super::piece;
+use std::str::FromStr;
+use std::fmt;
+
+use super::piece::{mod, Queen, Bishop, Knight, Rook};
 use super::square::Square;
 use super::castle::Side;
 
@@ -52,6 +55,43 @@ impl Move {
     pub fn is_pawn_double_move(&self) -> bool { self.is_pawn_double_move }
     pub fn set_pawn_double_move(&self, val: bool) -> Move {
         Move { is_pawn_double_move: val, ..*self }
+    }
+}
+impl FromStr for Move {
+    fn from_str(s: &str) -> Option<Move> {
+        if s.len() != 4 && s.len() != 5 { return None; }
+        let from: Square = match FromStr::from_str(&*s.slice(0,2)) {
+            Some(val) => val, None => return None };
+        let to:   Square = match FromStr::from_str(&*s.slice(2,4)) {
+            Some(val) => val, None => return None };
+        let mut ans = Move::new(from, to);
+        if s.len() == 5 {
+            ans = ans.set_promote(Some( match s.as_bytes()[4] {
+                b'q' => Queen,
+                b'b' => Bishop,
+                b'n' => Knight,
+                b'r' => Rook,
+                _ => return None,
+            }));
+        }
+        Some(ans)
+    }
+}
+impl fmt::Show for Move {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(f, "{}{}", self.from, self.to));
+        match self.promote() {
+            Some(val) => {
+                write!(f, "{}", match val {
+                    Queen  => 'q',
+                    Bishop => 'b',
+                    Knight => 'n',
+                    Rook   => 'r',
+                    _ => return Err(fmt::Error),
+                })
+            }
+            None => Ok(())
+        }
     }
 }
 

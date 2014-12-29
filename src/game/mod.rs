@@ -15,11 +15,13 @@ pub use self::legal::receive_legal;
 pub use self::make_move::{make_move, make_move_mut};
 pub use self::mate::{is_checkmated, is_stalemated};
 pub use self::mate::{is_checkmate, is_stalemate};
+pub use self::time::MilliSec;
 
 mod color;
 mod piece;
 mod square;
 mod moves;
+mod time;
 
 mod bitboard;
 mod board;

@@ -7,7 +7,7 @@ pub fn start(input: &mut StdinReader, output: &mut LineBufferedWriter<StdWriter>
     let mut inbuf = input.lock();
     for x in inbuf.lines() {
         let s = x.unwrap();
-        let res = cmd(s.as_slice(), output);
+        let res = cmd(s, output);
         if res == cmd::Result::Quit {
             return;
         }

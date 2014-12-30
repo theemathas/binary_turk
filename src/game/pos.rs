@@ -40,11 +40,11 @@ impl Position {
         self.data.is_color_at(s,c)
     }
 
-    pub fn set_at_mut(&mut self, s: Square, p: Piece) {
-        self.data.set_at_mut(s, p);
+    pub fn set_at(&mut self, s: Square, p: Piece) {
+        self.data.set_at(s, p);
     }
-    pub fn remove_at_mut(&mut self, s: Square, p: Piece) {
-        self.data.remove_at_mut(s, p);
+    pub fn remove_at(&mut self, s: Square, p: Piece) {
+        self.data.remove_at(s, p);
     }
 
     pub fn king_square(&self, c: Color) -> Square {
@@ -57,12 +57,12 @@ impl Position {
     pub fn side_to_move(&self) -> Color {
         self.side_to_move
     }
-    pub fn set_side_to_move_mut(&mut self, c: Color) {
+    pub fn set_side_to_move(&mut self, c: Color) {
         self.side_to_move = c;
     }
-    pub fn swap_side_to_move_mut(&mut self) {
+    pub fn swap_side_to_move(&mut self) {
         let c = self.side_to_move.invert();
-        self.set_side_to_move_mut(c);
+        self.set_side_to_move(c);
     }
 
     pub fn can_castle(&self, side: Side, c: Color) -> bool {
@@ -73,21 +73,21 @@ impl Position {
         self.can_castle(side, c) &&
             castle::require_empty_squares(side, c).iter().all( |x| self.is_empty_at(*x) )
     }
-    pub fn set_castle_mut(&mut self, side:Side, c:Color, val: bool) {
-        self.castling.set_mut(side, c, val);
+    pub fn set_castle(&mut self, side:Side, c:Color, val: bool) {
+        self.castling.set(side, c, val);
     }
 
     pub fn en_passant(&self) -> Option<File> {
         self.en_passant
     }
-    pub fn set_en_passant_mut(&mut self, val: Option<File>) {
+    pub fn set_en_passant(&mut self, val: Option<File>) {
         self.en_passant = val;
     }
 
     pub fn ply_count(&self) -> Plies {
         self.ply_count
     }
-    pub fn set_ply_count_mut(&mut self, val: Plies) {
+    pub fn set_ply_count(&mut self, val: Plies) {
         self.ply_count = val;
     }
 }

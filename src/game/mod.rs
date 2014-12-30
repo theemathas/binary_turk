@@ -12,7 +12,7 @@ pub use self::moves::{Move, Plies};
 pub use self::pos::Position;
 pub use self::fen::{fen_to_position, start_pos};
 pub use self::legal::receive_legal;
-pub use self::make_move::{make_move, make_move_mut};
+pub use self::make_move::{make_move};
 pub use self::mate::{is_checkmated, is_stalemated};
 pub use self::mate::{is_checkmate, is_stalemate};
 pub use self::time::MilliSec;

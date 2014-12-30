@@ -18,8 +18,8 @@ impl BitBoard {
     }
 
     pub fn at(&self, s: Square) -> bool { self.0.contains(&(s.to_id() as uint)) }
-    pub fn set_at_mut(&mut self, s: Square) { self.0.insert(s.to_id() as uint); }
-    pub fn remove_at_mut(&mut self, s: Square) { self.0.remove(&(s.to_id() as uint)); }
+    pub fn set_at(&mut self, s: Square) { self.0.insert(s.to_id() as uint); }
+    pub fn remove_at(&mut self, s: Square) { self.0.remove(&(s.to_id() as uint)); }
 
     pub fn iter(&self) -> Map< uint, Square, BitPositions, fn(uint)->Square > {
         fn map_fn(x: uint) -> Square { Square::from_id(x as u8) };

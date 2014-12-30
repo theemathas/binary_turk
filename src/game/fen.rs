@@ -52,7 +52,7 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
             match decode.get(&ch) {
                 None => return Err("Unexpected charactor found."),
                 Some(val) => {
-                    pos.set_at_mut(Square::new(File(file),Rank(rank)), *val);
+                    pos.set_at(Square::new(File(file),Rank(rank)), *val);
                     file = file + 1;
                 }
             }
@@ -60,22 +60,22 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
     }
     let side_to_move = fields[1].char_at(0);
     match side_to_move {
-        'w' => pos.set_side_to_move_mut(Color::White),
-        'b' => pos.set_side_to_move_mut(Color::Black),
+        'w' => pos.set_side_to_move(Color::White),
+        'b' => pos.set_side_to_move(Color::Black),
         _ => return Err("Invalid side to move."),
     };
     let castle = fields[2];
-    pos.set_castle_mut(Kingside,  Color::White, castle.char_at(0) == 'K');
-    pos.set_castle_mut(Queenside, Color::White, castle.char_at(1) == 'Q');
-    pos.set_castle_mut(Kingside,  Color::Black, castle.char_at(2) == 'k');
-    pos.set_castle_mut(Queenside, Color::Black, castle.char_at(3) == 'q');
+    pos.set_castle(Kingside,  Color::White, castle.char_at(0) == 'K');
+    pos.set_castle(Queenside, Color::White, castle.char_at(1) == 'Q');
+    pos.set_castle(Kingside,  Color::Black, castle.char_at(2) == 'k');
+    pos.set_castle(Queenside, Color::Black, castle.char_at(3) == 'q');
     let en_passant_char = fields[3].char_at(0);
     if en_passant_char != '-' {
-        pos.set_en_passant_mut(Some(File(en_passant_char as u8 - 'a' as u8)));
+        pos.set_en_passant(Some(File(en_passant_char as u8 - 'a' as u8)));
     }
     match fields[4].parse::<u8>() {
         None => return Err("Invalid number of plies."),
-        Some(val) => pos.set_ply_count_mut(Plies(val)),
+        Some(val) => pos.set_ply_count(Plies(val)),
     }
     Ok(pos)
 }

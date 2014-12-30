@@ -5,7 +5,7 @@ use super::castle;
 use super::moves::Move;
 use super::pos::Position;
 use super::gen;
-use super::make_move::make_move_mut;
+use super::make_move::make_move;
 
 pub fn receive_legal(p: Position) -> Receiver<Move> {
     let (tx,rx) = sync_channel(0);
@@ -32,7 +32,7 @@ fn filter_legal(p: &Position, out: SyncSender<Move>, rx: Receiver<Move>) {
 
 pub fn is_legal(mut p: Position, curr_move: &Move) -> bool {
     let c = p.side_to_move();
-    make_move_mut(&mut p, curr_move);
+    make_move(&mut p, curr_move);
     match curr_move.castle() {
         None => {
             !can_take_king(p)

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub use self::start::start;
 
 mod types;

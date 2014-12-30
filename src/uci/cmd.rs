@@ -9,7 +9,7 @@ pub enum Result {
     Quit,
 }
 
-pub fn cmd(s: String, output: &mut LineBufferedWriter<StdWriter>) -> Result {
+pub fn cmd(s: &str, output: &mut LineBufferedWriter<StdWriter>) -> Result {
     let val = parse(s);
     // TODO implement uci command processing
     unimplemented!()

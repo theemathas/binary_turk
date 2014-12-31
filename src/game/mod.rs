@@ -8,7 +8,7 @@ pub use self::piece::Type as PieceType;
 pub use self::piece::{WP,WK,WQ,WB,WN,WR};
 pub use self::piece::{BP,BK,BQ,BB,BN,BR};
 pub use self::piece::Type::{Pawn,King,Queen,Bishop,Knight,Rook};
-pub use self::moves::{Move, Plies};
+pub use self::moves::{Move, NumPlies, NumMoves};
 pub use self::pos::Position;
 pub use self::fen::{fen_to_position, start_pos};
 pub use self::legal::receive_legal;

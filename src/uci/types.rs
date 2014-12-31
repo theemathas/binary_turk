@@ -1,20 +1,20 @@
-use game::{Position, Move, Color, Plies, MilliSec};
+use game::{Position, Move, Color, NumPlies, NumMoves, MilliSec};
 
 pub enum CmdVal {
     Uci,
     Debug(bool),
     IsReady,
-    SetOption(OptionName),
+    SetOption(OptionParam),
     Register(Vec<RegisterParam>),
     UciNewGame,
-    SetupPosition(Position, Vec<Move>),
+    SetupPosition(Option<Position>, Vec<Move>),
     Go(Vec<GoParam>),
     Stop,
     PonderHit,
     Quit,
 }
 
-pub enum OptionName {
+pub enum OptionParam {
     // TODO enumerate options.
     Dummy,
 }
@@ -30,10 +30,12 @@ pub enum GoParam {
     Ponder,
     Time(Color, MilliSec),
     IncTime(Color, MilliSec),
-    MovesToGo(Plies),
-    Depth(Plies),
-    Nodes(Plies),
-    Mate(Plies),
+    MovesToGo(NumMoves),
+    Depth(NumPlies),
+    Nodes(NumNodes),
+    Mate(NumMoves),
     MoveTime(MilliSec),
     Infinite,
 }
+
+pub struct NumNodes(pub u64);

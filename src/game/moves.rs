@@ -96,4 +96,7 @@ impl fmt::Show for Move {
 }
 
 #[deriving(PartialEq,Eq,Copy,Clone)]
-pub struct Plies(pub u8);
+pub struct NumPlies(pub u16);
+
+#[deriving(PartialEq,Eq,Copy,Clone)]
+pub struct NumMoves(pub u16);

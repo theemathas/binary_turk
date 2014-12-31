@@ -4,7 +4,7 @@
 
 use std::iter::AdditiveIterator;
 
-use super::game::{Position, Color, Piece, PieceType, Plies};
+use super::game::{Position, Color, Piece, PieceType, NumMoves};
 use super::game::{Pawn, King, Queen, Bishop, Knight, Rook};
 use super::game::{is_checkmated, is_stalemated};
 
@@ -18,20 +18,20 @@ pub enum Result {
     // Negative: disadvantage for side to move.
     Score(ScoreUnit),
     // Side to move can checkmate in x moves.
-    // WinIn(Plies(1)): can checkmate now.
-    // WinIn(Plies(2)): can checkmate next move.
-    WinIn(Plies),
+    // WinIn(NumMoves(1)): can checkmate now.
+    // WinIn(NumMoves(2)): can checkmate next move.
+    WinIn(NumMoves),
     // Side to move will be checkmated in x moves.
-    // WinIn(Plies(0)): already checkmated.
-    // WinIn(Plies(1)): Will be immediately checkmated after any move.
-    LoseIn(Plies),
+    // WinIn(NumMoves(0)): already checkmated.
+    // WinIn(NumMoves(1)): Will be immediately checkmated after any move.
+    LoseIn(NumMoves),
     Draw,
 }
 
 /// Evaluates the position without searching.
 pub fn eval(p: &Position) -> Result {
     if is_checkmated(p.clone()) {
-        LoseIn(Plies(0))
+        LoseIn(NumMoves(0))
     } else if is_stalemated(p.clone()) {
         Draw
     } else {

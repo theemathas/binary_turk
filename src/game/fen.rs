@@ -1,4 +1,4 @@
-use super::moves::Plies;
+use super::moves::NumPlies;
 use super::square::{File, Rank, Square};
 use super::pos::Position;
 use super::castle::{Kingside, Queenside};
@@ -73,9 +73,9 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
     if en_passant_char != '-' {
         pos.set_en_passant(Some(File(en_passant_char as u8 - 'a' as u8)));
     }
-    match fields[4].parse::<u8>() {
+    match fields[4].parse::<u16>() {
         None => return Err("Invalid number of plies."),
-        Some(val) => pos.set_ply_count(Plies(val)),
+        Some(val) => pos.set_ply_count(NumPlies(val)),
     }
     Ok(pos)
 }

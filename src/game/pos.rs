@@ -3,7 +3,7 @@
 use super::piece::Piece;
 use super::color::{Color};
 use super::square::{File,Square};
-use super::moves::Plies;
+use super::moves::NumPlies;
 use super::board::{mod,Board};
 use super::castle::{mod,CastlingData,Side};
 
@@ -14,7 +14,7 @@ pub struct Position {
     side_to_move: Color,
     castling: CastlingData,
     en_passant: Option<File>,
-    ply_count: Plies,
+    ply_count: NumPlies,
 }
 impl Position {
     pub fn new() -> Position {
@@ -23,7 +23,7 @@ impl Position {
             side_to_move: Color::White,
             castling: CastlingData::new(),
             en_passant: None,
-            ply_count: Plies(0),
+            ply_count: NumPlies(0),
         }
     }
 
@@ -84,10 +84,10 @@ impl Position {
         self.en_passant = val;
     }
 
-    pub fn ply_count(&self) -> Plies {
+    pub fn ply_count(&self) -> NumPlies {
         self.ply_count
     }
-    pub fn set_ply_count(&mut self, val: Plies) {
+    pub fn set_ply_count(&mut self, val: NumPlies) {
         self.ply_count = val;
     }
 }

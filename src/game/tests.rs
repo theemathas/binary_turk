@@ -1,4 +1,4 @@
-use super::moves::Plies;
+use super::moves::NumPlies;
 use super::pos::Position;
 use super::fen;
 use super::legal;
@@ -24,21 +24,22 @@ fn perf_fen(fen_str: &str, res: &[u64]) {
 
 fn perf_pos(p: &Position, res: &[u64]) {
     for (num_plies, expect_num_from_pos) in res.iter().enumerate() {
-        assert_eq!(*expect_num_from_pos, num_from_pos(p, Plies(num_plies as u8)));
+        assert_eq!(*expect_num_from_pos, num_from_pos(p, NumPlies(num_plies as u16)));
     }
 }
 
-fn num_from_pos(p: &Position, plies: Plies) -> u64 {
-    if plies == Plies(0) {
+fn num_from_pos(p: &Position, plies: NumPlies) -> u64 {
+    if plies == NumPlies(0) {
         return 1;
     }
     if !mate::has_legal_moves(p.clone()) {
         return 0;
     }
-    let next_plies = Plies(plies.0 - 1);
+    let next_plies = NumPlies(plies.0 - 1);
     let mut ans = 0;
     for m in legal::receive_legal(p.clone()).iter() {
-        let new_pos = make_move(p.clone(), &m);
+        let mut new_pos = p.clone();
+        make_move(&mut new_pos, &m);
         ans += num_from_pos(&new_pos, next_plies);
     }
     ans

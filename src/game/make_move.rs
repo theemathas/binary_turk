@@ -1,7 +1,7 @@
 use super::color::{White, Black};
 use super::piece::{Piece, WK, WR, BK, BR, Pawn};
 use super::square::{Square,File,Rank};
-use super::moves::{Move,Plies};
+use super::moves::{Move,NumPlies};
 use super::pos::Position;
 use super::castle::{Kingside,Queenside};
 
@@ -11,10 +11,10 @@ pub fn make_move(p: &mut Position, m: &Move) {
     let curr_piece = p.at(from).unwrap();
 
     if m.is_capture() || m.is_en_passant() || curr_piece.piece_type() == Pawn {
-        p.set_ply_count(Plies(0));
+        p.set_ply_count(NumPlies(0));
     } else {
-        let Plies(temp) = p.ply_count();
-        p.set_ply_count(Plies(temp+1));
+        let NumPlies(temp) = p.ply_count();
+        p.set_ply_count(NumPlies(temp+1));
     }
 
     if m.castle().is_some() {

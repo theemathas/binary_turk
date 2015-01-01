@@ -6,4 +6,4 @@ mod types;
 mod parse;
 
 mod start;
-mod cmd;
+mod process;

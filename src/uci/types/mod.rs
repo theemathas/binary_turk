@@ -1,4 +1,6 @@
-use game::{Position, Move, Color, NumPlies, NumMoves, MilliSec};
+use std::time::Duration;
+
+use game::{Position, Move, Color, NumPlies, NumMoves};
 use eval;
 
 pub mod options;
@@ -29,13 +31,13 @@ pub enum RegisterParam {
 pub enum GoParam {
     SearchMoves(Vec<Move>),
     Ponder,
-    Time(Color, MilliSec),
-    IncTime(Color, MilliSec),
+    Time(Color, Duration),
+    IncTime(Color, Duration),
     MovesToGo(NumMoves),
     Depth(NumPlies),
     Nodes(NumNodes),
     Mate(NumMoves),
-    MoveTime(MilliSec),
+    MoveTime(Duration),
     Infinite,
 }
 
@@ -63,7 +65,7 @@ pub enum IdParam {
 pub enum InfoParam {
     Depth(NumPlies),
     SelDepth(NumPlies),
-    TimeSearched(MilliSec),
+    TimeSearched(Duration),
     NodesSearched(NumNodes),
     PrincipalVariation(Vec<Move>),
     MultiPv(NumVariations),

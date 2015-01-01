@@ -1,10 +1,10 @@
 use std::iter::Peekable;
 use std::str::FromStr;
+use std::time::Duration;
 
 use super::types::{CmdVal, RegisterParam, GoParam, NumNodes};
 use super::types::options;
-use super::super::game::{Position, Move, White, Black, fen_to_position,
-                         MilliSec, NumPlies, NumMoves};
+use super::super::game::{Position, Move, White, Black, fen_to_position, NumPlies, NumMoves};
 
 pub fn parse(s: &str) -> Option<CmdVal> {
     let mut words = s.words().peekable();
@@ -122,10 +122,10 @@ where T: Iterator<&'a str> {
         match next_word {
             "search moves" => parse_move_vec(words).map(|x| GoParam::SearchMoves(x)),
             "ponder" => Some(GoParam::Ponder),
-            "wtime"     => words.next().and_then(|s| s.parse::<u32>())
-                                       .map(|x| GoParam::Time(White,MilliSec(x))),
-            "btime"     => words.next().and_then(|s| s.parse::<u32>())
-                                       .map(|x| GoParam::Time(Black,MilliSec(x))),
+            "wtime"     => words.next().and_then(|s| s.parse::<i64>())
+                                       .map(|x| GoParam::Time(White,Duration::milliseconds(x))),
+            "btime"     => words.next().and_then(|s| s.parse::<i64>())
+                                       .map(|x| GoParam::Time(Black,Duration::milliseconds(x))),
             "movestogo" => words.next().and_then(|s| s.parse::<u16>())
                                        .map(|x| GoParam::MovesToGo(NumMoves(x))),
             "depth"     => words.next().and_then(|s| s.parse::<u16>())
@@ -134,8 +134,8 @@ where T: Iterator<&'a str> {
                                        .map(|x| GoParam::Nodes(NumNodes(x))),
             "mate"      => words.next().and_then(|s| s.parse::<u16>())
                                        .map(|x| GoParam::Mate(NumMoves(x))),
-            "movetime"  => words.next().and_then(|s| s.parse::<u32>())
-                                       .map(|x| GoParam::MoveTime(MilliSec(x))),
+            "movetime"  => words.next().and_then(|s| s.parse::<i64>())
+                                       .map(|x| GoParam::MoveTime(Duration::milliseconds(x))),
             "infinite" => Some(GoParam::Infinite),
             _ => None,
         }.map(|val| res.push(val));

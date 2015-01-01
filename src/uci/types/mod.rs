@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use game::{Position, Move, Color, NumPlies, NumMoves};
 use eval;
+use types::{NumNodes, NumVariations, PerMill, NumCpu};
 
 pub mod options;
 
@@ -41,9 +42,6 @@ pub enum GoParam {
     Infinite,
 }
 
-#[deriving(PartialEq,Eq,Copy,Clone)]
-pub struct NumNodes(pub u64);
-
 #[deriving(PartialEq, Eq, Clone)]
 pub enum Response {
     Id(IdParam),
@@ -79,16 +77,7 @@ pub enum InfoParam {
 }
 
 #[deriving(PartialEq,Eq,Copy,Clone)]
-pub struct NumVariations(u16);
-
-#[deriving(PartialEq,Eq,Copy,Clone)]
 pub enum ScoreType {
     LowerBound,
     UpperBound,
 }
-
-#[deriving(PartialEq,Eq,Copy,Clone)]
-pub struct PerMill(u16);
-
-#[deriving(PartialEq,Eq,Copy,Clone)]
-pub struct NumCpu(u16);

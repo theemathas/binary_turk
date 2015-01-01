@@ -2,6 +2,7 @@
 
 use std::io;
 
+mod types;
 mod game;
 mod eval;
 mod uci;

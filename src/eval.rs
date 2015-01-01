@@ -13,6 +13,7 @@ pub use self::Result::{Score, WinIn, LoseIn, Draw};
 type ScoreUnit = int;
 
 /// An assessment of the position.
+#[deriving(PartialEq,Eq,Copy,Clone)]
 pub enum Result {
     // Positive: advantage for side to move.
     // Negative: disadvantage for side to move.

@@ -3,6 +3,7 @@ use eval;
 
 pub mod options;
 
+#[deriving(PartialEq, Eq, Clone)]
 pub enum CmdVal {
     Uci,
     Debug(bool),
@@ -17,12 +18,14 @@ pub enum CmdVal {
     Quit,
 }
 
+#[deriving(PartialEq, Eq, Clone)]
 pub enum RegisterParam {
     Later,
     Name(String),
     Code(String),
 }
 
+#[deriving(PartialEq, Eq, Clone)]
 pub enum GoParam {
     SearchMoves(Vec<Move>),
     Ponder,
@@ -36,8 +39,10 @@ pub enum GoParam {
     Infinite,
 }
 
+#[deriving(PartialEq,Eq,Copy,Clone)]
 pub struct NumNodes(pub u64);
 
+#[deriving(PartialEq, Eq, Clone)]
 pub enum Response {
     Id(IdParam),
     UciOk,
@@ -48,11 +53,13 @@ pub enum Response {
     Info(Vec<InfoParam>),
 }
 
+#[deriving(PartialEq, Eq, Clone)]
 pub enum IdParam {
     Name(String),
     Author(String),
 }
 
+#[deriving(PartialEq, Eq, Clone)]
 pub enum InfoParam {
     Depth(NumPlies),
     SelDepth(NumPlies),
@@ -69,13 +76,17 @@ pub enum InfoParam {
     ShowOption(options::Name, options::Info),
 }
 
+#[deriving(PartialEq,Eq,Copy,Clone)]
 pub struct NumVariations(u16);
 
+#[deriving(PartialEq,Eq,Copy,Clone)]
 pub enum ScoreType {
     LowerBound,
     UpperBound,
 }
 
+#[deriving(PartialEq,Eq,Copy,Clone)]
 pub struct PerMill(u16);
 
+#[deriving(PartialEq,Eq,Copy,Clone)]
 pub struct NumCpu(u16);

@@ -5,7 +5,7 @@ use std::iter::Map;
 
 use super::square::Square;
 
-#[deriving(Clone)]
+#[deriving(PartialEq, Eq, Clone)]
 pub struct BitBoard(BitvSet);
 impl BitBoard {
     pub fn new() -> BitBoard { BitBoard(BitvSet::with_capacity(64)) }

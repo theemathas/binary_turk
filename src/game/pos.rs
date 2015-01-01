@@ -8,7 +8,7 @@ use super::board::{mod,Board};
 use super::castle::{mod,CastlingData,Side};
 
 /// A complete representation of a chess position.
-#[deriving(Clone)]
+#[deriving(PartialEq, Eq, Clone)]
 pub struct Position {
     data: Board,
     side_to_move: Color,

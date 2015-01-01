@@ -7,6 +7,7 @@ use super::piece::{mod, Queen, Bishop, Knight, Rook};
 use super::square::Square;
 use super::castle::Side;
 
+#[deriving(PartialEq, Eq, Clone)]
 pub struct Move {
     from: Square,
     to: Square,

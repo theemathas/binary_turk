@@ -3,6 +3,7 @@
 use std::io;
 
 mod types;
+mod state;
 mod game;
 mod eval;
 mod uci;

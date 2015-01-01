@@ -1,10 +1,12 @@
 use game::{Position, Move, Color, NumPlies, NumMoves, MilliSec};
 
+pub mod options;
+
 pub enum CmdVal {
     Uci,
     Debug(bool),
     IsReady,
-    SetOption(OptionParam),
+    SetOption(options::Val),
     Register(Vec<RegisterParam>),
     UciNewGame,
     SetupPosition(Option<Position>, Vec<Move>),
@@ -12,11 +14,6 @@ pub enum CmdVal {
     Stop,
     PonderHit,
     Quit,
-}
-
-pub enum OptionParam {
-    // TODO enumerate options.
-    Dummy,
 }
 
 pub enum RegisterParam {

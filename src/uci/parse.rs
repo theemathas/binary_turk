@@ -1,7 +1,8 @@
 use std::iter::Peekable;
 use std::str::FromStr;
 
-use super::types::{CmdVal, OptionParam, RegisterParam, GoParam, NumNodes};
+use super::types::{CmdVal, RegisterParam, GoParam, NumNodes};
+use super::types::options;
 use super::super::game::{Position, Move, White, Black, fen_to_position,
                          MilliSec, NumPlies, NumMoves};
 
@@ -59,10 +60,10 @@ fn parse_on_off(words: &mut Iterator<&str>) -> Option<bool> {
     ans
 }
 
-fn parse_option_val<'a,T>(words: &mut T) -> Option<OptionParam>
+fn parse_option_val<'a,T>(words: &mut T) -> Option<options::Val>
 where T: Iterator<&'a str> {
     // TODO parse options.
-    Some(OptionParam::Dummy)
+    Some(options::Val::Dummy(1))
 }
 
 fn parse_register_vec<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Vec<RegisterParam>>

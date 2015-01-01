@@ -34,28 +34,28 @@ impl Move {
     pub fn to(&self) -> Square { self.to }
 
     pub fn is_capture(&self) -> bool { self.is_capture }
-    pub fn set_capture(&self, val: bool) -> Move {
-        Move { is_capture: val, ..*self }
+    pub fn set_capture(&mut self, val: bool) {
+        self.is_capture = val;
     }
 
     pub fn castle(&self) -> Option<Side> { self.castle }
-    pub fn set_castle(&self, val: Option<Side>) -> Move {
-        Move { castle: val, ..*self }
+    pub fn set_castle(&mut self, val: Option<Side>) {
+        self.castle = val;
     }
 
     pub fn is_en_passant(&self) -> bool { self.is_en_passant }
-    pub fn set_en_passant(&self, val: bool) -> Move {
-        Move { is_en_passant: val, ..*self }
+    pub fn set_en_passant(&mut self, val: bool) {
+        self.is_en_passant = val;
     }
 
     pub fn promote(&self) -> Option<piece::Type> { self.promote }
-    pub fn set_promote(&self, val: Option<piece::Type>) -> Move {
-        Move { promote: val, ..*self }
+    pub fn set_promote(&mut self, val: Option<piece::Type>) {
+        self.promote = val;
     }
 
     pub fn is_pawn_double_move(&self) -> bool { self.is_pawn_double_move }
-    pub fn set_pawn_double_move(&self, val: bool) -> Move {
-        Move { is_pawn_double_move: val, ..*self }
+    pub fn set_pawn_double_move(&mut self, val: bool) {
+        self.is_pawn_double_move = val;
     }
 }
 impl FromStr for Move {
@@ -67,7 +67,7 @@ impl FromStr for Move {
             Some(val) => val, None => return None };
         let mut ans = Move::new(from, to);
         if s.len() == 5 {
-            ans = ans.set_promote(Some( match s.as_bytes()[4] {
+            ans.set_promote(Some( match s.as_bytes()[4] {
                 b'q' => Queen,
                 b'b' => Bishop,
                 b'n' => Knight,

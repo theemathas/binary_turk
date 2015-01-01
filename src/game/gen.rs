@@ -106,7 +106,8 @@ fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<
             let to = curr_pos.unwrap();
             //if there is an enemy at the destination
             if p.is_color_at(to, piece_color.invert()) {
-                let curr_move = Move::new(from, to).set_capture(true);
+                let mut curr_move = Move::new(from, to);
+                curr_move.set_capture(true);
                 send!(tx, curr_move);
             }
         }
@@ -142,7 +143,8 @@ fn gen_fixed_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<M
                 }
             };
             if is_valid {
-                let curr_move = Move::new(from, to).set_capture(is_capture);
+                let mut curr_move = Move::new(from, to);
+                curr_move.set_capture(is_capture);
                 send!(tx, curr_move);
             }
         }
@@ -166,7 +168,8 @@ fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
         match rank_up {
             7 => {
                 for new_piece in [Queen, Knight, Rook, Bishop].iter() {
-                    let curr_move = Move::new(from, to).set_promote(Some(*new_piece));
+                    let mut curr_move = Move::new(from, to);
+                    curr_move.set_promote(Some(*new_piece));
                     send!(tx, curr_move);
                 }
             },
@@ -175,7 +178,8 @@ fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
                 send!(tx, curr_move);
                 let to2: Square = shift(to, move_dir).unwrap();
                 if p.is_empty_at(to2) {
-                    let curr_move2 = Move::new(from, to2).set_pawn_double_move(true);
+                    let mut curr_move2 = Move::new(from, to2);
+                    curr_move2.set_pawn_double_move(true);
                     send!(tx, curr_move2);
                 }
             },
@@ -196,12 +200,14 @@ fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
         if p.is_color_at(capture_to, piece_color.invert()) {
             if rank_up == 7 {
                 for new_piece in [Queen, Knight, Rook, Bishop].iter() {
-                    let curr_move = Move::new(from, capture_to).set_capture(true);
-                    let curr_move = curr_move.set_promote(Some(*new_piece));
+                    let mut curr_move = Move::new(from, capture_to);
+                    curr_move.set_capture(true);
+                    curr_move.set_promote(Some(*new_piece));
                     send!(tx, curr_move);
                 }
             } else {
-                let curr_move = Move::new(from, capture_to).set_capture(true);
+                let mut curr_move = Move::new(from, capture_to);
+                curr_move.set_capture(true);
                 send!(tx, curr_move);
             }
         }
@@ -232,7 +238,8 @@ fn gen_en_passant(p: &Position, tx: &SyncSender<Move>) -> Action {
     for &from_file in from_file_all.iter() {
         let from = Square::new(from_file, from_rank);
         if p.is_piece_at(expect_piece, from) {
-            let curr_move = Move::new(from, to).set_en_passant(true);
+            let mut curr_move = Move::new(from, to);
+            curr_move.set_en_passant(true);
             send!(tx, curr_move);
         }
     }
@@ -246,13 +253,15 @@ fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
             if p.can_castle_now(Kingside, White) {
                 let from = Square::new(File(4),Rank(0));
                 let to   = Square::new(File(6),Rank(0));
-                let curr_move = Move::new(from, to).set_castle(Some(Kingside));
+                let mut curr_move = Move::new(from, to);
+                curr_move.set_castle(Some(Kingside));
                 send!(tx, curr_move);
             }
             if p.can_castle_now(Queenside, White) {
                 let from = Square::new(File(4),Rank(0));
                 let to   = Square::new(File(2),Rank(0));
-                let curr_move = Move::new(from, to).set_castle(Some(Queenside));
+                let mut curr_move = Move::new(from, to);
+                curr_move.set_castle(Some(Queenside));
                 send!(tx, curr_move);
             }
         }
@@ -260,13 +269,15 @@ fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
             if p.can_castle_now(Kingside, Black) {
                 let from = Square::new(File(4),Rank(7));
                 let to   = Square::new(File(6),Rank(7));
-                let curr_move = Move::new(from, to).set_castle(Some(Kingside));
+                let mut curr_move = Move::new(from, to);
+                curr_move.set_castle(Some(Kingside));
                 send!(tx, curr_move);
             }
             if p.can_castle_now(Queenside, Black) {
                 let from = Square::new(File(4),Rank(7));
                 let to   = Square::new(File(2),Rank(7));
-                let curr_move = Move::new(from, to).set_castle(Some(Queenside));
+                let mut curr_move = Move::new(from, to);
+                curr_move.set_castle(Some(Queenside));
                 send!(tx, curr_move);
             }
         }

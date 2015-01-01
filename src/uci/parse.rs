@@ -127,6 +127,10 @@ where T: Iterator<&'a str> {
                                        .map(|x| GoParam::Time(White,Duration::milliseconds(x))),
             "btime"     => words.next().and_then(|s| s.parse::<i64>())
                                        .map(|x| GoParam::Time(Black,Duration::milliseconds(x))),
+            "winc"      => words.next().and_then(|s| s.parse::<i64>())
+                                       .map(|x| GoParam::IncTime(White,Duration::milliseconds(x))),
+            "binc"      => words.next().and_then(|s| s.parse::<i64>())
+                                       .map(|x| GoParam::IncTime(Black,Duration::milliseconds(x))),
             "movestogo" => words.next().and_then(|s| s.parse::<u16>())
                                        .map(|x| GoParam::MovesToGo(NumMoves(x))),
             "depth"     => words.next().and_then(|s| s.parse::<u16>())

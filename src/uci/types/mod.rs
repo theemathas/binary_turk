@@ -6,7 +6,7 @@ pub enum CmdVal {
     Uci,
     Debug(bool),
     IsReady,
-    SetOption(options::Val),
+    SetOption(options::Name, options::Val),
     Register(Vec<RegisterParam>),
     UciNewGame,
     SetupPosition(Option<Position>, Vec<Move>),

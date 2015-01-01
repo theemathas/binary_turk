@@ -22,7 +22,7 @@ pub fn parse(s: &str) -> Option<CmdVal> {
             "uci" => Some(CmdVal::Uci),
             "debug" => parse_on_off(&mut words).map(|val| CmdVal::Debug(val)),
             "isready" => Some(CmdVal::IsReady),
-            "setoption" => parse_option_val(&mut words).map(|val| CmdVal::SetOption(val)),
+            "setoption" => parse_option_val(&mut words).map(|(name, val)| CmdVal::SetOption(name, val)),
             "register" => parse_register_vec(&mut words).map(|val| CmdVal::Register(val)),
             "ucinewgame" => Some(CmdVal::UciNewGame),
             "position" => {
@@ -60,10 +60,10 @@ fn parse_on_off(words: &mut Iterator<&str>) -> Option<bool> {
     ans
 }
 
-fn parse_option_val<'a,T>(words: &mut T) -> Option<options::Val>
+fn parse_option_val<'a,T>(words: &mut T) -> Option<options::NameAndVal>
 where T: Iterator<&'a str> {
     // TODO parse options.
-    Some(options::Val::Dummy(1))
+    Some((options::Name::Dummy, options::Val::Spin(1)))
 }
 
 fn parse_register_vec<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Vec<RegisterParam>>

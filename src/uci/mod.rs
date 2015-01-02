@@ -1,6 +1,6 @@
 pub use self::start::start;
 
-mod types;
+pub mod types;
 mod parse;
 
 mod start;

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use game::{Position, Move, Color, NumPlies, NumMoves};
+use game::{Position, Move, FromTo, Color, NumPlies, NumMoves};
 use eval;
 use types::{NumNodes, NumVariations, PerMill, NumCpu};
 
@@ -14,7 +14,7 @@ pub enum CmdVal {
     SetOption(options::Name, options::Val),
     Register(Vec<RegisterParam>),
     UciNewGame,
-    SetupPosition(Option<Position>, Vec<Move>),
+    SetupPosition(Option<Position>, Vec<FromTo>),
     Go(Vec<GoParam>),
     Stop,
     PonderHit,
@@ -30,7 +30,7 @@ pub enum RegisterParam {
 
 #[deriving(PartialEq, Eq, Clone)]
 pub enum GoParam {
-    SearchMoves(Vec<Move>),
+    SearchMoves(Vec<FromTo>),
     Ponder,
     Time(Color, Duration),
     IncTime(Color, Duration),

@@ -2,7 +2,7 @@ use std::iter::Peekable;
 use std::str::FromStr;
 use std::time::Duration;
 
-use game::{Position, Move, White, Black, fen_to_position, NumPlies, NumMoves};
+use game::{Position, FromTo, White, Black, fen_to_position, NumPlies, NumMoves};
 use super::types::{CmdVal, RegisterParam, GoParam};
 use super::types::options;
 use types::NumNodes;
@@ -106,9 +106,9 @@ where T: Iterator<&'a str> {
     fen_to_position(&*six_words.connect(" ")).ok()
 }
 
-fn parse_move_vec<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Vec<Move>>
+fn parse_move_vec<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Vec<FromTo>>
 where T: Iterator<&'a str> {
-    let mut res = Vec::<Move>::new();
+    let mut res = Vec::<FromTo>::new();
     while let Some(val) = words.peek().and_then(|val| FromStr::from_str(*val)) {
         res.push(val);
         words.next();

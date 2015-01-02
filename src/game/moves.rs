@@ -2,10 +2,12 @@
 
 use std::str::FromStr;
 use std::fmt;
+use std::num::SignedInt;
 
-use super::piece::{mod, Queen, Bishop, Knight, Rook};
-use super::square::Square;
-use super::castle::Side;
+use super::piece::{mod, Queen, Bishop, Knight, Rook, King, Pawn};
+use super::square::{Square, File};
+use super::castle::{Side, Kingside, Queenside};
+use super::pos::Position;
 
 #[deriving(PartialEq, Eq, Clone)]
 pub struct Move {
@@ -58,26 +60,6 @@ impl Move {
         self.is_pawn_double_move = val;
     }
 }
-impl FromStr for Move {
-    fn from_str(s: &str) -> Option<Move> {
-        if s.len() != 4 && s.len() != 5 { return None; }
-        let from: Square = match FromStr::from_str(&*s.slice(0,2)) {
-            Some(val) => val, None => return None };
-        let to:   Square = match FromStr::from_str(&*s.slice(2,4)) {
-            Some(val) => val, None => return None };
-        let mut ans = Move::new(from, to);
-        if s.len() == 5 {
-            ans.set_promote(Some( match s.as_bytes()[4] {
-                b'q' => Queen,
-                b'b' => Bishop,
-                b'n' => Knight,
-                b'r' => Rook,
-                _ => return None,
-            }));
-        }
-        Some(ans)
-    }
-}
 impl fmt::Show for Move {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "{}{}", self.from, self.to));
@@ -93,6 +75,63 @@ impl fmt::Show for Move {
             }
             None => Ok(())
         }
+    }
+}
+
+#[deriving(PartialEq,Eq,Copy,Clone)]
+pub struct FromTo {
+    from: Square,
+    to: Square,
+    promote: Option<piece::Type>,
+}
+impl FromTo {
+    fn new(from: Square, to: Square) -> FromTo {
+        FromTo { from: from, to: to, promote: None }
+    }
+    fn to_move_with_pos(&self, pos: Position) -> Move {
+        let mut ans = Move::new(self.from, self.to);
+        ans.set_promote(self.promote);
+        if !pos.is_empty_at(self.to) {
+            ans.set_capture(true);
+        }
+        match pos.at(self.to).map(|x| x.piece_type()) {
+            Some(King) => {
+                match (self.from.file(), self.to.file()) {
+                    (File(4), File(6)) => ans.set_castle(Some(Kingside)),
+                    (File(4), File(2)) => ans.set_castle(Some(Queenside)),
+                    _ => {},
+                }
+            },
+            Some(Pawn) => {
+                if !ans.is_capture() && self.from.file() != self.to.file() {
+                    ans.set_en_passant(true);
+                } else if ((self.from.rank().0 as int) - (self.to.rank().0 as int)).abs() != 1 {
+                    ans.set_pawn_double_move(true);
+                }
+            },
+            _ => {},
+        }
+        ans
+    }
+}
+impl FromStr for FromTo {
+    fn from_str(s: &str) -> Option<FromTo> {
+        if s.len() != 4 && s.len() != 5 { return None; }
+        let from: Square = match FromStr::from_str(&*s.slice(0,2)) {
+            Some(val) => val, None => return None };
+        let to:   Square = match FromStr::from_str(&*s.slice(2,4)) {
+            Some(val) => val, None => return None };
+        let mut ans = FromTo::new(from, to);
+        if s.len() == 5 {
+            ans.promote = Some( match s.as_bytes()[4] {
+                b'q' => Queen,
+                b'b' => Bishop,
+                b'n' => Knight,
+                b'r' => Rook,
+                _ => return None,
+            });
+        }
+        Some(ans)
     }
 }
 

@@ -6,6 +6,7 @@ mod types;
 mod state;
 mod game;
 mod eval;
+mod search;
 mod uci;
 
 fn main() {

@@ -1,5 +1,7 @@
 //! Represents the state of the engine.
 
+#![allow(dead_code)]
+
 use std::time::Duration;
 
 use game::{Position, Color, Move, NumMoves, NumPlies};

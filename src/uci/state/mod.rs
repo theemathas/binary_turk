@@ -16,6 +16,17 @@ pub struct State {
     start_move_time: Option<u64>,
     time_data: Option<TimeData>,
 }
+impl State {
+    pub fn new() -> State {
+        State {
+            search_state: None,
+            mode: Mode::new(),
+            start_search_time: None,
+            start_move_time: None,
+            time_data: None,
+        }
+    }
+}
 
 #[deriving(Copy, Clone)]
 pub enum TimeData {

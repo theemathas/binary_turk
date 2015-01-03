@@ -53,3 +53,8 @@ pub enum Mode {
     // if mode is not Search, then: wait for everything to finish
     // send one "readyok" message
 }
+impl Mode {
+    pub fn new() -> Mode {
+        Mode::Init
+    }
+}

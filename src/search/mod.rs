@@ -1,34 +1,33 @@
-use state::State;
 use uci::types::Response;
 use game::{Move,receive_legal};
 
-pub use self::types::SearchCmd;
+pub use self::types::{State, Param, Cmd};
 
 mod types;
 
-pub fn start(mut state: State, rx: Receiver<SearchCmd>, tx:Sender<Response>) {
-    if state.search_param.ponder.is_some() {
+pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
+    if state.param.ponder.is_some() {
         // Actually should ponder, but now just waits for our move.
         for cmd in rx.iter() {
             match cmd {
-                SearchCmd::SetDebug(val) => state.is_debug = val,
-                SearchCmd::PonderHit => {
-                    state.search_param.ponder = None;
+                Cmd::SetDebug(val) => state.is_debug = val,
+                Cmd::PonderHit => {
+                    state.param.ponder = None;
                     break;
                 },
-                SearchCmd::Stop => {
+                Cmd::Stop => {
                     // TODO report stuff.about pondering and terminate.
                     unimplemented!();
                 },
             }
         }
-        if state.search_param.ponder.is_some() {
+        if state.param.ponder.is_some() {
             panic!("Sender hung up while pondering");
         }
     }
     let legal_moves_chan = receive_legal(state.pos.clone());
     let legal_moves = legal_moves_chan.iter();
-    let search_moves: Vec<Move> = match state.search_param.search_moves {
+    let search_moves: Vec<Move> = match state.param.search_moves {
         None => legal_moves.collect(),
         Some(val) => legal_moves.filter(|x| val.contains(x)).collect(),
     };
@@ -40,12 +39,12 @@ pub fn start(mut state: State, rx: Receiver<SearchCmd>, tx:Sender<Response>) {
     // TODO send info
     for cmd in rx.iter() {
         match cmd {
-            SearchCmd::SetDebug(val) => state.is_debug = val,
-            SearchCmd::PonderHit => {
+            Cmd::SetDebug(val) => state.is_debug = val,
+            Cmd::PonderHit => {
                 // TODO Report unexpected message.
                 unimplemented!();
             },
-            SearchCmd::Stop => {
+            Cmd::Stop => {
                 tx.send(Response::BestMove(best_move, None));
                 return;
             }

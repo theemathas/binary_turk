@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use types::NumMoves;
 use game::{Position, Color, Move, FromTo};
-use state::State;
+use search;
 
 use super::state::UciState;
 
@@ -41,7 +41,7 @@ pub enum Response {
 // Always allow commands "debug" and "isready"
 #[deriving(Clone)]
 pub struct UciData {
-    search_state: Option<State>,
+    search_state: Option<search::State>,
     uci_state: UciState,
     start_search: Option<u64>,
     start_move: Option<u64>,

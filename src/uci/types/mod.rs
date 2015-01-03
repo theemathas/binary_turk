@@ -4,7 +4,7 @@ use types::NumMoves;
 use game::{Position, Color, Move, FromTo};
 use search;
 
-use super::state::UciState;
+use super::mode::UciMode;
 
 pub use self::param::{RegisterParam, GoParam, IdParam, InfoParam, ScoreType};
 
@@ -50,7 +50,7 @@ pub enum VertifyingState {
 #[deriving(Clone)]
 pub struct UciData {
     search_state: search::State,
-    uci_state: UciState,
+    uci_mode: UciMode,
     start_search_time: Option<u64>,
     start_move_time: Option<u64>,
     time_data: TimeData,

@@ -1,8 +1,8 @@
 pub use self::start::start;
 
 pub mod types;
-mod state;
-mod parse;
+mod mode;
 
 mod start;
+mod parse;
 mod process;

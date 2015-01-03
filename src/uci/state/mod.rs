@@ -4,17 +4,17 @@ use game::Color;
 use types::NumMoves;
 use search;
 
-use self::mode::Mode;
+pub use self::mode::Mode;
 
-pub mod mode;
+mod mode;
 
 #[deriving(Clone)]
 pub struct State {
-    search_state: Option<search::State>,
-    mode: Mode,
-    start_search_time: Option<u64>,
-    start_move_time: Option<u64>,
-    time_data: Option<TimeData>,
+    pub search_state: Option<search::State>,
+    pub mode: Mode,
+    pub start_search_time: Option<u64>,
+    pub start_move_time: Option<u64>,
+    pub time_data: Option<TimeData>,
 }
 impl State {
     pub fn new() -> State {

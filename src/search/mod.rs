@@ -12,10 +12,6 @@ pub fn start(mut state: State, rx: Receiver<SearchCmd>, tx:Sender<Response>) {
         for cmd in rx.iter() {
             match cmd {
                 SearchCmd::SetDebug(val) => state.is_debug = val,
-                SearchCmd::SetOption(_name, _val) => {
-                    // TODO set options in start_search
-                    unimplemented!();
-                },
                 SearchCmd::PonderHit => {
                     state.search_param.ponder = None;
                     break;
@@ -45,10 +41,6 @@ pub fn start(mut state: State, rx: Receiver<SearchCmd>, tx:Sender<Response>) {
     for cmd in rx.iter() {
         match cmd {
             SearchCmd::SetDebug(val) => state.is_debug = val,
-            SearchCmd::SetOption(_name, _val) => {
-                // TODO Set options in start_search
-                unimplemented!();
-            },
             SearchCmd::PonderHit => {
                 // TODO Report unexpected message.
                 unimplemented!();

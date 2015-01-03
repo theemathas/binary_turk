@@ -1,5 +1,3 @@
-pub use self::param::{RegisterParam, GoParam, IdParam, InfoParam, ScoreType};
-
 use std::time::Duration;
 
 use types::NumMoves;
@@ -7,6 +5,8 @@ use game::{Position, Color, Move, FromTo};
 use state::State;
 
 use super::state::UciState;
+
+pub use self::param::{RegisterParam, GoParam, IdParam, InfoParam, ScoreType};
 
 pub mod options;
 mod param;

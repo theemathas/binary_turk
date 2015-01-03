@@ -2,7 +2,7 @@ use std::iter::Peekable;
 use std::str::FromStr;
 use std::time::Duration;
 
-use game::{Position, FromTo, White, Black, fen_to_position, NumPlies, NumMoves};
+use game::{Position, FromTo, White, Black, fen_to_position, start_pos, NumPlies, NumMoves};
 use super::types::{CmdVal, RegisterParam, GoParam};
 use super::types::options;
 use types::NumNodes;
@@ -100,8 +100,12 @@ where T: Iterator<&'a str> {
     if res.is_empty() { None } else { Some(res) }
 }
 
-fn parse_position<'a,T>(words: &mut T) -> Option<Position>
+fn parse_position<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Position>
 where T: Iterator<&'a str> {
+    if words.peek() == Some(&"startpos") {
+        words.next();
+        return Some(start_pos());
+    }
     let six_words: Vec<_> = words.by_ref().take(6).collect();
     fen_to_position(&*six_words.connect(" ")).ok()
 }

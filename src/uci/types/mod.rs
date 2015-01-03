@@ -16,10 +16,10 @@ pub enum CmdVal {
     Uci,
     Debug(bool),
     IsReady,
-    SetOption(options::Name, options::Val),
+    SetOption(options::Name, Option<options::Val>),
     Register(Vec<RegisterParam>),
     UciNewGame,
-    SetupPosition(Option<Position>, Vec<FromTo>),
+    SetupPosition(Position, Vec<FromTo>),
     Go(Vec<GoParam>),
     Stop,
     PonderHit,
@@ -32,19 +32,27 @@ pub enum Response {
     UciOk,
     ReadyOk,
     BestMove(Move,Option<Move>),
-    CopyProtectionIsOk(bool),
-    RegistrationIsOk(bool),
+    CopyProtection(VertifyingState),
+    Registration(VertifyingState),
     Info(Vec<InfoParam>),
+    ShowOption(options::Name, options::Val, options::Info),
+}
+
+#[deriving(PartialEq, Eq, Copy, Clone)]
+pub enum VertifyingState {
+    Checking,
+    Ok,
+    Error,
 }
 
 // When starting program, start at state "Init"
 // Always allow commands "debug" and "isready"
 #[deriving(Clone)]
 pub struct UciData {
-    search_state: Option<search::State>,
+    search_state: search::State,
     uci_state: UciState,
-    start_search: Option<u64>,
-    start_move: Option<u64>,
+    start_search_time: Option<u64>,
+    start_move_time: Option<u64>,
     time_data: TimeData,
 }
 

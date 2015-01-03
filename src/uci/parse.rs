@@ -23,15 +23,18 @@ pub fn parse(s: &str) -> Option<CmdVal> {
             "uci" => Some(CmdVal::Uci),
             "debug" => parse_on_off(&mut words).map(|val| CmdVal::Debug(val)),
             "isready" => Some(CmdVal::IsReady),
-            "setoption" => parse_option_val(&mut words).map(|(name, val)| CmdVal::SetOption(name, val)),
+            "setoption" => parse_option_val(&mut words)
+                           .map(|(name, val)| CmdVal::SetOption(name, Some(val))),
             "register" => parse_register_vec(&mut words).map(|val| CmdVal::Register(val)),
             "ucinewgame" => Some(CmdVal::UciNewGame),
             "position" => {
-                let pos_opt = parse_position(&mut words);
-                match parse_move_vec(&mut words) {
-                    Some(moves) => Some(CmdVal::SetupPosition(pos_opt, moves)),
-                    None => None,
-                }
+                let temp = parse_position(&mut words);
+                temp.and_then(|pos_opt| {
+                    match parse_move_vec(&mut words) {
+                        Some(moves) => Some(CmdVal::SetupPosition(pos_opt, moves)),
+                        None => None,
+                    }
+                })
             },
             "go" => parse_go_param_vec(&mut words).map(|val| CmdVal::Go(val)),
             "stop" => Some(CmdVal::Stop),

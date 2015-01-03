@@ -42,12 +42,16 @@ pub enum InfoParam {
     PrincipalVariation(Vec<Move>),
     MultiPv(NumVariations),
     Score(Option<ScoreType>, eval::Result),
+    CurrMove(Move),
     CurrMoveNumber(NumMoves),
     HashFull(PerMill),
+    NodesPerSec(u64),
+    TablebaseHits(u64),
+    ShredderTablebaseHits(u64),
+    CpuLoad(PerMill),
     ShowString(String),
     Refutation(Vec<Move>),
     CurrLine(Option<NumCpu>, Vec<Move>),
-    ShowOption(options::Name, options::Info),
 }
 
 #[deriving(PartialEq,Eq,Copy,Clone)]

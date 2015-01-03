@@ -1,9 +1,10 @@
 //! Implements the game representation
 
+use types::NumPlies;
+
 use super::piece::Piece;
 use super::color::{Color};
 use super::square::{File,Square};
-use super::moves::NumPlies;
 use super::board::{mod,Board};
 use super::castle::{mod,CastlingData,Side};
 

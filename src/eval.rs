@@ -4,7 +4,9 @@
 
 use std::iter::AdditiveIterator;
 
-use super::game::{Position, Color, Piece, PieceType, NumMoves};
+use types::NumMoves;
+
+use super::game::{Position, Color, Piece, PieceType};
 use super::game::{Pawn, King, Queen, Bishop, Knight, Rook};
 use super::game::{is_checkmated, is_stalemated};
 

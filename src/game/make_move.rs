@@ -1,7 +1,9 @@
+use types::NumPlies;
+
 use super::color::{White, Black};
 use super::piece::{Piece, WK, WR, BK, BR, Pawn};
 use super::square::{Square,File,Rank};
-use super::moves::{Move,NumPlies};
+use super::moves::Move;
 use super::pos::Position;
 use super::castle::{Kingside,Queenside};
 

@@ -1,11 +1,12 @@
-use super::moves::NumPlies;
+use std::collections::HashMap;
+
+use types::NumPlies;
+
 use super::square::{File, Rank, Square};
 use super::pos::Position;
 use super::castle::{Kingside, Queenside};
 use super::piece;
 use super::color::Color;
-
-use std::collections::HashMap;
 
 pub fn start_pos() -> Position {
     fen_to_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap()

@@ -134,9 +134,3 @@ impl FromStr for FromTo {
         Some(ans)
     }
 }
-
-#[deriving(PartialEq,Eq,Copy,Clone)]
-pub struct NumPlies(pub u16);
-
-#[deriving(PartialEq,Eq,Copy,Clone)]
-pub struct NumMoves(pub u16);

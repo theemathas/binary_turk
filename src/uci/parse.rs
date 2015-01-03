@@ -2,10 +2,10 @@ use std::iter::Peekable;
 use std::str::FromStr;
 use std::time::Duration;
 
-use game::{Position, FromTo, White, Black, fen_to_position, start_pos, NumPlies, NumMoves};
+use game::{Position, FromTo, White, Black, fen_to_position, start_pos};
 use super::types::{CmdVal, RegisterParam, GoParam};
 use super::types::options;
-use types::NumNodes;
+use types::{NumNodes, NumPlies, NumMoves};
 
 pub fn parse(s: &str) -> Option<CmdVal> {
     let mut words = s.words().peekable();

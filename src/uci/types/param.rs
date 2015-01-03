@@ -1,8 +1,8 @@
 use std::time::Duration;
 
-use game::{Move, FromTo, Color, NumPlies, NumMoves};
+use game::{Move, FromTo, Color};
 use eval;
-use types::{NumNodes, NumVariations, PerMill, NumCpu};
+use types::{NumNodes, NumVariations, PerMill, NumCpu, NumPlies, NumMoves};
 
 use super::options;
 

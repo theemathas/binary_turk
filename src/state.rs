@@ -2,9 +2,8 @@
 
 #![allow(dead_code)]
 
-
-use game::{Position, Move, NumMoves, NumPlies};
-use types::NumNodes;
+use game::{Position, Move};
+use types::{NumNodes, NumMoves, NumPlies};
 
 #[deriving(Clone)]
 pub struct State {

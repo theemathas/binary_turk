@@ -15,6 +15,7 @@ pub struct State {
     pub start_search_time: Option<u64>,
     pub start_move_time: Option<u64>,
     pub time_data: Option<TimeData>,
+    pub ucinewgame_support: bool,
 }
 impl State {
     pub fn new() -> State {
@@ -24,6 +25,7 @@ impl State {
             start_search_time: None,
             start_move_time: None,
             time_data: None,
+            ucinewgame_support: false,
         }
     }
 }

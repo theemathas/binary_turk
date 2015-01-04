@@ -1,9 +1,10 @@
 use time::precise_time_ns;
 
 use game::Move;
+use timer::TimeData;
 
 use super::super::types::GoParam;
-use super::super::state::{State, TimeData};
+use super::super::state::State;
 
 pub fn setup(state: &mut State, mut data: Vec<GoParam>) {
     let ref mut search_state = state.search_state.as_mut().unwrap();

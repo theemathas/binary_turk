@@ -1,6 +1,6 @@
 use std::time::Duration;
 use std::thread::JoinGuard;
-use std::sync::mpsc::Sender;
+use std::sync::mpsc::SyncSender;
 
 use game::Color;
 use types::NumMoves;
@@ -13,7 +13,7 @@ mod mode;
 pub struct State {
     pub search_state: Option<search::State>,
     pub search_guard: Option<JoinGuard<()>>,
-    pub search_chan: Option<Sender<search::Cmd>>,
+    pub search_chan: Option<SyncSender<search::Cmd>>,
     pub mode: Mode,
     pub start_search_time: Option<u64>,
     pub start_move_time: Option<u64>,

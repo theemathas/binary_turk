@@ -3,14 +3,14 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use game::{Position, FromTo, White, Black, fen_to_position, start_pos};
-use super::types::{CmdVal, RegisterParam, GoParam};
+use super::types::{Cmd, RegisterParam, GoParam};
 use super::types::options;
 use types::{NumNodes, NumPlies, NumMoves};
 
-pub fn parse(s: &str) -> Option<CmdVal> {
+pub fn parse(s: &str) -> Option<Cmd> {
     let mut words = s.words().peekable();
 
-    let mut cmd_val: Option<CmdVal> = None;
+    let mut cmd_val: Option<Cmd> = None;
 
     while cmd_val.is_none() {
         let next_word_opt = words.next();
@@ -20,26 +20,26 @@ pub fn parse(s: &str) -> Option<CmdVal> {
         };
 
         cmd_val = match next_word {
-            "uci" => Some(CmdVal::Uci),
-            "debug" => parse_on_off(&mut words).map(|val| CmdVal::Debug(val)),
-            "isready" => Some(CmdVal::IsReady),
+            "uci" => Some(Cmd::Uci),
+            "debug" => parse_on_off(&mut words).map(|val| Cmd::Debug(val)),
+            "isready" => Some(Cmd::IsReady),
             "setoption" => parse_option_val(&mut words)
-                           .map(|(name, val)| CmdVal::SetOption(name, Some(val))),
-            "register" => parse_register_vec(&mut words).map(|val| CmdVal::Register(val)),
-            "ucinewgame" => Some(CmdVal::UciNewGame),
+                           .map(|(name, val)| Cmd::SetOption(name, Some(val))),
+            "register" => parse_register_vec(&mut words).map(|val| Cmd::Register(val)),
+            "ucinewgame" => Some(Cmd::UciNewGame),
             "position" => {
                 let temp = parse_position(&mut words);
                 temp.and_then(|pos_opt| {
                     match parse_move_vec(&mut words) {
-                        Some(moves) => Some(CmdVal::SetupPosition(pos_opt, moves)),
+                        Some(moves) => Some(Cmd::SetupPosition(pos_opt, moves)),
                         None => None,
                     }
                 })
             },
-            "go" => parse_go_param_vec(&mut words).map(|val| CmdVal::Go(val)),
-            "stop" => Some(CmdVal::Stop),
-            "ponderhit" => Some(CmdVal::PonderHit),
-            "quit" => Some(CmdVal::Quit),
+            "go" => parse_go_param_vec(&mut words).map(|val| Cmd::Go(val)),
+            "stop" => Some(Cmd::Stop),
+            "ponderhit" => Some(Cmd::PonderHit),
+            "quit" => Some(Cmd::Quit),
             _ => None,
         }
     }

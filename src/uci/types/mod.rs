@@ -6,7 +6,7 @@ pub mod options;
 mod param;
 
 #[derive(PartialEq, Eq, Clone)]
-pub enum CmdVal {
+pub enum Cmd {
     Uci,
     Debug(bool),
     IsReady,

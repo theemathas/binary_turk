@@ -85,10 +85,10 @@ pub struct FromTo {
     promote: Option<piece::Type>,
 }
 impl FromTo {
-    fn new(from: Square, to: Square) -> FromTo {
+    pub fn new(from: Square, to: Square) -> FromTo {
         FromTo { from: from, to: to, promote: None }
     }
-    fn to_move_with_pos(&self, pos: Position) -> Move {
+    pub fn to_move_with_pos(&self, pos: &Position) -> Move {
         let mut ans = Move::new(self.from, self.to);
         ans.set_promote(self.promote);
         if !pos.is_empty_at(self.to) {

@@ -2,6 +2,7 @@ use std::sync::mpsc::{channel, Sender};
 use std::thread::Thread;
 
 use search;
+use timer;
 
 use super::types::{Cmd, Response};
 use super::state::{State, Mode};
@@ -73,11 +74,16 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                         let output = output.clone();
                         let temp = Thread::spawn(move ||
                                                  search::start(search_state, search_rx, output));
-                        state.search_tx = Some(search_tx);
+
+                        state.search_tx = Some(search_tx.clone());
                         state.search_guard = Some(temp);
-                        // TODO start timer
+
+                        let time_data = state.time_data.clone().unwrap();
+                        let c = state.search_state.as_ref().unwrap().pos.side_to_move();
+
+                        Thread::spawn(move || timer::start(time_data, c, search_tx)).detach();
+
                         state.mode = Mode::Search;
-                        unimplemented!();
                     }
                 },
                 Mode::Search => {

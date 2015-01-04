@@ -12,7 +12,7 @@ pub fn process(state: &mut State, cmd: Cmd, output: &SyncSender<Response>) {
     match cmd {
         Cmd::Debug(val) => {
             state.search_state.as_mut().map(|x| { x.is_debug = val; } );
-            state.search_chan.as_mut().map(|tx| { let _ = tx.send(search::Cmd::Stop); } );
+            state.search_tx.as_mut().map(|tx| { let _ = tx.send(search::Cmd::Stop); } );
         },
         Cmd::IsReady => {
             // TODO implement IsReady
@@ -68,11 +68,12 @@ pub fn process(state: &mut State, cmd: Cmd, output: &SyncSender<Response>) {
                 Mode::Ready => {
                     if let Cmd::Go(param) = cmd {
                         go_param::setup(state, param);
-                        let (tx, rx) = sync_channel::<search::Cmd>(0);
+                        let (search_tx, search_rx) = sync_channel::<search::Cmd>(0);
                         let search_state = state.search_state.as_ref().unwrap().clone();
                         let output = output.clone();
-                        let temp = Thread::spawn(move || search::start(search_state, rx, output));
-                        state.search_chan = Some(tx);
+                        let temp = Thread::spawn(move ||
+                                                 search::start(search_state, search_rx, output));
+                        state.search_tx = Some(search_tx);
                         state.search_guard = Some(temp);
                         // TODO start timer
                         state.mode = Mode::Search;

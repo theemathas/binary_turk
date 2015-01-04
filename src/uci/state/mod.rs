@@ -11,7 +11,7 @@ mod mode;
 pub struct State {
     pub search_state: Option<search::State>,
     pub search_guard: Option<JoinGuard<()>>,
-    pub search_chan: Option<SyncSender<search::Cmd>>,
+    pub search_tx: Option<SyncSender<search::Cmd>>,
     pub mode: Mode,
     pub start_search_time: Option<u64>,
     pub start_move_time: Option<u64>,
@@ -23,7 +23,7 @@ impl State {
         State {
             search_state: None,
             search_guard: None,
-            search_chan: None,
+            search_tx: None,
             mode: Mode::new(),
             start_search_time: None,
             start_move_time: None,

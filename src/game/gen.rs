@@ -1,4 +1,5 @@
 use std::thread::Thread;
+use std::sync::mpsc::{sync_channel, SyncSender, Receiver};
 
 use super::square::{Square,Rank,File};
 use super::moves::Move;
@@ -12,7 +13,7 @@ use self::Action::{Continue,Stop};
 
 macro_rules! send {
     ($tx: expr, $x: expr) => ({
-        match $tx.send_opt($x) {
+        match $tx.send($x) {
             Ok(()) => (),
             Err(_) => return Stop,
         }

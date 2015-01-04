@@ -4,14 +4,14 @@ use game::{Move, FromTo, Color};
 use eval;
 use types::{NumNodes, NumVariations, PerMill, NumCpu, NumPlies, NumMoves};
 
-#[deriving(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub enum RegisterParam {
     Later,
     Name(String),
     Code(String),
 }
 
-#[deriving(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub enum GoParam {
     SearchMoves(Vec<FromTo>),
     Ponder,
@@ -25,13 +25,13 @@ pub enum GoParam {
     Infinite,
 }
 
-#[deriving(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub enum IdParam {
     Name(String),
     Author(String),
 }
 
-#[deriving(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub enum InfoParam {
     Depth(NumPlies),
     SelDepth(NumPlies),
@@ -52,7 +52,7 @@ pub enum InfoParam {
     CurrLine(Option<NumCpu>, Vec<Move>),
 }
 
-#[deriving(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq,Eq,Copy,Clone)]
 pub enum ScoreType {
     LowerBound,
     UpperBound,

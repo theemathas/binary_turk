@@ -1,4 +1,5 @@
 use std::thread::Thread;
+use std::sync::mpsc::{sync_channel, SyncSender, Receiver};
 
 use super::square::Square;
 use super::castle;
@@ -23,7 +24,7 @@ pub fn gen_legal(p: &Position, out: SyncSender<Move>) {
 fn filter_legal(p: &Position, out: SyncSender<Move>, rx: Receiver<Move>) {
     for curr_move in rx.iter() {
         if is_legal(p.clone(), &curr_move) {
-            if out.send_opt(curr_move).is_err() {
+            if out.send(curr_move).is_err() {
                 return;
             }
         }

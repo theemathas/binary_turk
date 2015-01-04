@@ -6,7 +6,7 @@ pub use self::Piece::{WP,WK,WQ,WB,WN,WR};
 pub use self::Piece::{BP,BK,BQ,BB,BN,BR};
 pub use self::Type::{Pawn,King,Queen,Bishop,Knight,Rook};
 
-#[deriving(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq,Eq,Copy,Clone)]
 pub enum Piece {
     WP,
     WK,
@@ -23,10 +23,10 @@ pub enum Piece {
     BR,
 }
 
-pub static ALL_PIECES: [Piece, ..12] = [WP, WK, WQ, WB, WN, WR,
-                                        BP, BK, BQ, BB, BN, BR];
+pub static ALL_PIECES: [Piece; 12] = [WP, WK, WQ, WB, WN, WR,
+                                      BP, BK, BQ, BB, BN, BR];
 
-#[deriving(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq,Eq,Copy,Clone)]
 pub enum Type {
     Pawn,
     King,

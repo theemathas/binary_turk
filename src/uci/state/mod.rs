@@ -8,7 +8,7 @@ pub use self::mode::Mode;
 
 mod mode;
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct State {
     pub search_state: Option<search::State>,
     pub mode: Mode,
@@ -30,13 +30,13 @@ impl State {
     }
 }
 
-#[deriving(Copy, Clone)]
+#[derive(Copy, Clone)]
 pub enum TimeData {
     TimeLeft(TimeLeftData),
     ExactTime(Duration),
 }
 
-#[deriving(Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct TimeLeftData {
     pub w_time: Option<Duration>,
     pub b_time: Option<Duration>,

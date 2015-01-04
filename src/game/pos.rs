@@ -5,11 +5,11 @@ use types::NumPlies;
 use super::piece::Piece;
 use super::color::{Color};
 use super::square::{File,Square};
-use super::board::{mod,Board};
-use super::castle::{mod,CastlingData,Side};
+use super::board::{self,Board};
+use super::castle::{self,CastlingData,Side};
 
 /// A complete representation of a chess position.
-#[deriving(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct Position {
     data: Board,
     side_to_move: Color,

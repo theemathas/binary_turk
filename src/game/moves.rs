@@ -4,12 +4,12 @@ use std::str::FromStr;
 use std::fmt;
 use std::num::SignedInt;
 
-use super::piece::{mod, Queen, Bishop, Knight, Rook, King, Pawn};
+use super::piece::{self, Queen, Bishop, Knight, Rook, King, Pawn};
 use super::square::{Square, File};
 use super::castle::{Side, Kingside, Queenside};
 use super::pos::Position;
 
-#[deriving(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct Move {
     from: Square,
     to: Square,
@@ -78,7 +78,7 @@ impl fmt::Show for Move {
     }
 }
 
-#[deriving(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq,Eq,Copy,Clone)]
 pub struct FromTo {
     from: Square,
     to: Square,

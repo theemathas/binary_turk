@@ -4,7 +4,7 @@ use std::str::FromStr;
 use std::fmt;
 
 // File and Rank are 0-based.
-#[deriving(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq,Eq,Copy,Clone)]
 pub struct File(pub u8);
 impl FromStr for File {
     fn from_str(s: &str) -> Option<File> {
@@ -21,7 +21,7 @@ impl fmt::Show for File {
     }
 }
 
-#[deriving(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq,Eq,Copy,Clone)]
 pub struct Rank(pub u8);
 impl FromStr for Rank {
     fn from_str(s: &str) -> Option<Rank> {
@@ -38,7 +38,7 @@ impl fmt::Show for Rank {
     }
 }
 
-#[deriving(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq,Eq,Copy,Clone)]
 pub struct Square(File, Rank);
 impl Square {
     pub fn new(f: File, r: Rank) -> Square {

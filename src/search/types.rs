@@ -1,14 +1,14 @@
 use game::{Position, Move};
 use types::{NumNodes, NumMoves, NumPlies};
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct State {
     pub is_debug: bool,
     pub pos: Position,
     pub param: Param,
 }
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct Param {
     pub ponder: Option<(Position, Move)>,
     pub search_moves: Option<Vec<Move>>,
@@ -17,7 +17,7 @@ pub struct Param {
     pub mate: Option<NumMoves>,
 }
 
-#[deriving(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub enum Cmd {
     SetDebug(bool),
     PonderHit,

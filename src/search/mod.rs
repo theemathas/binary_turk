@@ -1,3 +1,5 @@
+use std::sync::mpsc::{Sender, Receiver};
+
 use uci::types::Response;
 use game::{Move,receive_legal};
 
@@ -45,7 +47,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
                 unimplemented!();
             },
             Cmd::Stop => {
-                tx.send(Response::BestMove(best_move, None));
+                let _ = tx.send(Response::BestMove(best_move, None));
                 return;
             }
         }

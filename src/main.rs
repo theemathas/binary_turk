@@ -9,5 +9,5 @@ mod search;
 mod uci;
 
 fn main() {
-    uci::start(&mut io::stdin(), &mut io::stdout());
+    uci::start(io::stdin(), io::stdout());
 }

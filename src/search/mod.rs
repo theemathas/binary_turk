@@ -8,13 +8,13 @@ pub use self::types::{State, Param, Cmd};
 mod types;
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
-    if state.param.ponder.is_some() {
+    if state.param.ponder {
         // Actually should ponder, but now just waits for our move.
         for cmd in rx.iter() {
             match cmd {
                 Cmd::SetDebug(val) => state.is_debug = val,
                 Cmd::PonderHit => {
-                    state.param.ponder = None;
+                    state.param.ponder = false;
                     break;
                 },
                 Cmd::Stop => {
@@ -23,7 +23,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
                 },
             }
         }
-        if state.param.ponder.is_some() {
+        if state.param.ponder {
             panic!("Sender hung up while pondering");
         }
     }

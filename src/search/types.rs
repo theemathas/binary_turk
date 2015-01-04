@@ -5,12 +5,14 @@ use types::{NumNodes, NumMoves, NumPlies};
 pub struct State {
     pub is_debug: bool,
     pub pos: Position,
+    pub prev_pos: Option<Position>,
+    pub prev_move: Option<Move>,
     pub param: Param,
 }
 
 #[derive(Clone)]
 pub struct Param {
-    pub ponder: Option<(Position, Move)>,
+    pub ponder: bool,
     pub search_moves: Option<Vec<Move>>,
     pub depth: Option<NumPlies>,
     pub nodes: Option<NumNodes>,

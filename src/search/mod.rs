@@ -1,4 +1,4 @@
-use std::sync::mpsc::{SyncSender, Receiver};
+use std::sync::mpsc::{Sender, Receiver};
 
 use uci::types::Response;
 use game::{Move,receive_legal};
@@ -7,7 +7,7 @@ pub use self::types::{State, Param, Cmd};
 
 mod types;
 
-pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
+pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     if state.param.ponder {
         // Actually should ponder, but now just waits for our move.
         for cmd in rx.iter() {

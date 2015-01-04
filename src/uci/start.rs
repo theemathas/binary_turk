@@ -1,7 +1,7 @@
 use std::io::stdio::{StdinReader, StdWriter};
 use std::io::LineBufferedWriter;
 use std::thread::Thread;
-use std::sync::mpsc::sync_channel;
+use std::sync::mpsc::channel;
 
 use super::types::{Cmd, Response};
 use super::process::process;
@@ -11,9 +11,9 @@ use super::output::format_output;
 
 pub fn start(input: StdinReader, output: LineBufferedWriter<StdWriter>) {
     let mut state = State::new();
-    let (cmd_tx, cmd_rx) = sync_channel::<Cmd>(0);
+    let (cmd_tx, cmd_rx) = channel::<Cmd>();
     let _input_guard = Thread::spawn(move || parse_input(input, cmd_tx));
-    let (resp_tx, resp_rx) = sync_channel::<Response>(0);
+    let (resp_tx, resp_rx) = channel::<Response>();
     let _output_guard = Thread::spawn(move || format_output(output, resp_rx));
     for cmd in cmd_rx.iter() {
         if cmd == Cmd::Quit {

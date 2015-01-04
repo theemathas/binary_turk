@@ -1,14 +1,16 @@
 use std::io::LineBufferedWriter;
 use std::io::stdio::StdWriter;
 
+use search::Cmd;
+
 use super::types::CmdVal;
 use super::state::{State, Mode};
 
 pub fn process(state: &mut State, cmd: &CmdVal, output: &mut LineBufferedWriter<StdWriter>) {
     match *cmd {
         CmdVal::Debug(val) => {
-            // TODO set debug flag
-            unimplemented!();
+            state.search_state.as_mut().map(|x| { x.is_debug = val; } );
+            state.search_chan.as_mut().map(|tx| { let _ = tx.send(Cmd::Stop); } );
         },
         CmdVal::IsReady => {
             // TODO implement IsReady

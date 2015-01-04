@@ -1,15 +1,18 @@
-use std::sync::mpsc::SyncSender;
+use std::sync::mpsc::{sync_channel, SyncSender};
+use std::thread::Thread;
 
-use search::Cmd;
+use search;
 
 use super::types::{CmdVal, Response};
 use super::state::{State, Mode};
+
+mod go_param;
 
 pub fn process(state: &mut State, cmd: CmdVal, output: &SyncSender<Response>) {
     match cmd {
         CmdVal::Debug(val) => {
             state.search_state.as_mut().map(|x| { x.is_debug = val; } );
-            state.search_chan.as_mut().map(|tx| { let _ = tx.send(Cmd::Stop); } );
+            state.search_chan.as_mut().map(|tx| { let _ = tx.send(search::Cmd::Stop); } );
         },
         CmdVal::IsReady => {
             // TODO implement IsReady
@@ -64,7 +67,14 @@ pub fn process(state: &mut State, cmd: CmdVal, output: &SyncSender<Response>) {
                 },
                 Mode::Ready => {
                     if let CmdVal::Go(param) = cmd {
-                        // TODO start searching
+                        go_param::setup(state, param);
+                        let (tx, rx) = sync_channel::<search::Cmd>(0);
+                        let search_state = state.search_state.as_ref().unwrap().clone();
+                        let output = output.clone();
+                        let temp = Thread::spawn(move || search::start(search_state, rx, output));
+                        state.search_chan = Some(tx);
+                        state.search_guard = Some(temp);
+                        // TODO start timer
                         state.mode = Mode::Search;
                         unimplemented!();
                     }

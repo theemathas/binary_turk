@@ -35,13 +35,43 @@ impl State {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub enum TimeData {
     TimeLeft(TimeLeftData),
     ExactTime(Duration),
+    Infinite,
+}
+impl TimeData {
+    pub fn set_time(&mut self, c: Color, val: Option<Duration>) {
+        self.force_time_left();
+        match *self {
+            TimeData::TimeLeft(ref mut x) => x.set_time(c, val),
+            _ => unreachable!(),
+        }
+    }
+    pub fn set_inc(&mut self, c: Color, val: Option<Duration>) {
+        self.force_time_left();
+        match *self {
+            TimeData::TimeLeft(ref mut x) => x.set_inc(c, val),
+            _ => unreachable!(),
+        }
+    }
+    pub fn set_moves_to_go(&mut self, val: Option<NumMoves>) {
+        self.force_time_left();
+        match *self {
+            TimeData::TimeLeft(ref mut x) => x.moves_to_go = val,
+            _ => unreachable!(),
+        }
+    }
+    fn force_time_left(&mut self) {
+        match *self {
+            TimeData::TimeLeft(_) => {},
+            ref mut x => *x = TimeData::TimeLeft(TimeLeftData::new()),
+        }
+    }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct TimeLeftData {
     pub w_time: Option<Duration>,
     pub b_time: Option<Duration>,
@@ -50,6 +80,15 @@ pub struct TimeLeftData {
     pub moves_to_go: Option<NumMoves>,
 }
 impl TimeLeftData {
+    pub fn new() -> TimeLeftData {
+        TimeLeftData {
+            w_time: None,
+            b_time: None,
+            w_inc: None,
+            b_inc: None,
+            moves_to_go: None,
+        }
+    }
     pub fn time(&self, c: Color) -> Option<Duration> {
         match c {
             Color::White => self.w_time,

@@ -1,7 +1,7 @@
 use time::precise_time_ns;
 
 use game::Move;
-use timer::TimeData;
+use timer;
 
 use super::super::types::GoParam;
 use super::super::state::State;
@@ -18,14 +18,20 @@ pub fn setup(state: &mut State, mut data: Vec<GoParam>) {
                 param.search_moves = Some(move_vec);
             },
             GoParam::Ponder => param.ponder = true,
-            GoParam::Time(c, val) => drop(time_data.as_mut().map(|ref mut x| x.set_time(c, Some(val)))),
-            GoParam::IncTime(c, val) => drop(time_data.as_mut().map(|ref mut x| x.set_inc(c, Some(val)))),
-            GoParam::MovesToGo(val) => drop(time_data.as_mut().map(|ref mut x| x.set_moves_to_go(Some(val)))),
+            GoParam::Time(c, val) => {
+                let _ = time_data.as_mut().map(|ref mut x| x.set_time(c, Some(val)));
+            },
+            GoParam::IncTime(c, val) => {
+                let _ = time_data.as_mut().map(|ref mut x| x.set_inc(c, Some(val)));
+            },
+            GoParam::MovesToGo(val) => {
+                let _ = time_data.as_mut().map(|ref mut x| x.set_moves_to_go(Some(val)));
+            },
             GoParam::Depth(val) => param.depth = Some(val),
             GoParam::Nodes(val) => param.nodes = Some(val),
             GoParam::Mate(val) => param.mate = Some(val),
-            GoParam::MoveTime(val) => *time_data = Some(TimeData::ExactTime(val)),
-            GoParam::Infinite => *time_data = Some(TimeData::Infinite),
+            GoParam::MoveTime(val) => *time_data = Some(timer::Data::Exact(val)),
+            GoParam::Infinite => *time_data = Some(timer::Data::Infinite),
         }
     }
     state.start_search_time = Some(precise_time_ns());

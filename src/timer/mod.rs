@@ -1,3 +1,3 @@
-pub use self::types::TimeData;
+pub use self::types::Data;
 
 mod types;

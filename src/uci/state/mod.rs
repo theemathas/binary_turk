@@ -2,7 +2,7 @@ use std::thread::JoinGuard;
 use std::sync::mpsc::SyncSender;
 
 use search;
-use timer::TimeData;
+use timer;
 
 pub use self::mode::Mode;
 
@@ -15,7 +15,7 @@ pub struct State {
     pub mode: Mode,
     pub start_search_time: Option<u64>,
     pub start_move_time: Option<u64>,
-    pub time_data: Option<TimeData>,
+    pub time_data: Option<timer::Data>,
     pub ucinewgame_support: bool,
 }
 impl State {

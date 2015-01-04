@@ -1,12 +1,11 @@
-use std::io::LineBufferedWriter;
-use std::io::stdio::StdWriter;
+use std::sync::mpsc::SyncSender;
 
 use search::Cmd;
 
-use super::types::CmdVal;
+use super::types::{CmdVal, Response};
 use super::state::{State, Mode};
 
-pub fn process(state: &mut State, cmd: CmdVal, output: &mut LineBufferedWriter<StdWriter>) {
+pub fn process(state: &mut State, cmd: CmdVal, output: &SyncSender<Response>) {
     match cmd {
         CmdVal::Debug(val) => {
             state.search_state.as_mut().map(|x| { x.is_debug = val; } );

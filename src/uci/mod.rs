@@ -5,5 +5,6 @@ mod state;
 
 mod start;
 mod input;
+mod output;
 mod parse;
 mod process;

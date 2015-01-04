@@ -16,7 +16,7 @@ pub fn start(input: StdinReader, mut output: LineBufferedWriter<StdWriter>) {
         if cmd == CmdVal::Quit {
             return;
         } else {
-            process(&mut state, &cmd, &mut output);
+            process(&mut state, cmd, &mut output);
         }
     }
 }

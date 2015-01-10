@@ -114,8 +114,6 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                             }
                             state.time_rx = None;
                             state.mode = Mode::Wait;
-                            // TODO what to do about search_state
-                            unimplemented!();
                         },
                         _ => {},
                     }

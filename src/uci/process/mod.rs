@@ -4,12 +4,13 @@ use std::sync::mpsc::{channel, Sender};
 use std::thread::Thread;
 
 use search;
-use timer;
 
 use super::types::{Cmd, Response};
 use super::state::{State, Mode};
+use self::time_start::time_start;
 
 mod go_param;
+mod time_start;
 
 pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
     match cmd {
@@ -78,13 +79,12 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                         let temp = Thread::scoped(move ||
                                                   search::start(search_state, search_rx, output));
 
-                        state.search_tx = Some(search_tx.clone());
+                        state.search_tx = Some(search_tx);
                         state.search_guard = Some(temp);
 
-                        let time_data = state.time_data.clone().unwrap();
-                        let c = state.search_state.as_ref().unwrap().pos.side_to_move();
-
-                        Thread::spawn(move || timer::start(time_data, c, search_tx));
+                        if !state.search_state.as_ref().unwrap().param.ponder {
+                            time_start(state);
+                        }
 
                         state.mode = Mode::Search;
                     }
@@ -101,18 +101,21 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                             let _ = state.search_tx.as_ref().unwrap().send(search::Cmd::PonderHit);
                             state.search_state.as_mut().unwrap().param.ponder = false;
                             state.start_move_time = Some(precise_time_ns());
+                            time_start(state);
                         },
                         Cmd::Stop => {
                             let _ = state.search_tx.as_ref().unwrap().send(search::Cmd::Stop);
                             let _ = state.search_guard.take().unwrap().join();
                             state.search_tx = None;
-                            state.mode = Mode::Wait;
                             state.start_search_time = None;
                             state.start_move_time = None;
                             state.time_data = None;
+                            if let Some(time_kill_tx) = state.time_kill_tx.take() {
+                                let _ = time_kill_tx.send(());
+                            }
+                            state.time_rx = None;
+                            state.mode = Mode::Wait;
                             // TODO what to do about search_state
-                            // TODO what to do about the timer thread
-                            // TODO what if time is out
                             unimplemented!();
                         },
                         _ => {},

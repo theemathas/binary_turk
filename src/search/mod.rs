@@ -1,6 +1,6 @@
 use std::sync::mpsc::{Sender, Receiver};
 
-use uci::types::Response;
+use uci::Response;
 use game::{Move,receive_legal};
 
 pub use self::types::{State, Param, Cmd};

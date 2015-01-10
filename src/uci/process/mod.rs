@@ -20,8 +20,7 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
             state.search_tx.as_ref().map(|tx| { let _ = tx.send(search::Cmd::Stop); } );
         },
         Cmd::IsReady => {
-            // TODO implement IsReady
-            unimplemented!();
+            let _ = output.send(Response::ReadyOk);
         },
         Cmd::Register(ref param) => {
             // TODO register

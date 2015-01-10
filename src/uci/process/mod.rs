@@ -44,10 +44,12 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                             unimplemented!();
                         },
                         Cmd::UciNewGame => {
-                            // TODO note that ucinewgame supported
-                            // TODO reset game status
-                            state.mode = Mode::NewGame;
-                            unimplemented!();
+                            *state = State {
+                                is_debug: state.is_debug,
+                                mode: Mode::NewGame,
+                                ucinewgame_support: true,
+                                ..State::new()
+                            };
                         },
                         Cmd::SetupPosition(pos, from_to_vec) => {
                             if state.ucinewgame_support {

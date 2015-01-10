@@ -1,3 +1,5 @@
+use time::precise_time_ns;
+
 use std::sync::mpsc::{channel, Sender};
 use std::thread::Thread;
 
@@ -67,6 +69,7 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                     }
                 },
                 Mode::Ready => {
+                    assert!(state.search_state.is_some());
                     if let Cmd::Go(param) = cmd {
                         go_param::setup(state, param);
                         let (search_tx, search_rx) = channel::<search::Cmd>();
@@ -87,14 +90,26 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                     }
                 },
                 Mode::Search => {
+                    assert!(state.search_state.is_some());
+                    assert!(state.search_guard.is_some());
+                    assert!(state.search_tx.is_some());
                     match cmd {
                         Cmd::PonderHit => {
-                            // TODO ponder hit
-                            unimplemented!();
+                            state.search_tx.as_ref().map(|ref tx| tx.send(search::Cmd::PonderHit));
+                            state.search_state.as_mut().map(|ref mut x| x.param.ponder = false);
+                            state.start_move_time = Some(precise_time_ns());
                         },
                         Cmd::Stop => {
-                            // TODO stop search
-                            // Also if time is out
+                            state.search_tx.as_mut().map(|ref tx| tx.send(search::Cmd::Stop));
+                            state.search_guard.take().map(|x| x.join());
+                            state.search_tx = None;
+                            state.mode = Mode::Wait;
+                            state.start_search_time = None;
+                            state.start_move_time = None;
+                            state.time_data = None;
+                            // TODO what to do about search_state
+                            // TODO what to do about the timer thread
+                            // TODO what if time is out
                             unimplemented!();
                         },
                         _ => {},

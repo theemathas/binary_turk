@@ -9,6 +9,7 @@ pub use self::mode::Mode;
 mod mode;
 
 pub struct State<'a> {
+    pub is_debug: bool,
     pub search_state: Option<search::State>,
     pub search_guard: Option<JoinGuard<'a, ()>>,
     pub search_tx: Option<Sender<search::Cmd>>,
@@ -21,6 +22,7 @@ pub struct State<'a> {
 impl<'a> State<'a> {
     pub fn new() -> State<'a> {
         State {
+            is_debug: false,
             search_state: None,
             search_guard: None,
             search_tx: None,

@@ -8,11 +8,12 @@ pub use self::types::{State, Param, Cmd};
 mod types;
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
+    let mut is_debug = false;
     if state.param.ponder {
         // Actually should ponder, but now just waits for our move.
         for cmd in rx.iter() {
             match cmd {
-                Cmd::SetDebug(val) => state.is_debug = val,
+                Cmd::SetDebug(val) => is_debug = val,
                 Cmd::PonderHit => {
                     state.param.ponder = false;
                     break;
@@ -41,7 +42,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     // TODO send info
     for cmd in rx.iter() {
         match cmd {
-            Cmd::SetDebug(val) => state.is_debug = val,
+            Cmd::SetDebug(val) => is_debug = val,
             Cmd::PonderHit => {
                 // TODO Report unexpected message.
                 unimplemented!();

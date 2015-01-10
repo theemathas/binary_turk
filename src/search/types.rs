@@ -3,7 +3,6 @@ use types::{NumNodes, NumMoves, NumPlies};
 
 #[derive(Clone, Show)]
 pub struct State {
-    pub is_debug: bool,
     pub pos: Position,
     pub prev_pos: Option<Position>,
     pub prev_move: Option<Move>,

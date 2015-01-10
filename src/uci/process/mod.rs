@@ -14,7 +14,7 @@ mod go_param;
 pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
     match cmd {
         Cmd::Debug(val) => {
-            state.search_state.as_mut().map(|x| { x.is_debug = val; } );
+            state.is_debug = val;
             state.search_tx.as_mut().map(|tx| { let _ = tx.send(search::Cmd::Stop); } );
         },
         Cmd::IsReady => {

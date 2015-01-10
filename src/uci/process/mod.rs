@@ -95,13 +95,16 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                     assert!(state.search_tx.is_some());
                     match cmd {
                         Cmd::PonderHit => {
-                            state.search_tx.as_ref().map(|ref tx| tx.send(search::Cmd::PonderHit));
-                            state.search_state.as_mut().map(|ref mut x| x.param.ponder = false);
+                            if !state.search_state.as_ref().unwrap().param.ponder {
+                                return;
+                            }
+                            let _ = state.search_tx.as_ref().unwrap().send(search::Cmd::PonderHit);
+                            state.search_state.as_mut().unwrap().param.ponder = false;
                             state.start_move_time = Some(precise_time_ns());
                         },
                         Cmd::Stop => {
-                            state.search_tx.as_mut().map(|ref tx| tx.send(search::Cmd::Stop));
-                            state.search_guard.take().map(|x| x.join());
+                            let _ = state.search_tx.as_ref().unwrap().send(search::Cmd::Stop);
+                            let _ = state.search_guard.take().unwrap().join();
                             state.search_tx = None;
                             state.mode = Mode::Wait;
                             state.start_search_time = None;

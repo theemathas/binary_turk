@@ -5,7 +5,7 @@ pub use self::param::{RegisterParam, GoParam, IdParam, InfoParam, ScoreType};
 pub mod options;
 mod param;
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Show)]
 pub enum Cmd {
     Uci,
     Debug(bool),
@@ -20,7 +20,7 @@ pub enum Cmd {
     Quit,
 }
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Show)]
 pub enum Response {
     Id(IdParam),
     UciOk,
@@ -32,7 +32,7 @@ pub enum Response {
     ShowOption(options::Name, options::Val, options::Info),
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Show)]
 pub enum VertifyingState {
     Checking,
     Ok,

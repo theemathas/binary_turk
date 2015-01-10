@@ -3,7 +3,7 @@ use super::square::{Square,File,Rank};
 
 pub use self::Side::{Kingside,Queenside};
 
-#[derive(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Show)]
 pub enum Side {
     Kingside,
     Queenside,
@@ -41,7 +41,7 @@ pub fn require_no_attack(side: Side, c: Color) -> Vec<Square> {
     }
 }
 
-#[derive(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Show)]
 pub struct CastlingData {
     w_kingside: bool,
     w_queenside: bool,

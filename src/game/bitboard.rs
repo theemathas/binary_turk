@@ -5,7 +5,7 @@ use std::iter::Map;
 
 use super::square::Square;
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Show)]
 pub struct BitBoard(BitvSet);
 impl BitBoard {
     pub fn new() -> BitBoard { BitBoard(BitvSet::with_capacity(64)) }
@@ -17,12 +17,12 @@ impl BitBoard {
         BitBoard(ans)
     }
 
-    pub fn at(&self, s: Square) -> bool { self.0.contains(&(s.to_id() as uint)) }
-    pub fn set_at(&mut self, s: Square) { self.0.insert(s.to_id() as uint); }
-    pub fn remove_at(&mut self, s: Square) { self.0.remove(&(s.to_id() as uint)); }
+    pub fn at(&self, s: Square) -> bool { self.0.contains(&(s.to_id() as usize)) }
+    pub fn set_at(&mut self, s: Square) { self.0.insert(s.to_id() as usize); }
+    pub fn remove_at(&mut self, s: Square) { self.0.remove(&(s.to_id() as usize)); }
 
-    pub fn iter(&self) -> Map< uint, Square, bitv_set::Iter, fn(uint)->Square > {
-        fn map_fn(x: uint) -> Square { Square::from_id(x as u8) };
-        self.0.iter().map( map_fn as fn(uint)->Square )
+    pub fn iter(&self) -> Map< usize, Square, bitv_set::Iter, fn(usize)->Square > {
+        fn map_fn(x: usize) -> Square { Square::from_id(x as u8) };
+        self.0.iter().map( map_fn as fn(usize)->Square )
     }
 }

@@ -35,7 +35,7 @@ impl Action {
 
 pub fn receive_psudo_legal(p: Position) -> Receiver<Move> {
     let (tx,rx) = sync_channel(0);
-    Thread::spawn(move || gen_psudo_legal(&p, tx)).detach();
+    Thread::spawn(move || gen_psudo_legal(&p, tx));
     rx
 }
 
@@ -71,12 +71,12 @@ fn gen_move_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
 }
 
 // (file, rank)
-type Diff = (int, int);
+type Diff = (i8, i8);
 
 fn shift(s: Square, dir: Diff) -> Option<Square> {
     let (dx, dy) = dir;
     let (File(file), Rank(rank)) = s.to_tuple();
-    Square::from_int(file as int + dx, rank as int + dy)
+    Square::from_i8(file as i8 + dx, rank as i8 + dy)
 }
 
 fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
@@ -158,7 +158,7 @@ fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
     let piece_color = piece_id.color();
     let from_rank = from.rank().0;
     //rank_up is the 1-based rank from the piece-owner's side.
-    let (dy, rank_up): (int, u8) = match piece_color {
+    let (dy, rank_up): (i8, u8) = match piece_color {
         White => ( 1, 1u8 + from_rank ),
         Black => (-1, 8u8 - from_rank ),
     };

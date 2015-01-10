@@ -47,7 +47,7 @@ pub fn parse(s: &str) -> Option<Cmd> {
     cmd_val
 }
 
-fn parse_on_off(words: &mut Iterator<&str>) -> Option<bool> {
+fn parse_on_off(words: &mut Iterator<Item = &str>) -> Option<bool> {
     let mut ans = None;
     while ans.is_none() {
         let next_word_opt = words.next();
@@ -65,13 +65,13 @@ fn parse_on_off(words: &mut Iterator<&str>) -> Option<bool> {
 }
 
 fn parse_option_val<'a,T>(words: &mut T) -> Option<options::NameAndVal>
-where T: Iterator<&'a str> {
+where T: Iterator<Item = &'a str> {
     // TODO parse options.
     Some((options::Name::Dummy, options::Val::Spin(1)))
 }
 
 fn parse_register_vec<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Vec<RegisterParam>>
-where T: Iterator<&'a str> {
+where T: Iterator<Item = &'a str> {
     let mut res = Vec::<RegisterParam>::new();
     while let Some(next_word) = words.next() {
         let register_val = match next_word {
@@ -104,7 +104,7 @@ where T: Iterator<&'a str> {
 }
 
 fn parse_position<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Position>
-where T: Iterator<&'a str> {
+where T: Iterator<Item = &'a str> {
     if words.peek() == Some(&"startpos") {
         words.next();
         return Some(start_pos());
@@ -114,7 +114,7 @@ where T: Iterator<&'a str> {
 }
 
 fn parse_move_vec<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Vec<FromTo>>
-where T: Iterator<&'a str> {
+where T: Iterator<Item = &'a str> {
     let mut res = Vec::<FromTo>::new();
     while let Some(val) = words.peek().and_then(|val| FromStr::from_str(*val)) {
         res.push(val);
@@ -124,7 +124,7 @@ where T: Iterator<&'a str> {
 }
 
 fn parse_go_param_vec<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Vec<GoParam>>
-where T: Iterator<&'a str> {
+where T: Iterator<Item = &'a str> {
     let mut res = Vec::<GoParam>::new();
     while let Some(next_word) = words.next() {
         match next_word {

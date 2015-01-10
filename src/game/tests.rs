@@ -1,4 +1,5 @@
-use super::moves::NumPlies;
+use types::NumPlies;
+
 use super::pos::Position;
 use super::fen;
 use super::legal;

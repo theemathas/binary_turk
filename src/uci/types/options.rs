@@ -2,12 +2,12 @@
 
 pub type NameAndVal = (Name, Val);
 
-#[derive(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Show)]
 pub enum Name {
     Dummy,
 }
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Show)]
 pub enum Val {
     Check(bool),
     Spin(i64),
@@ -16,7 +16,7 @@ pub enum Val {
     String(String),
 }
 
-#[derive(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Show)]
 pub enum Type {
     Check,
     Spin,
@@ -25,7 +25,7 @@ pub enum Type {
     String,
 }
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Show)]
 pub enum Info {
     Check,
     Spin(i64, i64),

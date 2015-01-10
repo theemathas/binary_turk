@@ -72,8 +72,8 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                         let (search_tx, search_rx) = channel::<search::Cmd>();
                         let search_state = state.search_state.as_ref().unwrap().clone();
                         let output = output.clone();
-                        let temp = Thread::spawn(move ||
-                                                 search::start(search_state, search_rx, output));
+                        let temp = Thread::scoped(move ||
+                                                  search::start(search_state, search_rx, output));
 
                         state.search_tx = Some(search_tx.clone());
                         state.search_guard = Some(temp);
@@ -81,7 +81,7 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                         let time_data = state.time_data.clone().unwrap();
                         let c = state.search_state.as_ref().unwrap().pos.side_to_move();
 
-                        Thread::spawn(move || timer::start(time_data, c, search_tx)).detach();
+                        Thread::spawn(move || timer::start(time_data, c, search_tx));
 
                         state.mode = Mode::Search;
                     }

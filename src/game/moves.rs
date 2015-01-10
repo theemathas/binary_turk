@@ -9,7 +9,7 @@ use super::square::{Square, File};
 use super::castle::{Side, Kingside, Queenside};
 use super::pos::Position;
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Show)]
 pub struct Move {
     from: Square,
     to: Square,
@@ -60,7 +60,7 @@ impl Move {
         self.is_pawn_double_move = val;
     }
 }
-impl fmt::Show for Move {
+impl fmt::String for Move {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "{}{}", self.from, self.to));
         match self.promote() {
@@ -78,7 +78,7 @@ impl fmt::Show for Move {
     }
 }
 
-#[derive(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Show)]
 pub struct FromTo {
     from: Square,
     to: Square,
@@ -105,7 +105,7 @@ impl FromTo {
             Some(Pawn) => {
                 if !ans.is_capture() && self.from.file() != self.to.file() {
                     ans.set_en_passant(true);
-                } else if ((self.from.rank().0 as int) - (self.to.rank().0 as int)).abs() != 1 {
+                } else if ((self.from.rank().0 as i8) - (self.to.rank().0 as i8)).abs() != 1 {
                     ans.set_pawn_double_move(true);
                 }
             },
@@ -117,9 +117,9 @@ impl FromTo {
 impl FromStr for FromTo {
     fn from_str(s: &str) -> Option<FromTo> {
         if s.len() != 4 && s.len() != 5 { return None; }
-        let from: Square = match FromStr::from_str(&*s.slice(0,2)) {
+        let from: Square = match FromStr::from_str(&s[0..2]) {
             Some(val) => val, None => return None };
-        let to:   Square = match FromStr::from_str(&*s.slice(2,4)) {
+        let to:   Square = match FromStr::from_str(&s[2..4]) {
             Some(val) => val, None => return None };
         let mut ans = FromTo::new(from, to);
         if s.len() == 5 {

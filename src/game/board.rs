@@ -8,7 +8,7 @@ use super::piece::{Piece, King, ALL_PIECES};
 use super::square::Square;
 use super::bitboard::BitBoard;
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Show)]
 pub struct Board {
     data: VecMap<BitBoard>,
     white_data: BitBoard,
@@ -20,7 +20,7 @@ impl Board {
     pub fn new() -> Board {
         let mut ans = VecMap::new();
         for x in ALL_PIECES.iter() {
-            ans.insert(*x as uint, BitBoard::new());
+            ans.insert(*x as usize, BitBoard::new());
         }
         Board {
             data: ans,
@@ -31,10 +31,10 @@ impl Board {
     }
 
     fn piece_data(&self, p: Piece) -> &BitBoard {
-        self.data.get(&(p as uint)).unwrap()
+        self.data.get(&(p as usize)).unwrap()
     }
     fn piece_data_mut(&mut self, p: Piece) -> &mut BitBoard {
-        self.data.get_mut(&(p as uint)).unwrap()
+        self.data.get_mut(&(p as usize)).unwrap()
     }
 
     fn color_data(&self, c: Color) -> &BitBoard {
@@ -91,11 +91,12 @@ impl Board {
 }
 
 pub struct Iter(vec::IntoIter<(Piece,Square)>);
-impl Iterator<(Piece,Square)> for Iter {
+impl Iterator for Iter {
+    type Item = (Piece,Square);
     fn next(&mut self) -> Option<(Piece,Square)> { self.0.next() }
-    fn size_hint(&self) -> (uint, Option<uint>) { self.0.size_hint() }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.0.size_hint() }
 }
-impl DoubleEndedIterator<(Piece,Square)> for Iter {
+impl DoubleEndedIterator for Iter {
     fn next_back(&mut self) -> Option<(Piece,Square)> { self.0.next_back() }
 }
-impl ExactSizeIterator<(Piece,Square)> for Iter {}
+impl ExactSizeIterator for Iter {}

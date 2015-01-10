@@ -12,10 +12,10 @@ use super::game::{is_checkmated, is_stalemated};
 
 pub use self::Result::{Score, WinIn, LoseIn, Draw};
 
-type ScoreUnit = int;
+type ScoreUnit = i32;
 
 /// An assessment of the position.
-#[derive(PartialEq,Eq,Copy,Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Show)]
 pub enum Result {
     // Positive: advantage for side to move.
     // Negative: disadvantage for side to move.

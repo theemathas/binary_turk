@@ -10,14 +10,14 @@ use super::make_move::make_move;
 
 pub fn receive_legal(p: Position) -> Receiver<Move> {
     let (tx,rx) = sync_channel(0);
-    Thread::spawn(move || gen_legal(&p, tx)).detach();
+    Thread::spawn(move || gen_legal(&p, tx));
     rx
 }
 
 pub fn gen_legal(p: &Position, out: SyncSender<Move>) {
     let (tx, rx) = sync_channel::<Move>(1);
     let temp = (*p).clone();
-    Thread::spawn(move || gen::gen_psudo_legal(&temp, tx)).detach();
+    Thread::spawn(move || gen::gen_psudo_legal(&temp, tx));
     filter_legal(p, out, rx);
 }
 

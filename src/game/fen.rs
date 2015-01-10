@@ -21,7 +21,13 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
     for ch in fields[0].chars() {
         match ch {
             '0' ... '9' => {
-                for _ in range(0, ch as uint - '0' as uint) {
+                let val = {
+                    match ch.to_digit(10) {
+                        Some(val) => val,
+                        None => return Err("invalid character in fen"),
+                    }
+                };
+                for _ in range(0, val) {
                     pos_str.push('1')
                 }
             }

@@ -27,7 +27,7 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
                         None => return Err("invalid character in fen"),
                     }
                 };
-                for _ in range(0, val) {
+                for _ in (0..val) {
                     pos_str.push('1')
                 }
             }

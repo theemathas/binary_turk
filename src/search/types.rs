@@ -17,6 +17,17 @@ pub struct Param {
     pub nodes: Option<NumNodes>,
     pub mate: Option<NumMoves>,
 }
+impl Param {
+    pub fn new() -> Self {
+        Param {
+            ponder: false,
+            search_moves: None,
+            depth: None,
+            nodes: None,
+            mate: None,
+        }
+    }
+}
 
 #[derive(PartialEq, Eq, Copy, Clone, Show)]
 pub enum Cmd {

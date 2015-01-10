@@ -11,6 +11,7 @@ use self::time_start::time_start;
 
 mod go_param;
 mod time_start;
+mod pos;
 
 pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
     match cmd {
@@ -48,25 +49,23 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                             state.mode = Mode::NewGame;
                             unimplemented!();
                         },
-                        cmd @Cmd::SetupPosition(..) => {
+                        Cmd::SetupPosition(pos, from_to_vec) => {
                             if state.ucinewgame_support {
-                                // TODO set up position for same game
+                                pos::setup_same(&mut state.search_state, pos, from_to_vec);
                                 state.mode = Mode::Ready;
-                                unimplemented!();
                             } else {
                                 process(state, Cmd::UciNewGame, output);
                                 state.ucinewgame_support = false;
-                                process(state, cmd, output);
+                                process(state, Cmd::SetupPosition(pos, from_to_vec), output);
                             }
                         },
                         _ => {},
                     }
                 },
                 Mode::NewGame => {
-                    if let Cmd::SetupPosition(ref pos, ref from_to_vec) = cmd {
-                        // TODO setup position for new game
+                    if let Cmd::SetupPosition(pos, from_to_vec) = cmd {
+                        pos::setup_new(&mut state.search_state, pos, from_to_vec);
                         state.mode = Mode::Ready;
-                        unimplemented!();
                     }
                 },
                 Mode::Ready => {

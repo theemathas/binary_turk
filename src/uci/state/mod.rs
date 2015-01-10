@@ -1,5 +1,5 @@
 use std::thread::JoinGuard;
-use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc::Sender;
 
 use search;
 use timer;
@@ -17,8 +17,6 @@ pub struct State<'a> {
     pub start_search_time: Option<u64>,
     pub start_move_time: Option<u64>,
     pub time_data: Option<timer::Data>,
-    // TODO handle the timer.
-    pub time_rx: Option<Receiver<()>>,
     pub time_kill_tx: Option<Sender<()>>,
     pub ucinewgame_support: bool,
 }
@@ -33,7 +31,6 @@ impl<'a> State<'a> {
             start_search_time: None,
             start_move_time: None,
             time_data: None,
-            time_rx: None,
             time_kill_tx: None,
             ucinewgame_support: false,
         }

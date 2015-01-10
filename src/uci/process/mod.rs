@@ -13,7 +13,10 @@ mod go_param;
 mod time_start;
 mod pos;
 
-pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
+pub fn process(state: &mut State,
+               cmd: Cmd,
+               output: &Sender<Response>,
+               cmd_tx: &Sender<Cmd>) {
     match cmd {
         Cmd::Debug(val) => {
             state.is_debug = val;
@@ -55,9 +58,10 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                                 pos::setup_same(&mut state.search_state, pos, from_to_vec);
                                 state.mode = Mode::Ready;
                             } else {
-                                process(state, Cmd::UciNewGame, output);
+                                process(state, Cmd::UciNewGame, output, cmd_tx);
                                 state.ucinewgame_support = false;
-                                process(state, Cmd::SetupPosition(pos, from_to_vec), output);
+                                process(state, Cmd::SetupPosition(pos, from_to_vec),
+                                        output, cmd_tx);
                             }
                         },
                         _ => {},
@@ -83,7 +87,7 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                         state.search_guard = Some(temp);
 
                         if !state.search_state.as_ref().unwrap().param.ponder {
-                            time_start(state);
+                            time_start(state, cmd_tx.clone());
                         }
 
                         state.mode = Mode::Search;
@@ -101,7 +105,7 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                             let _ = state.search_tx.as_ref().unwrap().send(search::Cmd::PonderHit);
                             state.search_state.as_mut().unwrap().param.ponder = false;
                             state.start_move_time = Some(precise_time_ns());
-                            time_start(state);
+                            time_start(state, cmd_tx.clone());
                         },
                         Cmd::Stop => {
                             let _ = state.search_tx.as_ref().unwrap().send(search::Cmd::Stop);
@@ -113,7 +117,6 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
                             if let Some(time_kill_tx) = state.time_kill_tx.take() {
                                 let _ = time_kill_tx.send(());
                             }
-                            state.time_rx = None;
                             state.mode = Mode::Wait;
                         },
                         _ => {},

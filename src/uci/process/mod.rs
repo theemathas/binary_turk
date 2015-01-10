@@ -15,7 +15,7 @@ pub fn process(state: &mut State, cmd: Cmd, output: &Sender<Response>) {
     match cmd {
         Cmd::Debug(val) => {
             state.is_debug = val;
-            state.search_tx.as_mut().map(|tx| { let _ = tx.send(search::Cmd::Stop); } );
+            state.search_tx.as_ref().map(|tx| { let _ = tx.send(search::Cmd::Stop); } );
         },
         Cmd::IsReady => {
             // TODO implement IsReady

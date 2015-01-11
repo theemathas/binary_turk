@@ -4,13 +4,13 @@
 pub struct NumNodes(pub u64);
 
 #[derive(PartialEq, Eq, Copy, Clone, Show)]
-pub struct NumVariations(u16);
+pub struct NumVariations(pub u16);
 
 #[derive(PartialEq, Eq, Copy, Clone, Show)]
-pub struct PerMill(u16);
+pub struct PerMill(pub u16);
 
 #[derive(PartialEq, Eq, Copy, Clone, Show)]
-pub struct NumCpu(u16);
+pub struct NumCpu(pub u16);
 
 #[derive(PartialEq, Eq, Copy, Clone, Show)]
 pub struct NumPlies(pub u16);

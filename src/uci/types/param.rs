@@ -28,8 +28,8 @@ pub enum GoParam {
 
 #[derive(PartialEq, Eq, Clone, Show)]
 pub enum IdParam {
-    Name(String),
-    Author(String),
+    Name(&'static str),
+    Author(&'static str),
 }
 impl fmt::String for IdParam {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -39,6 +39,9 @@ impl fmt::String for IdParam {
         }
     }
 }
+
+pub const ID_DATA: [IdParam; 2] = [IdParam::Name("chess_project"),
+                                   IdParam::Author("Theemathas Chirananthavat")];
 
 #[derive(PartialEq, Eq, Clone, Show)]
 pub enum InfoParam {

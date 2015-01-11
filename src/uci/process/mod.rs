@@ -5,7 +5,7 @@ use std::thread::Thread;
 
 use search;
 
-use super::types::{Cmd, Response};
+use super::types::{Cmd, Response, ID_DATA};
 use super::state::{State, Mode};
 use self::time_start::time_start;
 
@@ -33,9 +33,12 @@ pub fn process(state: &mut State,
             match state.mode {
                 Mode::Init => {
                     if cmd == Cmd::Uci {
-                        // TODO print id/option/uciok
+                        for x in ID_DATA.iter() {
+                            let _ = output.send(Response::Id(x.clone()));
+                        }
+                        // TODO print option list
+                        let _ = output.send(Response::UciOk);
                         state.mode = Mode::Wait;
-                        unimplemented!();
                     }
                 },
                 Mode::Wait => {

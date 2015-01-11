@@ -1,6 +1,8 @@
 #![allow(unstable)]
 
 extern crate time;
+#[macro_use]
+extern crate log;
 
 use std::io;
 

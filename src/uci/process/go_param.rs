@@ -7,7 +7,8 @@ use super::super::types::GoParam;
 use super::super::state::State;
 
 pub fn setup(state: &mut State, mut data: Vec<GoParam>) {
-    let ref mut search_state = state.search_state.as_mut().unwrap();
+    let ref mut search_state = state.search_state.as_mut()
+                                    .expect("invalid search state");
     let ref mut time_data = state.time_data;
     let ref mut param = search_state.param;
     let ref pos = search_state.pos;

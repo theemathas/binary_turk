@@ -48,7 +48,8 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
             },
             Cmd::Stop => {
                 // TODO send info again
-                let _ = tx.send(Response::BestMove(best_move, None));
+                tx.send(Response::BestMove(best_move, None))
+                  .ok().expect("output channel closed");
                 return;
             }
         }

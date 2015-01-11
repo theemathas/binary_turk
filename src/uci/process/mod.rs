@@ -20,10 +20,13 @@ pub fn process(state: &mut State,
     match cmd {
         Cmd::Debug(val) => {
             state.is_debug = val;
-            state.search_tx.as_ref().map(|tx| { let _ = tx.send(search::Cmd::Stop); } );
+            state.search_tx.as_ref().map(|tx| {
+                tx.send(search::Cmd::Stop)
+                  .ok().expect("state.search_tx closed") } );
         },
         Cmd::IsReady => {
-            let _ = output.send(Response::ReadyOk);
+            output.send(Response::ReadyOk)
+                  .ok().expect("output channel closed");
         },
         Cmd::Register(ref param) => {
             // TODO register
@@ -34,10 +37,12 @@ pub fn process(state: &mut State,
                 Mode::Init => {
                     if cmd == Cmd::Uci {
                         for x in ID_DATA.iter() {
-                            let _ = output.send(Response::Id(x.clone()));
+                            output.send(Response::Id(x.clone()))
+                                  .ok().expect("output channel closed");
                         }
                         // TODO print option list
-                        let _ = output.send(Response::UciOk);
+                        output.send(Response::UciOk)
+                              .ok().expect("output channel closed");
                         state.mode = Mode::Wait;
                     }
                 },
@@ -105,14 +110,17 @@ pub fn process(state: &mut State,
                             if !state.search_state.as_ref().unwrap().param.ponder {
                                 return;
                             }
-                            let _ = state.search_tx.as_ref().unwrap().send(search::Cmd::PonderHit);
+                            state.search_tx.as_ref().unwrap().send(search::Cmd::PonderHit)
+                                 .ok().expect("state.search_tx was closed");
                             state.search_state.as_mut().unwrap().param.ponder = false;
                             state.start_move_time = Some(precise_time_ns());
                             time_start(state, cmd_tx.clone());
                         },
                         Cmd::Stop => {
-                            let _ = state.search_tx.as_ref().unwrap().send(search::Cmd::Stop);
-                            let _ = state.search_guard.take().unwrap().join();
+                            state.search_tx.as_ref().unwrap().send(search::Cmd::Stop)
+                                 .ok().expect("state.search_tx was closed");
+                            state.search_guard.take().unwrap().join()
+                                 .ok().expect("search thread is panicking");
                             state.search_tx = None;
                             state.start_search_time = None;
                             state.start_move_time = None;

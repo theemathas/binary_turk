@@ -7,9 +7,9 @@ use super::parse::parse;
 pub fn parse_input(mut input: StdinReader, tx: SyncSender<Cmd>) {
     let mut inbuf = input.lock();
     for x in inbuf.lines() {
-        let s = x.unwrap();
+        let s = x.ok().expect("cannot read input");
         if let Some(cmd) = parse(&*s) {
-            let send_res = tx.send(cmd).unwrap();
+            let send_res = tx.send(cmd).ok().expect("parse_input tx is closed");
         }
     }
 }

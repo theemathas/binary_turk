@@ -1,5 +1,5 @@
 use std::thread::JoinGuard;
-use std::sync::mpsc::Sender;
+use std::sync::mpsc::SyncSender;
 
 use search;
 use timer;
@@ -12,12 +12,12 @@ pub struct State<'a> {
     pub is_debug: bool,
     pub search_state: Option<search::State>,
     pub search_guard: Option<JoinGuard<'a, ()>>,
-    pub search_tx: Option<Sender<search::Cmd>>,
+    pub search_tx: Option<SyncSender<search::Cmd>>,
     pub mode: Mode,
     pub start_search_time: Option<u64>,
     pub start_move_time: Option<u64>,
     pub time_data: Option<timer::Data>,
-    pub time_kill_tx: Option<Sender<()>>,
+    pub time_kill_tx: Option<SyncSender<()>>,
     pub ucinewgame_support: bool,
 }
 impl<'a> State<'a> {

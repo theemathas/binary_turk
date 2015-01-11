@@ -1,6 +1,6 @@
 use time::precise_time_ns;
 
-use std::sync::mpsc::{channel, Sender};
+use std::sync::mpsc::{sync_channel, SyncSender};
 use std::thread::Thread;
 
 use search;
@@ -15,8 +15,8 @@ mod pos;
 
 pub fn process(state: &mut State,
                cmd: Cmd,
-               output: &Sender<Response>,
-               cmd_tx: &Sender<Cmd>) {
+               output: &SyncSender<Response>,
+               cmd_tx: &SyncSender<Cmd>) {
     match cmd {
         Cmd::Debug(val) => {
             state.is_debug = val;
@@ -80,7 +80,7 @@ pub fn process(state: &mut State,
                     assert!(state.search_state.is_some());
                     if let Cmd::Go(param) = cmd {
                         go_param::setup(state, param);
-                        let (search_tx, search_rx) = channel::<search::Cmd>();
+                        let (search_tx, search_rx) = sync_channel::<search::Cmd>(0);
                         let search_state = state.search_state.as_ref().unwrap().clone();
                         let output = output.clone();
                         let temp = Thread::scoped(move ||

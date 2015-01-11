@@ -1,4 +1,4 @@
-use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc::{SyncSender, Receiver};
 use std::time::Duration;
 use std::io::Timer;
 use std::cmp;
@@ -8,7 +8,7 @@ use uci;
 
 use super::types::Data;
 
-pub fn start(data: Data, c: Color, tx: Sender<uci::Cmd>, rx_kill: Receiver<()>) {
+pub fn start(data: Data, c: Color, tx: SyncSender<uci::Cmd>, rx_kill: Receiver<()>) {
     match data {
         Data::Infinite => return,
         Data::Exact(val) => {

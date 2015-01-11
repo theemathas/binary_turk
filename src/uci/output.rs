@@ -4,8 +4,9 @@ use std::sync::mpsc::Receiver;
 
 use super::types::Response;
 
-pub fn format_output(mut output: LineBufferedWriter<StdWriter>, mut rx: Receiver<Response>) {
+pub fn format_output(mut output: LineBufferedWriter<StdWriter>, rx: Receiver<Response>) {
     for x in rx.iter() {
-        // TODO format output
+        writeln!(&mut output, "{}", x).unwrap();
+        output.flush().unwrap();
     }
 }

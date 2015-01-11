@@ -121,10 +121,12 @@ where T: Iterator<Item = &'a str> {
 fn parse_position<'a,T>(words: &mut Peekable<&'a str,T>, is_debug: bool) -> Option<Position>
 where T: Iterator<Item = &'a str> {
     let ans = if words.peek() == Some(&"startpos") {
+        if is_debug { debug!("parse_position() consumed \"startpos\""); }
         words.next();
         Some(start_pos())
     } else {
         let six_words: Vec<_> = words.by_ref().take(6).collect();
+        if is_debug { debug!("parse_position(): six_words = {:?}", six_words); }
         fen_to_position(&*six_words.connect(" ")).ok()
     };
 
@@ -136,9 +138,12 @@ where T: Iterator<Item = &'a str> {
 fn parse_move_vec<'a,T>(words: &mut Peekable<&'a str,T>, is_debug: bool) -> Option<Vec<FromTo>>
 where T: Iterator<Item = &'a str> {
     let mut res = Vec::<FromTo>::new();
+    if is_debug { debug!("parse_move_vec() peeked at {:?}", words.peek()); }
     while let Some(val) = words.peek().and_then(|val| FromStr::from_str(*val)) {
+        if is_debug { debug!("parse_move_vec(): val = {:?}", val) }
         res.push(val);
         words.next();
+        if is_debug { debug!("parse_move_vec() peeked at {:?}", words.peek()); }
     }
     let ans = if res.is_empty() { None } else { Some(res) };
 

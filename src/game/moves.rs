@@ -63,18 +63,16 @@ impl Move {
 impl fmt::String for Move {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "{}{}", self.from, self.to));
-        match self.promote() {
-            Some(val) => {
-                write!(f, "{}", match val {
-                    Queen  => 'q',
-                    Bishop => 'b',
-                    Knight => 'n',
-                    Rook   => 'r',
-                    _ => return Err(fmt::Error),
-                })
-            }
-            None => Ok(())
+        if let Some(val) = self.promote() {
+            try!(write!(f, "{}", match val {
+                Queen  => 'q',
+                Bishop => 'b',
+                Knight => 'n',
+                Rook   => 'r',
+                _ => return Err(fmt::Error),
+            }))
         }
+        Ok(())
     }
 }
 

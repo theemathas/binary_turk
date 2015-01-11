@@ -29,11 +29,21 @@ pub fn parse(s: &str, is_debug: &mut bool) -> Option<Cmd> {
             "ucinewgame" => Some(Cmd::UciNewGame),
             "position" => {
                 let temp = parse_position(&mut words, *is_debug);
-                temp.and_then(|pos_opt| {
-                    match parse_move_vec(&mut words, *is_debug) {
-                        Some(moves) => Some(Cmd::SetupPosition(pos_opt, moves)),
-                        None => None,
+                temp.map(|pos| {
+                    // consume everything up to and including "words"
+                    let mut curr_word = words.next();
+                    while let Some(val) = curr_word {
+                        if val == "moves" { break; }
+                        curr_word = words.next();
                     }
+
+                    // Attempt to parse the moves
+                    let moves = match parse_move_vec(&mut words, *is_debug) {
+                        Some(val) => val,
+                        None => Vec::new(),
+                    };
+
+                    Cmd::SetupPosition(pos, moves)
                 })
             },
             "go" => parse_go_param_vec(&mut words, *is_debug).map(|val| Cmd::Go(val)),

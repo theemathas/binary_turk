@@ -9,10 +9,7 @@ pub fn parse_input(mut input: StdinReader, tx: SyncSender<Cmd>) {
     for x in inbuf.lines() {
         let s = x.unwrap();
         if let Some(cmd) = parse(&*s) {
-            let send_res = tx.send(cmd);
-            if send_res.is_err() {
-                return;
-            }
+            let send_res = tx.send(cmd).unwrap();
         }
     }
 }

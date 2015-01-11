@@ -44,10 +44,10 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
         match cmd {
             Cmd::SetDebug(val) => is_debug = val,
             Cmd::PonderHit => {
-                // TODO Report unexpected message.
-                unimplemented!();
+                // Ignore this cmd
             },
             Cmd::Stop => {
+                // TODO send info again
                 let _ = tx.send(Response::BestMove(best_move, None));
                 return;
             }

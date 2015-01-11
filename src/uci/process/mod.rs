@@ -19,6 +19,7 @@ pub fn process(state: &mut State,
                cmd_tx: &SyncSender<Cmd>) {
     match cmd {
         Cmd::Debug(val) => {
+            debug!("debug is now {:?}", val);
             state.is_debug = val;
             state.search_tx.as_ref().map(|tx| {
                 tx.send(search::Cmd::Stop)

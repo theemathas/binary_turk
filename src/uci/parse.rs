@@ -7,7 +7,7 @@ use super::types::{Cmd, RegisterParam, GoParam};
 use super::types::options;
 use types::{NumNodes, NumPlies, NumMoves};
 
-pub fn parse(s: &str) -> Option<Cmd> {
+pub fn parse(s: &str, is_debug: &mut bool) -> Option<Cmd> {
     let mut words = s.words().peekable();
 
     let mut cmd_val: Option<Cmd> = None;
@@ -21,22 +21,22 @@ pub fn parse(s: &str) -> Option<Cmd> {
 
         cmd_val = match next_word {
             "uci" => Some(Cmd::Uci),
-            "debug" => parse_on_off(&mut words).map(|val| Cmd::Debug(val)),
+            "debug" => parse_on_off(&mut words, *is_debug).map(|val| Cmd::Debug(val)),
             "isready" => Some(Cmd::IsReady),
-            "setoption" => parse_option_val(&mut words)
+            "setoption" => parse_option_val(&mut words, *is_debug)
                            .map(|(name, val)| Cmd::SetOption(name, Some(val))),
-            "register" => parse_register_vec(&mut words).map(|val| Cmd::Register(val)),
+            "register" => parse_register_vec(&mut words, *is_debug).map(|val| Cmd::Register(val)),
             "ucinewgame" => Some(Cmd::UciNewGame),
             "position" => {
-                let temp = parse_position(&mut words);
+                let temp = parse_position(&mut words, *is_debug);
                 temp.and_then(|pos_opt| {
-                    match parse_move_vec(&mut words) {
+                    match parse_move_vec(&mut words, *is_debug) {
                         Some(moves) => Some(Cmd::SetupPosition(pos_opt, moves)),
                         None => None,
                     }
                 })
             },
-            "go" => parse_go_param_vec(&mut words).map(|val| Cmd::Go(val)),
+            "go" => parse_go_param_vec(&mut words, *is_debug).map(|val| Cmd::Go(val)),
             "stop" => Some(Cmd::Stop),
             "ponderhit" => Some(Cmd::PonderHit),
             "quit" => Some(Cmd::Quit),
@@ -44,10 +44,17 @@ pub fn parse(s: &str) -> Option<Cmd> {
         }
     }
 
+    if let Some(Cmd::Debug(x)) = cmd_val {
+        *is_debug = x;
+        debug!("debug is now {:?}", is_debug);
+    }
+
+    if *is_debug { debug!("parse() returning {:?}", cmd_val); }
+
     cmd_val
 }
 
-fn parse_on_off(words: &mut Iterator<Item = &str>) -> Option<bool> {
+fn parse_on_off(words: &mut Iterator<Item = &str>, is_debug: bool) -> Option<bool> {
     let mut ans = None;
     while ans.is_none() {
         let next_word_opt = words.next();
@@ -61,16 +68,20 @@ fn parse_on_off(words: &mut Iterator<Item = &str>) -> Option<bool> {
             _ => None,
         }
     }
+
+    if is_debug { debug!("parse_on_off() returning {:?}", ans); }
+
     ans
 }
 
-fn parse_option_val<'a,T>(words: &mut T) -> Option<options::NameAndVal>
+fn parse_option_val<'a,T>(words: &mut T, is_debug: bool) -> Option<options::NameAndVal>
 where T: Iterator<Item = &'a str> {
+    if is_debug { debug!("dummy option parsing"); }
     // TODO parse options.
     Some((options::Name::Dummy, options::Val::Spin(1)))
 }
 
-fn parse_register_vec<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Vec<RegisterParam>>
+fn parse_register_vec<'a,T>(words: &mut Peekable<&'a str,T>, is_debug: bool) -> Option<Vec<RegisterParam>>
 where T: Iterator<Item = &'a str> {
     let mut res = Vec::<RegisterParam>::new();
     while let Some(next_word) = words.next() {
@@ -100,35 +111,48 @@ where T: Iterator<Item = &'a str> {
             res.push(val);
         }
     }
-    if res.is_empty() { None } else { Some(res) }
+    let ans = if res.is_empty() { None } else { Some(res) };
+
+    if is_debug { debug!("parse_register_vec() returning {:?}", ans); }
+
+    ans
 }
 
-fn parse_position<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Position>
+fn parse_position<'a,T>(words: &mut Peekable<&'a str,T>, is_debug: bool) -> Option<Position>
 where T: Iterator<Item = &'a str> {
-    if words.peek() == Some(&"startpos") {
+    let ans = if words.peek() == Some(&"startpos") {
         words.next();
-        return Some(start_pos());
-    }
-    let six_words: Vec<_> = words.by_ref().take(6).collect();
-    fen_to_position(&*six_words.connect(" ")).ok()
+        Some(start_pos())
+    } else {
+        let six_words: Vec<_> = words.by_ref().take(6).collect();
+        fen_to_position(&*six_words.connect(" ")).ok()
+    };
+
+    if is_debug { debug!("parse_position() returning {:?}", ans); }
+
+    ans
 }
 
-fn parse_move_vec<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Vec<FromTo>>
+fn parse_move_vec<'a,T>(words: &mut Peekable<&'a str,T>, is_debug: bool) -> Option<Vec<FromTo>>
 where T: Iterator<Item = &'a str> {
     let mut res = Vec::<FromTo>::new();
     while let Some(val) = words.peek().and_then(|val| FromStr::from_str(*val)) {
         res.push(val);
         words.next();
     }
-    if res.is_empty() { None } else { Some(res) }
+    let ans = if res.is_empty() { None } else { Some(res) };
+
+    if is_debug { debug!("parse_move_vec() returning {:?}", ans); }
+
+    ans
 }
 
-fn parse_go_param_vec<'a,T>(words: &mut Peekable<&'a str,T>) -> Option<Vec<GoParam>>
+fn parse_go_param_vec<'a,T>(words: &mut Peekable<&'a str,T>, is_debug: bool) -> Option<Vec<GoParam>>
 where T: Iterator<Item = &'a str> {
     let mut res = Vec::<GoParam>::new();
     while let Some(next_word) = words.next() {
         match next_word {
-            "search moves" => parse_move_vec(words).map(|x| GoParam::SearchMoves(x)),
+            "search moves" => parse_move_vec(words, is_debug).map(|x| GoParam::SearchMoves(x)),
             "ponder" => Some(GoParam::Ponder),
             "wtime"     => words.next().and_then(|s| s.parse::<i64>())
                                        .map(|x| GoParam::Time(White,Duration::milliseconds(x))),
@@ -152,5 +176,9 @@ where T: Iterator<Item = &'a str> {
             _ => None,
         }.map(|val| res.push(val));
     }
-    if res.is_empty() { None } else { Some(res) }
+    let ans = if res.is_empty() { None } else { Some(res) };
+
+    if is_debug { debug!("parse_go_param_vec() returning {:?}", ans); }
+
+    ans
 }

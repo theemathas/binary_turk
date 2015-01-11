@@ -3,6 +3,7 @@
 #![allow(dead_code)]
 
 use std::iter::AdditiveIterator;
+use std::fmt;
 
 use types::NumMoves;
 
@@ -13,6 +14,8 @@ use super::game::{is_checkmated, is_stalemated};
 pub use self::Result::{Score, WinIn, LoseIn, Draw};
 
 type ScoreUnit = i32;
+
+const CENTIPAWNS_PER_UNIT: i32 = 1;
 
 /// An assessment of the position.
 #[derive(PartialEq, Eq, Copy, Clone, Show)]
@@ -29,6 +32,16 @@ pub enum Result {
     // WinIn(NumMoves(1)): Will be immediately checkmated after any move.
     LoseIn(NumMoves),
     Draw,
+}
+impl fmt::String for Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Result::Score(val)   => write!(f, "cp {}", val * CENTIPAWNS_PER_UNIT),
+            Result::WinIn(val)   => write!(f, "mate {}", val.0 as i32),
+            Result::LoseIn(val)  => write!(f, "mate {}", (val.0 as i32) * -1),
+            Result::Draw         => write!(f, "cp {}", 0),
+        }
+    }
 }
 
 /// Evaluates the position without searching.

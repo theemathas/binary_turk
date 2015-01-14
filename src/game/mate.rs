@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use super::moves::Move;
 use super::pos::Position;
 use super::legal;

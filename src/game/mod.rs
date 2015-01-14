@@ -1,7 +1,5 @@
 //! This module is for everything about the rules of chess.
 
-#![allow(dead_code)]
-
 pub use self::color::{Color, White, Black};
 pub use self::piece::Piece;
 pub use self::piece::Type as PieceType;

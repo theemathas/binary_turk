@@ -84,7 +84,7 @@ fn parse_on_off(words: &mut Iterator<Item = &str>, is_debug: bool) -> Option<boo
     ans
 }
 
-fn parse_option_val<'a,T>(words: &mut T, is_debug: bool) -> Option<options::NameAndVal>
+fn parse_option_val<'a,T>(_words: &mut Peekable<&'a str,T>, is_debug: bool) -> Option<options::NameAndVal>
 where T: Iterator<Item = &'a str> {
     if is_debug { debug!("dummy option parsing"); }
     // TODO parse options.

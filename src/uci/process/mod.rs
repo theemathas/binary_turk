@@ -29,7 +29,7 @@ pub fn process(state: &mut State,
             output.send(Response::ReadyOk)
                   .ok().expect("output channel closed");
         },
-        Cmd::Register(ref param) => {
+        Cmd::Register(..) => {
             // TODO register
             unimplemented!();
         },
@@ -49,7 +49,7 @@ pub fn process(state: &mut State,
                 },
                 Mode::Wait => {
                     match cmd {
-                        Cmd::SetOption(ref name, ref val_opt) => {
+                        Cmd::SetOption(..) => {
                             // TODO maybe initialize
                             // TODO set options
                             unimplemented!();

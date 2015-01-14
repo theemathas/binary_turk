@@ -52,7 +52,7 @@ impl fmt::String for Response {
                 for x in params.iter() { try!(write!(f, " {}", x)) }
                 Ok(())
             },
-            Response::ShowOption(name, ref default, ref info) => {
+            Response::ShowOption(..) => {
                 // TODO implement fmt::String for Response::ShowOption
                 unimplemented!()
             },

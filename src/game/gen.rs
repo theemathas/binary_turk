@@ -71,12 +71,12 @@ fn gen_move_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
 }
 
 // (file, rank)
-type Diff = (i8, i8);
+type Diff = (i32, i32);
 
 fn shift(s: Square, dir: Diff) -> Option<Square> {
     let (dx, dy) = dir;
     let (File(file), Rank(rank)) = s.to_tuple();
-    Square::from_i8(file as i8 + dx, rank as i8 + dy)
+    Square::from_i32(file + dx, rank + dy)
 }
 
 fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
@@ -158,9 +158,9 @@ fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
     let piece_color = piece_id.color();
     let from_rank = from.rank().0;
     //rank_up is the 1-based rank from the piece-owner's side.
-    let (dy, rank_up): (i8, u8) = match piece_color {
-        White => ( 1, 1u8 + from_rank ),
-        Black => (-1, 8u8 - from_rank ),
+    let (dy, rank_up): (i32, i32) = match piece_color {
+        White => ( 1, 1 + from_rank ),
+        Black => (-1, 8 - from_rank ),
     };
     let move_dir: Diff = (0, dy);
     let to: Square = shift(from, move_dir).unwrap();

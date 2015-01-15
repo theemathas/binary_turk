@@ -5,36 +5,38 @@ use std::fmt;
 
 // File and Rank are 0-based.
 #[derive(PartialEq, Eq, Copy, Clone, Show)]
-pub struct File(pub u8);
+pub struct File(pub i32);
 impl FromStr for File {
     fn from_str(s: &str) -> Option<File> {
         if s.len() != 1 { return None; }
         match s.as_bytes()[0] {
-            ch @ b'a' ... b'h' => Some(File(ch - b'a')),
+            ch @ b'a' ... b'h' => Some(File((ch - b'a') as i32)),
             _ => None,
         }
     }
 }
 impl fmt::String for File {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,"{}",(b'a' + self.0) as char)
+		debug_assert!(self.0 >= 0 && self.0 < 8);
+        write!(f,"{}",(self.0 as u8 + b'a') as char)
     }
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, Show)]
-pub struct Rank(pub u8);
+pub struct Rank(pub i32);
 impl FromStr for Rank {
     fn from_str(s: &str) -> Option<Rank> {
         if s.len() != 1 { return None; }
         match s.as_bytes()[0] {
-            ch @ b'1' ... b'8' => Some(Rank(ch - b'1')),
+            ch @ b'1' ... b'8' => Some(Rank((ch - b'1') as i32)),
             _ => None,
         }
     }
 }
 impl fmt::String for Rank {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,"{}",(b'1' + self.0) as char)
+		debug_assert!(self.0 >= 0 && self.0 < 8);
+        write!(f,"{}",(self.0 as u8 + b'1') as char)
     }
 }
 
@@ -56,19 +58,19 @@ impl Square {
         let Square(f, r) = self;
         (f, r)
     }
-    pub fn from_i8(file: i8, rank: i8) -> Option<Square> {
+    pub fn from_i32(file: i32, rank: i32) -> Option<Square> {
         if file>=0 && file<8 && rank>=0 && rank<8 {
-            Some(Square(File(file as u8), Rank(rank as u8)))
+            Some(Square(File(file), Rank(rank)))
         } else {
             None
         }
     }
 
-    pub fn to_id(&self) -> u8 {
+    pub fn to_id(&self) -> i32 {
         let (File(f), Rank(r)) = self.to_tuple();
         f*8 + r
     }
-    pub fn from_id(val: u8) -> Square {
+    pub fn from_id(val: i32) -> Square {
         let (f, r) = (val/8, val%8);
         Square::new(File(f),Rank(r))
     }

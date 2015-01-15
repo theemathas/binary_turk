@@ -22,7 +22,7 @@ impl BitBoard {
     pub fn remove_at(&mut self, s: Square) { self.0.remove(&(s.to_id() as usize)); }
 
     pub fn iter(&self) -> Map< usize, Square, bitv_set::Iter, fn(usize)->Square > {
-        fn map_fn(x: usize) -> Square { Square::from_id(x as u8) };
+        fn map_fn(x: usize) -> Square { Square::from_id(x as i32) };
         self.0.iter().map( map_fn as fn(usize)->Square )
     }
 }

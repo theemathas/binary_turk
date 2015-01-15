@@ -177,13 +177,13 @@ where T: Iterator<Item = &'a str> {
                                        .map(|x| GoParam::IncTime(White,Duration::milliseconds(x))),
             "binc"      => words.next().and_then(|s| s.parse::<i64>())
                                        .map(|x| GoParam::IncTime(Black,Duration::milliseconds(x))),
-            "movestogo" => words.next().and_then(|s| s.parse::<u16>())
+            "movestogo" => words.next().and_then(|s| s.parse::<u32>())
                                        .map(|x| GoParam::MovesToGo(NumMoves(x))),
-            "depth"     => words.next().and_then(|s| s.parse::<u16>())
+            "depth"     => words.next().and_then(|s| s.parse::<u32>())
                                        .map(|x| GoParam::Depth(NumPlies(x))),
             "nodes"     => words.next().and_then(|s| s.parse::<u64>())
                                        .map(|x| GoParam::Nodes(NumNodes(x))),
-            "mate"      => words.next().and_then(|s| s.parse::<u16>())
+            "mate"      => words.next().and_then(|s| s.parse::<u32>())
                                        .map(|x| GoParam::Mate(NumMoves(x))),
             "movetime"  => words.next().and_then(|s| s.parse::<i64>())
                                        .map(|x| GoParam::MoveTime(Duration::milliseconds(x))),

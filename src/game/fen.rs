@@ -78,9 +78,9 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
     pos.set_castle(Queenside, Color::Black, castle.char_at(3) == 'q');
     let en_passant_char = fields[3].char_at(0);
     if en_passant_char != '-' {
-        pos.set_en_passant(Some(File(en_passant_char as u8 - 'a' as u8)));
+        pos.set_en_passant(Some(File((en_passant_char as u8 - b'a') as i32)));
     }
-    match fields[4].parse::<u16>() {
+    match fields[4].parse::<u32>() {
         None => return Err("Invalid number of plies."),
         Some(val) => pos.set_ply_count(NumPlies(val)),
     }

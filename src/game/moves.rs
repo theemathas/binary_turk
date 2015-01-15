@@ -103,7 +103,7 @@ impl FromTo {
             Some(Pawn) => {
                 if !ans.is_capture() && self.from.file() != self.to.file() {
                     ans.set_en_passant(true);
-                } else if ((self.from.rank().0 as i8) - (self.to.rank().0 as i8)).abs() != 1 {
+                } else if ((self.from.rank().0) - (self.to.rank().0)).abs() != 1 {
                     ans.set_pawn_double_move(true);
                 }
             },

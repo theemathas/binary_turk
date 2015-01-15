@@ -25,7 +25,7 @@ fn perf_fen(fen_str: &str, res: &[u64]) {
 
 fn perf_pos(p: &Position, res: &[u64]) {
     for (num_plies, expect_num_from_pos) in res.iter().enumerate() {
-        assert_eq!(*expect_num_from_pos, num_from_pos(p, NumPlies(num_plies as u16)));
+        assert_eq!(*expect_num_from_pos, num_from_pos(p, NumPlies(num_plies as u32)));
     }
 }
 

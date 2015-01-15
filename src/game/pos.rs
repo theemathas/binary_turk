@@ -8,23 +8,31 @@ use super::square::{File,Square};
 use super::board::{self,Board};
 use super::castle::{self,CastlingData,Side};
 
+/// Data required to unmake moves
+#[derive(PartialEq, Eq, Clone, Show)]
+pub struct ExtraData {
+    castling: CastlingData,
+    en_passant: Option<File>,
+    ply_count: NumPlies,
+}
+
 /// A complete representation of a chess position.
 #[derive(PartialEq, Eq, Clone, Show)]
 pub struct Position {
     data: Board,
     side_to_move: Color,
-    castling: CastlingData,
-    en_passant: Option<File>,
-    ply_count: NumPlies,
+    extra_data: ExtraData,
 }
 impl Position {
     pub fn new() -> Position {
         Position {
             data: Board::new(),
             side_to_move: Color::White,
-            castling: CastlingData::new(),
-            en_passant: None,
-            ply_count: NumPlies(0),
+            extra_data: ExtraData {
+                castling: CastlingData::new(),
+                en_passant: None,
+                ply_count: NumPlies(0),
+            },
         }
     }
 
@@ -67,7 +75,7 @@ impl Position {
     }
 
     pub fn can_castle(&self, side: Side, c: Color) -> bool {
-        self.castling.get(side, c)
+        self.extra_data.castling.get(side, c)
     }
     // Does not check for castling out of check, through check, or into check.
     pub fn can_castle_now(&self, side: Side, c: Color) -> bool {
@@ -75,20 +83,28 @@ impl Position {
             castle::require_empty_squares(side, c).iter().all( |x| self.is_empty_at(*x) )
     }
     pub fn set_castle(&mut self, side:Side, c:Color, val: bool) {
-        self.castling.set(side, c, val);
+        self.extra_data.castling.set(side, c, val);
     }
 
     pub fn en_passant(&self) -> Option<File> {
-        self.en_passant
+        self.extra_data.en_passant
     }
     pub fn set_en_passant(&mut self, val: Option<File>) {
-        self.en_passant = val;
+        self.extra_data.en_passant = val;
     }
 
     pub fn ply_count(&self) -> NumPlies {
-        self.ply_count
+        self.extra_data.ply_count
     }
     pub fn set_ply_count(&mut self, val: NumPlies) {
-        self.ply_count = val;
+        self.extra_data.ply_count = val;
+    }
+
+    pub fn extra_data(&self) -> &ExtraData {
+        &self.extra_data
+    }
+    pub fn set_extra_data(&mut self, val: ExtraData) {
+        self.extra_data = val;
     }
 }
+

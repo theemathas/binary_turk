@@ -4,7 +4,7 @@ use std::str::FromStr;
 use std::fmt;
 use std::num::SignedInt;
 
-use super::piece::{self, Queen, Bishop, Knight, Rook, King, Pawn};
+use super::piece::{self, Piece, Queen, Bishop, Knight, Rook, King, Pawn};
 use super::square::{Square, File};
 use super::castle::{Side, Kingside, Queenside};
 use super::pos::Position;
@@ -13,7 +13,7 @@ use super::pos::Position;
 pub struct Move {
     from: Square,
     to: Square,
-    is_capture: bool,
+	capture_normal: Option<Piece>,
     castle: Option<Side>,
     is_en_passant: bool,
     promote: Option<piece::Type>,
@@ -24,7 +24,7 @@ impl Move {
         Move {
             from: from,
             to: to,
-            is_capture: false,
+            capture_normal: None,
             castle: None,
             is_en_passant: false,
             promote: None,
@@ -35,9 +35,9 @@ impl Move {
     pub fn from(&self) -> Square { self.from }
     pub fn to(&self) -> Square { self.to }
 
-    pub fn is_capture(&self) -> bool { self.is_capture }
-    pub fn set_capture(&mut self, val: bool) {
-        self.is_capture = val;
+    pub fn capture_normal(&self) -> Option<Piece> { self.capture_normal }
+    pub fn set_capture_normal(&mut self, val: Option<Piece>) {
+        self.capture_normal = val;
     }
 
     pub fn castle(&self) -> Option<Side> { self.castle }
@@ -90,7 +90,7 @@ impl FromTo {
         let mut ans = Move::new(self.from, self.to);
         ans.set_promote(self.promote);
         if !pos.is_empty_at(self.to) {
-            ans.set_capture(true);
+            ans.set_capture_normal(pos.at(self.to));
         }
         match pos.at(self.to).map(|x| x.piece_type()) {
             Some(King) => {
@@ -101,7 +101,7 @@ impl FromTo {
                 }
             },
             Some(Pawn) => {
-                if !ans.is_capture() && self.from.file() != self.to.file() {
+                if self.from.file() != self.to.file() {
                     ans.set_en_passant(true);
                 } else if ((self.from.rank().0) - (self.to.rank().0)).abs() != 1 {
                     ans.set_pawn_double_move(true);

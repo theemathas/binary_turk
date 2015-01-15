@@ -12,7 +12,7 @@ pub fn make_move(p: &mut Position, m: &Move) {
     let to = m.to();
     let curr_piece = p.at(from).unwrap();
 
-    if m.is_capture() || m.is_en_passant() || curr_piece.piece_type() == Pawn {
+    if m.capture_normal().is_some() || m.is_en_passant() || curr_piece.piece_type() == Pawn {
         p.set_ply_count(NumPlies(0));
     } else {
         let NumPlies(temp) = p.ply_count();
@@ -65,8 +65,7 @@ pub fn make_move(p: &mut Position, m: &Move) {
         p.set_en_passant(None);
 
         //change the board and promote
-        if m.is_capture() {
-            let captured_piece = p.at(to).unwrap();
+        if let Some(captured_piece) = m.capture_normal() {
             p.remove_at(to, captured_piece);
         }
         p.remove_at(from, curr_piece);
@@ -80,8 +79,7 @@ pub fn make_move(p: &mut Position, m: &Move) {
         }
         
         //change the board
-        if m.is_capture() {
-            let captured_piece = p.at(to).unwrap();
+        if let Some(captured_piece) = m.capture_normal() {
             p.remove_at(to, captured_piece);
         }
         p.remove_at(from, curr_piece);

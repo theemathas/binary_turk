@@ -108,7 +108,7 @@ fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<
             //if there is an enemy at the destination
             if p.is_color_at(to, piece_color.invert()) {
                 let mut curr_move = Move::new(from, to);
-                curr_move.set_capture(true);
+                curr_move.set_capture_normal(p.at(to));
                 send!(tx, curr_move);
             }
         }
@@ -145,7 +145,7 @@ fn gen_fixed_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<M
             };
             if is_valid {
                 let mut curr_move = Move::new(from, to);
-                curr_move.set_capture(is_capture);
+				if is_capture { curr_move.set_capture_normal(p.at(to)); }
                 send!(tx, curr_move);
             }
         }
@@ -202,13 +202,13 @@ fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
             if rank_up == 7 {
                 for new_piece in [Queen, Knight, Rook, Bishop].iter() {
                     let mut curr_move = Move::new(from, capture_to);
-                    curr_move.set_capture(true);
+                    curr_move.set_capture_normal(Some(Piece::new(piece_color, *new_piece)));
                     curr_move.set_promote(Some(*new_piece));
                     send!(tx, curr_move);
                 }
             } else {
                 let mut curr_move = Move::new(from, capture_to);
-                curr_move.set_capture(true);
+                curr_move.set_capture_normal(p.at(capture_to));
                 send!(tx, curr_move);
             }
         }

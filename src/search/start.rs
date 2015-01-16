@@ -1,9 +1,12 @@
-use std::sync::mpsc::{SyncSender, Receiver};
+use std::sync::mpsc::{SyncSender, Receiver, Sender, channel};
+use std::thread::Thread;
 
 use uci::Response;
-use game::{Move,receive_legal};
+use game::{Move, Position, receive_legal, make_move};
+use types::NumPlies;
 
 use super::types::{State, Cmd};
+use super::negamax::{self, negamax};
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     let mut is_debug = false;
@@ -33,40 +36,68 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
         }
         if is_debug { debug!("pondering finished") }
     }
+
     let legal_moves_chan = receive_legal(state.pos.clone());
     let legal_moves = legal_moves_chan.iter();
     let search_moves: Vec<Move> = match state.param.search_moves {
         None => legal_moves.collect(),
-        Some(val) => legal_moves.filter(|x| val.contains(x)).collect(),
+        Some(ref val) => legal_moves.filter(|x| val.contains(x)).collect(),
     };
     if search_moves.is_empty() {
         panic!("No legal moves searched in searched position");
     }
-    // TODO Actually find the best move. (Currently any move.)
-    let best_move = search_moves[0].clone();
-    if is_debug {
-        debug!("best move is {:?}", best_move);
-        debug!("waiting for next command");
-    }
-    // TODO send info
-    for cmd in rx.iter() {
-        match cmd {
-            Cmd::SetDebug(val) => {
-                is_debug = val;
-                debug!("debug is now {:?}", val);
+
+    let search_pos: Vec<Position> = {
+        search_moves.iter().map(|x: &Move| {
+            let mut new_pos = state.pos.clone();
+            make_move(&mut new_pos, x);
+            new_pos
+        }).collect()
+    };
+
+    let mut best_move = search_moves[0].clone();
+
+    let (search_tx, mut search_rx) = channel::<negamax::Result>();
+    let (mut kill_tx, kill_rx) = channel::<()>();
+    Thread::spawn(move || depth_limited_search(&*search_pos, NumPlies(1), search_tx, kill_rx));
+
+    loop {
+        select! {
+            val = rx.recv() => {
+                let cmd = val.ok().expect("Sender hung up while calculating");
+                match cmd {
+                    Cmd::SetDebug(val) => {
+                        is_debug = val;
+                        debug!("debug is now {:?}", val);
+                    },
+                    Cmd::PonderHit => {
+                        if is_debug { debug!("ponder hit when not pondering (ignored)") }
+                        // Ignore this cmd
+                    },
+                    Cmd::Stop => {
+                        let _ = kill_tx.send(());
+                        if is_debug { debug!("stop search") }
+                        // TODO send info again
+                        tx.send(Response::BestMove(best_move, None))
+                          .ok().expect("output channel closed");
+                        return;
+                    }
+                }
             },
-            Cmd::PonderHit => {
-                if is_debug { debug!("ponder hit when not pondering (ignored)") }
-                // Ignore this cmd
-            },
-            Cmd::Stop => {
-                if is_debug { debug!("stop search") }
-                // TODO send info again
-                tx.send(Response::BestMove(best_move, None))
-                  .ok().expect("output channel closed");
-                return;
+            search_res = search_rx.recv() => {
+                // TODO use search_res
+                // TODO send info
+                // TODO do next iteration of depth limited search
+                unimplemented!()
             }
         }
     }
-    panic!("Sender hung up while calculating");
+}
+
+fn depth_limited_search(search_pos: &[Position],
+                        depth: NumPlies,
+                        tx: Sender<negamax::Result>,
+                        kill_rx: Receiver<()>) {
+    // TODO call negamax() for each Position
+    unimplemented!()
 }

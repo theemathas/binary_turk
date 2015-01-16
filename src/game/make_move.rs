@@ -4,7 +4,7 @@ use super::color::{White, Black};
 use super::piece::{Piece, WK, WR, BK, BR, Pawn};
 use super::square::{Square,File,Rank};
 use super::moves::Move;
-use super::pos::Position;
+use super::pos::{self, Position};
 use super::castle::{Kingside,Queenside};
 
 pub fn make_move(p: &mut Position, m: &Move) {
@@ -98,5 +98,57 @@ pub fn make_move(p: &mut Position, m: &Move) {
         p.set_castle(Kingside , Black, false);
     }
 
+    p.swap_side_to_move();
+}
+
+pub fn unmake_move(p: &mut Position, m: &Move, extra_data: pos::ExtraData) {
+    let from = m.from();
+    let to = m.to();
+    let curr_piece = p.at(to).unwrap();
+    let curr_color = p.side_to_move().invert();
+
+    if let Some(castle_side) = m.castle() {
+
+        let (rook_from, rook_to) = match (curr_color, castle_side) {
+            (White, Kingside ) => (Square::new(File(7),Rank(0)), Square::new(File(5),Rank(0))),
+            (White, Queenside) => (Square::new(File(0),Rank(0)), Square::new(File(3),Rank(0))),
+            (Black, Kingside ) => (Square::new(File(7),Rank(7)), Square::new(File(5),Rank(7))),
+            (Black, Queenside) => (Square::new(File(0),Rank(7)), Square::new(File(3),Rank(7))),
+        };
+
+        p.remove_at(to, curr_piece);
+        p.set_at(from, curr_piece);
+        let curr_rook = p.at(rook_to).unwrap();
+        p.remove_at(rook_to, curr_rook);
+        p.set_at(rook_from, curr_rook);
+
+    } else if m.is_en_passant() {
+
+        let captured = Square::new(to.file(), from.rank());
+        let captured_piece = Piece::new(curr_color.invert(), Pawn);
+
+        p.set_at(captured, captured_piece);
+        p.remove_at(to, curr_piece);
+        p.set_at(from, curr_piece);
+
+    } else if let Some(promote_piece) = m.promote() {
+
+        p.remove_at(to, Piece::new(curr_color, promote_piece));
+        p.set_at(to, curr_piece);
+        if let Some(captured_piece) = m.capture_normal() {
+            p.set_at(to, captured_piece);
+        }
+
+    } else {
+
+        p.remove_at(to, curr_piece);
+        p.set_at(from, curr_piece);
+        if let Some(captured_piece) = m.capture_normal() {
+            p.set_at(to, captured_piece);
+        }
+
+    }
+
+    p.set_extra_data(extra_data);
     p.swap_side_to_move();
 }

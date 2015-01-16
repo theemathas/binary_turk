@@ -4,6 +4,7 @@
 
 use std::iter::AdditiveIterator;
 use std::fmt;
+use std::cmp::Ordering;
 
 use types::NumMoves;
 
@@ -32,6 +33,15 @@ pub enum Result {
     // WinIn(NumMoves(1)): Will be immediately checkmated after any move.
     LoseIn(NumMoves),
 }
+impl Result {
+    pub fn increment(self) -> Result {
+        match self {
+            Score(val) => Score(-val),
+            WinIn(val) => LoseIn(val),
+            LoseIn(val) => WinIn(NumMoves(val.0+1)),
+        }
+    }
+}
 impl fmt::String for Result {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
@@ -39,6 +49,30 @@ impl fmt::String for Result {
             Result::WinIn(val)   => write!(f, "mate {}", val.0 as i32),
             Result::LoseIn(val)  => write!(f, "mate {}", (val.0 as i32) * -1),
         }
+    }
+}
+impl Ord for Result {
+    fn cmp(&self, other: &Result) -> Ordering {
+        match *self {
+            WinIn(val1) => match *other {
+                WinIn(val2) => val2.cmp(&val1),
+                _ => Ordering::Greater,
+            },
+            LoseIn(val1) => match *other {
+                LoseIn(val2) => val1.cmp(&val2),
+                _ => Ordering::Less,
+            },
+            Score(val1) => match *other {
+                WinIn(_) => Ordering::Less,
+                LoseIn(_) => Ordering::Greater,
+                Score(val2) => val1.cmp(&val2),
+            },
+        }
+    }
+}
+impl PartialOrd for Result {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 

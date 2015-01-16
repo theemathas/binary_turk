@@ -22,7 +22,7 @@ mod moves;
 mod bitboard;
 mod board;
 mod castle;
-mod pos;
+pub mod pos;
 
 mod fen;
 mod gen;

@@ -11,6 +11,7 @@ pub fn make_move(p: &mut Position, m: &Move) {
     let from = m.from();
     let to = m.to();
     let curr_piece = p.at(from).unwrap();
+    let curr_color = p.side_to_move();
 
     if m.capture_normal().is_some() || m.is_en_passant() || curr_piece.piece_type() == Pawn {
         p.set_ply_count(NumPlies(0));
@@ -19,23 +20,12 @@ pub fn make_move(p: &mut Position, m: &Move) {
         p.set_ply_count(NumPlies(temp+1));
     }
 
-    if m.castle().is_some() {
+    if let Some(castle_side) = m.castle() {
 
         //no en passant
         p.set_en_passant(None);
 
-        let castle_color = match from.rank() {
-            Rank(0) => White,
-            Rank(7) => Black,
-            _ => panic!(),
-        };
-        let castle_side = match to.file() {
-            File(2) => Queenside,
-            File(6) => Kingside,
-            _ => panic!(),
-        };
-
-        let (rook_from, rook_to) = match (castle_color, castle_side) {
+        let (rook_from, rook_to) = match (curr_color, castle_side) {
             (White, Kingside ) => (Square::new(File(7),Rank(0)), Square::new(File(5),Rank(0))),
             (White, Queenside) => (Square::new(File(0),Rank(0)), Square::new(File(3),Rank(0))),
             (Black, Kingside ) => (Square::new(File(7),Rank(7)), Square::new(File(5),Rank(7))),
@@ -60,7 +50,7 @@ pub fn make_move(p: &mut Position, m: &Move) {
         p.remove_at(from, curr_piece);
         p.set_at(to, curr_piece);
 
-    } else if m.promote().is_some() {
+    } else if let Some(promote_piece) = m.promote() {
         //no en passant
         p.set_en_passant(None);
 
@@ -69,7 +59,7 @@ pub fn make_move(p: &mut Position, m: &Move) {
             p.remove_at(to, captured_piece);
         }
         p.remove_at(from, curr_piece);
-        p.set_at(to, Piece::new(curr_piece.color(), m.promote().unwrap()));
+        p.set_at(to, Piece::new(curr_color, promote_piece));
     } else {
 
         if m.is_pawn_double_move() {

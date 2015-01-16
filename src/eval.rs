@@ -13,7 +13,7 @@ use super::game::{is_checkmated, is_stalemated};
 
 pub use self::Result::{Score, WinIn, LoseIn, Draw};
 
-type ScoreUnit = i32;
+pub type ScoreUnit = i32;
 
 const CENTIPAWNS_PER_UNIT: i32 = 1;
 

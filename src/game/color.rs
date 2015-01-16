@@ -7,8 +7,8 @@ pub enum Color {
 }
 
 impl Color {
-    pub fn invert(&self) -> Color {
-        match *self {
+    pub fn invert(self) -> Color {
+        match self {
             White => Black,
             Black => White,
         }

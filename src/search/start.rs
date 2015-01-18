@@ -4,9 +4,10 @@ use std::thread::Thread;
 use uci::Response;
 use game::{Move, Position, receive_legal, make_move};
 use types::NumPlies;
+use eval::Score;
 
 use super::types::{State, Cmd};
-use super::negamax::{self, negamax};
+use super::negamax::{negamax, Data};
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     let mut is_debug = false;
@@ -57,7 +58,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
 
     let mut best_move = search_moves[0].clone();
 
-    let (search_tx, mut search_rx) = channel::<negamax::Result>();
+    let (search_tx, mut search_rx) = channel::<(Score, Move, Data)>();
     let (mut kill_tx, kill_rx) = channel::<()>();
     Thread::spawn(move || depth_limited_search(&*search_pos, NumPlies(1), search_tx, kill_rx));
 
@@ -96,7 +97,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
 
 fn depth_limited_search(search_pos: &[Position],
                         depth: NumPlies,
-                        tx: Sender<negamax::Result>,
+                        tx: Sender<(Score, Move, Data)>,
                         kill_rx: Receiver<()>) {
     // TODO call negamax() for each Position
     unimplemented!()

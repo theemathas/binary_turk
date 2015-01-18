@@ -12,18 +12,16 @@ use super::game::{Position, Color, Piece, PieceType};
 use super::game::{Pawn, King, Queen, Bishop, Knight, Rook};
 use super::game::{is_checkmated, is_stalemated};
 
-pub use self::Result::{Score, WinIn, LoseIn};
-
 pub type ScoreUnit = i32;
 
 const CENTIPAWNS_PER_UNIT: i32 = 1;
 
 /// An assessment of the position.
 #[derive(PartialEq, Eq, Copy, Clone, Show)]
-pub enum Result {
+pub enum Score {
     // Positive: advantage for side to move.
     // Negative: disadvantage for side to move.
-    Score(ScoreUnit),
+    Value(ScoreUnit),
     // Side to move can checkmate in x moves.
     // WinIn(NumMoves(1)): can checkmate now.
     // WinIn(NumMoves(2)): can checkmate next move.
@@ -33,58 +31,58 @@ pub enum Result {
     // WinIn(NumMoves(1)): Will be immediately checkmated after any move.
     LoseIn(NumMoves),
 }
-impl Result {
-    pub fn increment(self) -> Result {
+impl Score {
+    pub fn increment(self) -> Score {
         match self {
-            Score(val) => Score(-val),
-            WinIn(val) => LoseIn(val),
-            LoseIn(val) => WinIn(NumMoves(val.0+1)),
+            Score::Value(val) => Score::Value(-val),
+            Score::WinIn(val) => Score::LoseIn(val),
+            Score::LoseIn(val) => Score::WinIn(NumMoves(val.0+1)),
         }
     }
 }
-impl fmt::String for Result {
+impl fmt::String for Score {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Result::Score(val)   => write!(f, "cp {}", val * CENTIPAWNS_PER_UNIT),
-            Result::WinIn(val)   => write!(f, "mate {}", val.0 as i32),
-            Result::LoseIn(val)  => write!(f, "mate {}", (val.0 as i32) * -1),
+            Score::Value(val)   => write!(f, "cp {}", val * CENTIPAWNS_PER_UNIT),
+            Score::WinIn(val)   => write!(f, "mate {}", val.0 as i32),
+            Score::LoseIn(val)  => write!(f, "mate {}", (val.0 as i32) * -1),
         }
     }
 }
-impl Ord for Result {
-    fn cmp(&self, other: &Result) -> Ordering {
+impl Ord for Score {
+    fn cmp(&self, other: &Score) -> Ordering {
         match *self {
-            WinIn(val1) => match *other {
-                WinIn(val2) => val2.cmp(&val1),
+            Score::WinIn(val1) => match *other {
+                Score::WinIn(val2) => val2.cmp(&val1),
                 _ => Ordering::Greater,
             },
-            LoseIn(val1) => match *other {
-                LoseIn(val2) => val1.cmp(&val2),
+            Score::LoseIn(val1) => match *other {
+                Score::LoseIn(val2) => val1.cmp(&val2),
                 _ => Ordering::Less,
             },
-            Score(val1) => match *other {
-                WinIn(_) => Ordering::Less,
-                LoseIn(_) => Ordering::Greater,
-                Score(val2) => val1.cmp(&val2),
+            Score::Value(val1) => match *other {
+                Score::WinIn(_) => Ordering::Less,
+                Score::LoseIn(_) => Ordering::Greater,
+                Score::Value(val2) => val1.cmp(&val2),
             },
         }
     }
 }
-impl PartialOrd for Result {
+impl PartialOrd for Score {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
 /// Evaluates the position without searching.
-pub fn eval(p: &Position, draw_val: ScoreUnit) -> Result {
+pub fn eval(p: &Position, draw_val: ScoreUnit) -> Score {
     if is_checkmated(p.clone()) {
-        LoseIn(NumMoves(0))
+        Score::LoseIn(NumMoves(0))
     } else if is_stalemated(p.clone()) {
-        Score(draw_val)
+        Score::Value(draw_val)
     } else {
         let c = p.side_to_move();
-        Score(p.piece_iter().map( |(piece, _pos)| val_for_color(piece, c) ).sum())
+        Score::Value(p.piece_iter().map( |(piece, _pos)| val_for_color(piece, c) ).sum())
     }
 }
 

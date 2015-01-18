@@ -3,10 +3,10 @@
 use std::cmp;
 
 use game::{Position, Move, make_move, unmake_move, receive_legal};
-use eval::{self, eval, ScoreUnit};
+use eval::{eval, Score, ScoreUnit};
 use types::NumPlies;
 
-pub type Result = (eval::Result, Data);
+pub type Result = (Score, Data);
 
 // TODO put actual data here
 pub struct Data;
@@ -21,7 +21,7 @@ pub fn negamax(pos: &mut Position, depth: NumPlies, param: Param) -> Result {
         return (eval(pos, param.draw_val), Data);
     }
 
-    let (ans_val_opt, ans_data): (Option<eval::Result>, Data) = {
+    let (ans_val_opt, ans_data): (Option<Score>, Data) = {
 
         let move_chan = receive_legal(pos.clone());
         let move_iter = move_chan.iter();
@@ -32,7 +32,7 @@ pub fn negamax(pos: &mut Position, depth: NumPlies, param: Param) -> Result {
             })
         });
 
-        res_iter.fold((None::<eval::Result>, Data), |prev_res_tuple, curr_res| {
+        res_iter.fold((None::<Score>, Data), |prev_res_tuple, curr_res| {
             let (curr_val, curr_data) = curr_res;
             let (prev_val_opt, prev_data) = prev_res_tuple;
 

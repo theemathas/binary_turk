@@ -2,7 +2,7 @@ use std::time::Duration;
 use std::fmt;
 
 use game::{Move, FromTo, Color};
-use eval;
+use eval::Score;
 use types::{NumNodes, NumVariations, PerMill, NumCpu, NumPlies, NumMoves};
 
 #[derive(PartialEq, Eq, Clone, Show)]
@@ -51,7 +51,7 @@ pub enum InfoParam {
     NodesSearched(NumNodes),
     PrincipalVariation(Vec<Move>),
     MultiPv(NumVariations),
-    Score(Option<ScoreType>, eval::Result),
+    Score(Option<ScoreType>, Score),
     CurrMove(Move),
     CurrMoveNumber(NumMoves),
     HashFull(PerMill),

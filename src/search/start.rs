@@ -1,4 +1,5 @@
 use std::sync::mpsc::{SyncSender, Receiver, Sender, channel};
+use std::sync::Arc;
 use std::thread::Thread;
 
 use uci::Response;
@@ -48,21 +49,33 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
         panic!("No legal moves searched in searched position");
     }
 
-    let search_pos: Vec<Position> = {
+    // This is a hack required because Send currently requires 'static
+    // TODO remove the Arc when Send does not require 'static
+    let search_pos_arc: Arc<Vec<Position>> = Arc::new({
         search_moves.iter().map(|x: &Move| {
             let mut new_pos = state.pos.clone();
             make_move(&mut new_pos, x);
             new_pos
         }).collect()
-    };
+    });
 
+    let mut best_score = None::<Score>;
     let mut best_move = search_moves[0].clone();
+    let mut total_search_data = Data;
+
+    let mut curr_plies = NumPlies(1);
 
     let (search_tx, mut search_rx) = channel::<(Score, Move, Data)>();
     let (mut kill_tx, kill_rx) = channel::<()>();
-    Thread::spawn(move || depth_limited_search(&*search_pos, NumPlies(1), search_tx, kill_rx));
+
+    let temp_search_pos_arc = search_pos_arc.clone();
+    let mut search_guard = Thread::scoped(move ||
+        depth_limited_search(temp_search_pos_arc, curr_plies, search_tx, kill_rx));
 
     loop {
+        // This is a hack to get around a problem in select! {}
+        // TODO remove this hack after the problem is solved
+        let mut search_rx_opt: Option<Receiver<(Score, Move, Data)>> = None;
         select! {
             val = rx.recv() => {
                 let cmd = val.ok().expect("Sender hung up while calculating");
@@ -77,6 +90,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                     },
                     Cmd::Stop => {
                         let _ = kill_tx.send(());
+                        search_guard.join().ok().expect("depth_limited_search panicked");
                         if is_debug { debug!("stop search") }
                         // TODO send info again
                         tx.send(Response::BestMove(best_move, None))
@@ -86,19 +100,42 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                 }
             },
             search_res = search_rx.recv() => {
-                // TODO use search_res
+                search_guard.join().ok().expect("depth_limited_search panicked");
+
+                let (temp_best_score, temp_best_move, curr_search_data) = search_res.ok()
+                    .expect("depth_limited_search unexpectedly dropped Sender");
+
+                best_score = Some(temp_best_score);
+                best_move = temp_best_move;
+
+                total_search_data = total_search_data.combine(curr_search_data);
+
+                // TODO use search data
                 // TODO send info
-                // TODO do next iteration of depth limited search
-                unimplemented!()
+
+                curr_plies.0 += 1;
+
+                let (new_search_tx, new_search_rx) = channel::<(Score, Move, Data)>();
+                search_rx_opt = Some(new_search_rx);
+                let (new_kill_tx, new_kill_rx) = channel::<()>();
+                kill_tx = new_kill_tx;
+
+                let temp_search_pos_arc = search_pos_arc.clone();
+                search_guard = Thread::scoped(move ||
+                    depth_limited_search(temp_search_pos_arc, curr_plies,
+                                         new_search_tx, new_kill_rx));
             }
         }
+        if let Some(val) = search_rx_opt { search_rx = val; }
     }
 }
 
-fn depth_limited_search(search_pos: &[Position],
+fn depth_limited_search(search_pos_arc: Arc<Vec<Position>>,
                         depth: NumPlies,
                         tx: Sender<(Score, Move, Data)>,
                         kill_rx: Receiver<()>) {
+    debug_assert!(!search_pos_arc.is_empty());
+
     // TODO call negamax() for each Position
     unimplemented!()
 }

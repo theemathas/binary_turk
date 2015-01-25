@@ -67,6 +67,8 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     let (mut kill_tx, kill_rx) = channel::<()>();
 
     let temp_search_move_pos_arc = search_move_pos_arc.clone();
+
+    debug!("Starting depth limited search with depth = {} plies", curr_plies.0);
     let mut search_guard = Thread::scoped(move ||
         depth_limited_search(temp_search_move_pos_arc, curr_plies, search_tx, kill_rx));
 
@@ -77,6 +79,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
         select! {
             val = rx.recv() => {
                 let cmd = val.ok().expect("Sender hung up while calculating");
+                debug!("received command {:?}", cmd);
                 match cmd {
                     Cmd::SetDebug(val) => {
                         // TODO set debug
@@ -87,17 +90,26 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                         // Ignore this cmd
                     },
                     Cmd::Stop => {
-                        let _ = kill_tx.send(());
-                        search_guard.join().ok().expect("depth_limited_search panicked");
-                        debug!("stop search");
+
+                        debug!("killing search");
+                        let _ = kill_tx.send(())
+                          .ok().expect("output channel closed");
+
+                        debug!("reporting result");
                         // TODO send info again
                         tx.send(Response::BestMove(best_move, None))
-                          .ok().expect("output channel closed");
+                          .ok().expect("output channel unexpectedly closed");
+
+                        debug!("attempting join of depth_limited_search");
+                        search_guard.join().ok().expect("depth_limited_search panicked");
+                        debug!("joined depth_limited_search");
                         return;
                     }
                 }
             },
             search_res = search_rx.recv() => {
+                debug!("receiving result from depth_limited_search");
+
                 search_guard.join().ok().expect("depth_limited_search panicked");
 
                 let (temp_best_score, temp_best_move, curr_search_data) = search_res.ok()
@@ -119,6 +131,8 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                 kill_tx = new_kill_tx;
 
                 let temp_search_move_pos_arc = search_move_pos_arc.clone();
+
+                debug!("Starting depth limited search with depth = {} plies", curr_plies.0);
                 search_guard = Thread::scoped(move ||
                     depth_limited_search(temp_search_move_pos_arc, curr_plies,
                                          new_search_tx, new_kill_rx));

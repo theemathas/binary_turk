@@ -5,13 +5,13 @@ use std::iter::Map;
 
 use super::square::Square;
 
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct BitBoard(BitvSet);
 impl BitBoard {
     pub fn new() -> BitBoard { BitBoard(BitvSet::with_capacity(64)) }
     pub fn new_full() -> BitBoard {
         let mut ans = BitvSet::with_capacity(64);
-        for i in 0..64 {
+        for i in 0..64_us {
             ans.insert(i);
         }
         BitBoard(ans)

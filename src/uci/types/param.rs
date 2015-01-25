@@ -5,14 +5,14 @@ use game::{Move, FromTo, Color};
 use eval::Score;
 use types::{NumNodes, NumVariations, PerMill, NumCpu, NumPlies, NumMoves};
 
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum RegisterParam {
     Later,
     Name(String),
     Code(String),
 }
 
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum GoParam {
     SearchMoves(Vec<FromTo>),
     Ponder,
@@ -26,12 +26,12 @@ pub enum GoParam {
     Infinite,
 }
 
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum IdParam {
     Name(&'static str),
     Author(&'static str),
 }
-impl fmt::String for IdParam {
+impl fmt::Display for IdParam {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             IdParam::Name(ref val)   => write!(f, "name {}", val),
@@ -43,7 +43,7 @@ impl fmt::String for IdParam {
 pub const ID_DATA: [IdParam; 2] = [IdParam::Name("chess_project"),
                                    IdParam::Author("Theemathas Chirananthavat")];
 
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum InfoParam {
     Depth(NumPlies),
     SelDepth(NumPlies),
@@ -63,7 +63,7 @@ pub enum InfoParam {
     Refutation(Vec<Move>),
     CurrLine(Option<NumCpu>, Vec<Move>),
 }
-impl fmt::String for InfoParam {
+impl fmt::Display for InfoParam {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             InfoParam::Depth(val)          => write!(f, "depth {}", val.0),
@@ -104,12 +104,12 @@ impl fmt::String for InfoParam {
     }
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Show)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum ScoreType {
     LowerBound,
     UpperBound,
 }
-impl fmt::String for ScoreType {
+impl fmt::Display for ScoreType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match *self {
             ScoreType::LowerBound => "lowerbound",

@@ -8,7 +8,7 @@ use super::piece::{Piece, King, ALL_PIECES};
 use super::square::Square;
 use super::bitboard::BitBoard;
 
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Board {
     data: VecMap<BitBoard>,
     white_data: BitBoard,

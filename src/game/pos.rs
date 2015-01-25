@@ -9,7 +9,7 @@ use super::board::{self,Board};
 use super::castle::{self,CastlingData,Side};
 
 /// Data required to unmake moves
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct ExtraData {
     castling: CastlingData,
     en_passant: Option<File>,
@@ -17,7 +17,7 @@ pub struct ExtraData {
 }
 
 /// A complete representation of a chess position.
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Position {
     data: Board,
     side_to_move: Color,

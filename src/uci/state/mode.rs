@@ -1,6 +1,6 @@
 // When starting program, start at state "Init"
 // Always allow commands "debug" and "isready"
-#[derive(PartialEq, Eq, Copy, Clone, Show)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Mode {
     // * `uci`
     // send all "id" and "option"  messages

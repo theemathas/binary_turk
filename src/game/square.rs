@@ -4,7 +4,7 @@ use std::str::FromStr;
 use std::fmt;
 
 // File and Rank are 0-based.
-#[derive(PartialEq, Eq, Copy, Clone, Show)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct File(pub i32);
 impl FromStr for File {
     fn from_str(s: &str) -> Option<File> {
@@ -15,14 +15,14 @@ impl FromStr for File {
         }
     }
 }
-impl fmt::String for File {
+impl fmt::Display for File {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		debug_assert!(self.0 >= 0 && self.0 < 8);
         write!(f,"{}",(self.0 as u8 + b'a') as char)
     }
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Show)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct Rank(pub i32);
 impl FromStr for Rank {
     fn from_str(s: &str) -> Option<Rank> {
@@ -33,14 +33,14 @@ impl FromStr for Rank {
         }
     }
 }
-impl fmt::String for Rank {
+impl fmt::Display for Rank {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		debug_assert!(self.0 >= 0 && self.0 < 8);
         write!(f,"{}",(self.0 as u8 + b'1') as char)
     }
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Show)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct Square(File, Rank);
 impl Square {
     pub fn new(f: File, r: Rank) -> Square {
@@ -85,7 +85,7 @@ impl FromStr for Square {
         Some(Square::new(f, r))
     }
 }
-impl fmt::String for Square {
+impl fmt::Display for Square {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}{}", self.file(), self.rank())
     }

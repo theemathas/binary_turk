@@ -17,7 +17,7 @@ pub type ScoreUnit = i32;
 const CENTIPAWNS_PER_UNIT: i32 = 1;
 
 /// An assessment of the position.
-#[derive(PartialEq, Eq, Copy, Clone, Show)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Score {
     // Positive: advantage for side to move.
     // Negative: disadvantage for side to move.
@@ -40,7 +40,7 @@ impl Score {
         }
     }
 }
-impl fmt::String for Score {
+impl fmt::Display for Score {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Score::Value(val)   => write!(f, "cp {}", val * CENTIPAWNS_PER_UNIT),

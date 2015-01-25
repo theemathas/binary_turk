@@ -3,7 +3,7 @@ use std::time::Duration;
 use game::Color;
 use types::NumMoves;
 
-#[derive(Clone, Show)]
+#[derive(Clone, Debug)]
 pub enum Data {
     Remain(RemainData),
     Exact(Duration),
@@ -39,7 +39,7 @@ impl Data {
     }
 }
 
-#[derive(Clone, Show)]
+#[derive(Clone, Debug)]
 pub struct RemainData {
     pub w_time: Option<Duration>,
     pub b_time: Option<Duration>,

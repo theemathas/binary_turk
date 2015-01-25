@@ -9,7 +9,7 @@ use super::square::{Square, File};
 use super::castle::{Side, Kingside, Queenside};
 use super::pos::Position;
 
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Move {
     from: Square,
     to: Square,
@@ -60,7 +60,7 @@ impl Move {
         self.is_pawn_double_move = val;
     }
 }
-impl fmt::String for Move {
+impl fmt::Display for Move {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "{}{}", self.from, self.to));
         if let Some(val) = self.promote() {
@@ -76,7 +76,7 @@ impl fmt::String for Move {
     }
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Show)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct FromTo {
     from: Square,
     to: Square,

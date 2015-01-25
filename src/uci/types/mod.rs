@@ -8,7 +8,7 @@ pub use self::param::ID_DATA;
 pub mod options;
 mod param;
 
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Cmd {
     Uci,
     Debug(bool),
@@ -23,7 +23,7 @@ pub enum Cmd {
     Quit,
 }
 
-#[derive(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Response {
     Id(IdParam),
     UciOk,
@@ -34,7 +34,7 @@ pub enum Response {
     Info(Vec<InfoParam>),
     ShowOption(options::Name, options::Val, options::Info),
 }
-impl fmt::String for Response {
+impl fmt::Display for Response {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Response::Id(ref val) => write!(f, "id {}", val),
@@ -60,13 +60,13 @@ impl fmt::String for Response {
     }
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Show)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum VertifyingState {
     Checking,
     Ok,
     Error,
 }
-impl fmt::String for VertifyingState {
+impl fmt::Display for VertifyingState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match *self {
             VertifyingState::Checking => "checking",

@@ -1,6 +1,6 @@
 pub use self::Color::{White,Black};
 
-#[derive(PartialEq, Eq, Copy, Clone, Show)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Color {
     White,
     Black,

@@ -22,7 +22,7 @@ pub fn process(state: &mut State,
             // TODO set debug
             debug!("debug is now {:?}", val);
             state.search_tx.as_ref().map(|tx| {
-                tx.send(search::Cmd::Stop)
+                tx.send(search::Cmd::SetDebug(val))
                   .ok().expect("state.search_tx closed") } );
         },
         Cmd::IsReady => {

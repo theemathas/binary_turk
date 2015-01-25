@@ -19,8 +19,8 @@ pub fn process(state: &mut State,
                cmd_tx: &SyncSender<Cmd>) {
     match cmd {
         Cmd::Debug(val) => {
+            // TODO set debug
             debug!("debug is now {:?}", val);
-            state.is_debug = val;
             state.search_tx.as_ref().map(|tx| {
                 tx.send(search::Cmd::Stop)
                   .ok().expect("state.search_tx closed") } );
@@ -56,7 +56,6 @@ pub fn process(state: &mut State,
                         },
                         Cmd::UciNewGame => {
                             *state = State {
-                                is_debug: state.is_debug,
                                 mode: Mode::NewGame,
                                 ucinewgame_support: true,
                                 ..State::new()

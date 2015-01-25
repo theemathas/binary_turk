@@ -17,16 +17,12 @@ pub fn start(input: StdinReader, output: LineBufferedWriter<StdWriter>) {
     let (resp_tx, resp_rx) = sync_channel::<Response>(0);
     let _output_guard = Thread::spawn(move || format_output(output, resp_rx));
     for cmd in cmd_rx.iter() {
-        if state.is_debug {
-            debug!("cmd = {:?}", cmd);
-        }
+        debug!("cmd = {:?}", cmd);
         if cmd == Cmd::Quit {
             return;
         } else {
             process(&mut state, cmd, &resp_tx, &cmd_tx);
         }
-        if state.is_debug {
-            debug!("state.mode = {:?}", state.mode);
-        }
+        debug!("state.mode = {:?}", state.mode);
     }
 }

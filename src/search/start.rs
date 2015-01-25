@@ -11,23 +11,22 @@ use super::types::{State, Cmd};
 use super::negamax::{self, negamax, Data};
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
-    let mut is_debug = false;
     if state.param.ponder {
-        if is_debug { debug!("pondering, waiting for next command") }
+        debug!("pondering, waiting for next command");
         // Actually should ponder, but now just waits for our move.
         for cmd in rx.iter() {
             match cmd {
                 Cmd::SetDebug(val) => {
-                    is_debug = val;
+                    // TODO set debug
                     debug!("debug is now {:?}", val);
                 },
                 Cmd::PonderHit => {
-                    if is_debug { debug!("ponder hit when pondering") }
+                    debug!("ponder hit when pondering");
                     state.param.ponder = false;
                     break;
                 },
                 Cmd::Stop => {
-                    if is_debug { debug!("stop from pondering") }
+                    debug!("stop from pondering");
                     // TODO report stuff.about pondering and terminate.
                     unimplemented!();
                 },
@@ -36,7 +35,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
         if state.param.ponder {
             panic!("Sender hung up while pondering");
         }
-        if is_debug { debug!("pondering finished") }
+        debug!("pondering finished");
     }
 
     // This is a hack required because Send currently requires 'static
@@ -80,17 +79,17 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                 let cmd = val.ok().expect("Sender hung up while calculating");
                 match cmd {
                     Cmd::SetDebug(val) => {
-                        is_debug = val;
+                        // TODO set debug
                         debug!("debug is now {:?}", val);
                     },
                     Cmd::PonderHit => {
-                        if is_debug { debug!("ponder hit when not pondering (ignored)") }
+                        debug!("ponder hit when not pondering (ignored)");
                         // Ignore this cmd
                     },
                     Cmd::Stop => {
                         let _ = kill_tx.send(());
                         search_guard.join().ok().expect("depth_limited_search panicked");
-                        if is_debug { debug!("stop search") }
+                        debug!("stop search");
                         // TODO send info again
                         tx.send(Response::BestMove(best_move, None))
                           .ok().expect("output channel closed");

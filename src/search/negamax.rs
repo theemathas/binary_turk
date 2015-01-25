@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use game::{Position, Move, make_move, unmake_move, receive_legal};
 use eval::{eval, Score, ScoreUnit};
 use types::NumPlies;

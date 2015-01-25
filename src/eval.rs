@@ -1,7 +1,5 @@
 //! This module is for statically evaluating a position.
 
-#![allow(dead_code)]
-
 use std::iter::AdditiveIterator;
 use std::fmt;
 use std::cmp::Ordering;

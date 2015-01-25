@@ -5,10 +5,10 @@ use std::thread::Thread;
 use uci::Response;
 use game::{Move, Position, receive_legal, make_move};
 use types::NumPlies;
-use eval::Score;
+use eval::{Score, ScoreUnit};
 
 use super::types::{State, Cmd};
-use super::negamax::{negamax, Data};
+use super::negamax::{self, negamax, Data};
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     let mut is_debug = false;
@@ -39,28 +39,27 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
         if is_debug { debug!("pondering finished") }
     }
 
-    let legal_moves_chan = receive_legal(state.pos.clone());
-    let legal_moves = legal_moves_chan.iter();
-    let search_moves: Vec<Move> = match state.param.search_moves {
-        None => legal_moves.collect(),
-        Some(ref val) => legal_moves.filter(|x| val.contains(x)).collect(),
-    };
-    if search_moves.is_empty() {
-        panic!("No legal moves searched in searched position");
-    }
-
     // This is a hack required because Send currently requires 'static
     // TODO remove the Arc when Send does not require 'static
-    let search_pos_arc: Arc<Vec<Position>> = Arc::new({
-        search_moves.iter().map(|x: &Move| {
+    let search_move_pos_arc: Arc<Vec<(Move, Position)>> = Arc::new({
+        let legal_moves_chan = receive_legal(state.pos.clone());
+        let legal_moves = legal_moves_chan.iter();
+        let mut search_moves: Vec<Move> = match state.param.search_moves {
+            None => legal_moves.collect(),
+            Some(ref val) => legal_moves.filter(|x| val.contains(x)).collect(),
+        };
+        if search_moves.is_empty() {
+            panic!("No legal moves searched in searched position");
+        }
+        search_moves.drain().map(|x: Move| {
             let mut new_pos = state.pos.clone();
-            make_move(&mut new_pos, x);
-            new_pos
+            make_move(&mut new_pos, &x);
+            (x, new_pos)
         }).collect()
     });
 
     let mut best_score = None::<Score>;
-    let mut best_move = search_moves[0].clone();
+    let mut best_move = search_move_pos_arc[0].0.clone();
     let mut total_search_data = Data;
 
     let mut curr_plies = NumPlies(1);
@@ -68,9 +67,9 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     let (search_tx, mut search_rx) = channel::<(Score, Move, Data)>();
     let (mut kill_tx, kill_rx) = channel::<()>();
 
-    let temp_search_pos_arc = search_pos_arc.clone();
+    let temp_search_move_pos_arc = search_move_pos_arc.clone();
     let mut search_guard = Thread::scoped(move ||
-        depth_limited_search(temp_search_pos_arc, curr_plies, search_tx, kill_rx));
+        depth_limited_search(temp_search_move_pos_arc, curr_plies, search_tx, kill_rx));
 
     loop {
         // This is a hack to get around a problem in select! {}
@@ -120,9 +119,9 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                 let (new_kill_tx, new_kill_rx) = channel::<()>();
                 kill_tx = new_kill_tx;
 
-                let temp_search_pos_arc = search_pos_arc.clone();
+                let temp_search_move_pos_arc = search_move_pos_arc.clone();
                 search_guard = Thread::scoped(move ||
-                    depth_limited_search(temp_search_pos_arc, curr_plies,
+                    depth_limited_search(temp_search_move_pos_arc, curr_plies,
                                          new_search_tx, new_kill_rx));
             }
         }
@@ -130,12 +129,46 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     }
 }
 
-fn depth_limited_search(search_pos_arc: Arc<Vec<Position>>,
+fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
                         depth: NumPlies,
                         tx: Sender<(Score, Move, Data)>,
                         kill_rx: Receiver<()>) {
-    debug_assert!(!search_pos_arc.is_empty());
+    debug_assert!(!search_move_pos_arc.is_empty());
+    debug_assert!(depth.0 >= 1);
 
-    // TODO call negamax() for each Position
-    unimplemented!()
+    // TODO This clone() shouldn't be needed
+    let mut search_move_pos = (*search_move_pos_arc).clone();
+
+    // TODO Take this draw_val value from somewhere else
+    let draw_val: ScoreUnit = 0;
+
+    let next_depth = NumPlies(depth.0 - 1);
+    let next_draw_val = -draw_val;
+
+    let param = negamax::Param { draw_val: next_draw_val };
+
+    let mut ans_iter = {
+        search_move_pos.iter_mut().map( |&mut (ref mut curr_move, ref mut curr_pos)| {
+            let (next_score, next_move_opt, data) = negamax(curr_pos, next_depth, param.clone());
+            let score = next_score.increment();
+            (score, curr_move.clone(), data)
+        })
+    };
+
+    let first_ans: (Score, Move, Data) = ans_iter.next().unwrap();
+    let ans = ans_iter.fold(first_ans, |prev_ans, curr_ans| {
+        let (prev_score, prev_move, prev_data) = prev_ans;
+        let (curr_score, curr_move, curr_data) = curr_ans;
+
+        let combined_data = prev_data.combine(curr_data);
+
+        if curr_score > prev_score {
+            (curr_score, curr_move, combined_data)
+        } else {
+            (prev_score, prev_move, combined_data)
+        }
+    });
+    let _ = tx.send(ans);
+
+    // TODO respond to kill_rx
 }

@@ -1,5 +1,6 @@
 use std::sync::mpsc::{SyncSender, Receiver, Sender, channel};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread::Thread;
 
 use uci::Response;
@@ -64,13 +65,16 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     let mut curr_plies = NumPlies(1);
 
     let (search_tx, mut search_rx) = channel::<(Score, Move, Data)>();
-    let (mut kill_tx, kill_rx) = channel::<()>();
+    // This is a hack required because Send currently requires 'static
+    // TODO remove the Arc when Send does not require 'static
+    let is_killed = Arc::new(AtomicBool::new(false));
 
     let temp_search_move_pos_arc = search_move_pos_arc.clone();
+    let temp_is_killed = is_killed.clone();
 
     debug!("Starting depth limited search with depth = {} plies", curr_plies.0);
     let mut search_guard = Thread::scoped(move ||
-        depth_limited_search(temp_search_move_pos_arc, curr_plies, search_tx, kill_rx));
+        depth_limited_search(temp_search_move_pos_arc, curr_plies, search_tx, temp_is_killed));
 
     loop {
         // This is a hack to get around a problem in select! {}
@@ -92,8 +96,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                     Cmd::Stop => {
 
                         debug!("killing search");
-                        let _ = kill_tx.send(())
-                          .ok().expect("output channel closed");
+                        is_killed.store(true, Ordering::SeqCst);
 
                         debug!("reporting result");
                         // TODO send info again
@@ -127,15 +130,14 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
 
                 let (new_search_tx, new_search_rx) = channel::<(Score, Move, Data)>();
                 search_rx_opt = Some(new_search_rx);
-                let (new_kill_tx, new_kill_rx) = channel::<()>();
-                kill_tx = new_kill_tx;
 
                 let temp_search_move_pos_arc = search_move_pos_arc.clone();
+                let temp_is_killed = is_killed.clone();
 
                 debug!("Starting depth limited search with depth = {} plies", curr_plies.0);
                 search_guard = Thread::scoped(move ||
                     depth_limited_search(temp_search_move_pos_arc, curr_plies,
-                                         new_search_tx, new_kill_rx));
+                                         new_search_tx, temp_is_killed));
             }
         }
         if let Some(val) = search_rx_opt { search_rx = val; }
@@ -145,7 +147,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
 fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
                         depth: NumPlies,
                         tx: Sender<(Score, Move, Data)>,
-                        kill_rx: Receiver<()>) {
+                        is_killed: Arc<AtomicBool>) {
     debug_assert!(!search_move_pos_arc.is_empty());
     debug_assert!(depth.0 >= 1);
 
@@ -162,7 +164,8 @@ fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
 
     let mut ans_iter = {
         search_move_pos.iter_mut().map( |&mut (ref mut curr_move, ref mut curr_pos)| {
-            let (next_score, next_move_opt, data) = negamax(curr_pos, next_depth, param.clone());
+            let (next_score, next_move_opt, data) =
+                negamax(curr_pos, next_depth, param.clone(), &*is_killed);
             let score = next_score.increment();
             (score, curr_move.clone(), data)
         })

@@ -8,6 +8,9 @@ use super::pos::{self, Position};
 use super::castle::{Kingside,Queenside};
 
 pub fn make_move(p: &mut Position, m: &Move) {
+
+    debug!("make_move with move {:?}", *m);
+
     let from = m.from();
     let to = m.to();
     let curr_piece = p.at(from).unwrap();

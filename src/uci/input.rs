@@ -1,4 +1,4 @@
-use std::io::stdio::StdinReader;
+use std::old_io::stdio::StdinReader;
 use std::sync::mpsc::SyncSender;
 
 use super::types::Cmd;

@@ -1,5 +1,5 @@
-use std::io::stdio::{StdinReader, StdWriter};
-use std::io::LineBufferedWriter;
+use std::old_io::stdio::{StdinReader, StdWriter};
+use std::old_io::LineBufferedWriter;
 use std::thread::Thread;
 use std::sync::mpsc::sync_channel;
 

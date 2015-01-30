@@ -1,5 +1,5 @@
-use std::io::LineBufferedWriter;
-use std::io::stdio::StdWriter;
+use std::old_io::LineBufferedWriter;
+use std::old_io::stdio::StdWriter;
 use std::sync::mpsc::Receiver;
 
 use super::types::Response;

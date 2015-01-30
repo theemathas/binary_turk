@@ -1,10 +1,10 @@
-#![allow(unstable)]
+#![feature(core, io, collections, std_misc, unicode)]
 
 extern crate time;
 #[macro_use]
 extern crate log;
 
-use std::io;
+use std::old_io as io;
 
 mod types;
 mod game;

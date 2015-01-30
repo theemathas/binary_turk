@@ -1,6 +1,6 @@
 use std::sync::mpsc::{SyncSender, Receiver};
 use std::time::Duration;
-use std::io::Timer;
+use std::old_io::Timer;
 use std::cmp;
 
 use game::Color;

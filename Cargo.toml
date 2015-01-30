@@ -7,3 +7,4 @@ authors = ["Theemathas Chirananthavat <theemathas@gmail.com>"]
 [dependencies]
 time = "*"
 log = "*"
+env_logger = "*"

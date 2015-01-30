@@ -101,7 +101,7 @@ impl FromTo {
                 }
             },
             Some(Pawn) => {
-                if self.from.file() != self.to.file() {
+                if self.from.file() != self.to.file() && ans.capture_normal().is_none() {
                     ans.set_en_passant(true);
                 } else if ((self.from.rank().0) - (self.to.rank().0)).abs() != 1 {
                     ans.set_pawn_double_move(true);

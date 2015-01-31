@@ -4,6 +4,7 @@ use std::sync::mpsc::{sync_channel, SyncSender};
 use std::thread::Thread;
 
 use search;
+use timer::Timer;
 
 use super::types::{Cmd, Response, ID_DATA};
 use super::state::{State, Mode};
@@ -124,9 +125,9 @@ pub fn process(state: &mut State,
                             state.search_tx = None;
                             state.start_search_time = None;
                             state.start_move_time = None;
-                            state.time_data = None;
-                            if let Some(time_kill_tx) = state.time_kill_tx.take() {
-                                let _ = time_kill_tx.send(());
+                            state.timer = Timer::new();
+                            if let Some(timer_kill_tx) = state.timer_kill_tx.take() {
+                                let _ = timer_kill_tx.send(());
                             }
                             state.mode = Mode::Wait;
                         },

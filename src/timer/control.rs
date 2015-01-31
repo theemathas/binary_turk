@@ -1,29 +1,30 @@
 use std::sync::mpsc::{SyncSender, Receiver};
 use std::time::Duration;
-use std::old_io::Timer;
+use std::old_io::Timer as StdTimer;
 use std::cmp;
 
 use game::Color;
 use uci;
 
-use super::types::Data;
+use super::Timer;
 
-pub fn start(data: Data, c: Color, tx: SyncSender<uci::Cmd>, rx_kill: Receiver<()>) {
+pub fn start(data: Timer, c: Color, tx: SyncSender<uci::Cmd>, rx_kill: Receiver<()>) {
     match data {
-        Data::Infinite => return,
-        Data::Exact(val) => {
-            let mut timer = Timer::new().unwrap();
+        Timer::Infinite => return,
+        Timer::Exact(val) => {
+            let mut timer = StdTimer::new().unwrap();
             let rx_timer = timer.oneshot(val);
             select!(
                 _ = rx_timer.recv() => { let _ = tx.send(uci::Cmd::Stop); },
                 _ = rx_kill.recv() => {}
             )
         },
-        Data::Remain(val) => {
+        Timer::Remain(val) => {
+            // TODO what is the right default value for base time?
             let base = val.time(c).unwrap_or(Duration::zero());
-            let inc = val.inc(c).unwrap_or(Duration::zero());
+            let inc = val.inc(c);
             let val = calc_time(base, inc);
-            let mut timer = Timer::new().unwrap();
+            let mut timer = StdTimer::new().unwrap();
             let rx_timer = timer.oneshot(val);
             select!(
                 _ = rx_timer.recv() => { let _ = tx.send(uci::Cmd::Stop); },

@@ -92,7 +92,7 @@ impl FromTo {
         if !pos.is_empty_at(self.to) {
             ans.set_capture_normal(pos.at(self.to));
         }
-        match pos.at(self.to).map(|x| x.piece_type()) {
+        match pos.at(self.from).map(|x| x.piece_type()) {
             Some(King) => {
                 match (self.from.file(), self.to.file()) {
                     (File(4), File(6)) => ans.set_castle(Some(Kingside)),

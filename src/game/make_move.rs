@@ -11,6 +11,8 @@ pub fn make_move(p: &mut Position, m: &Move) {
 
     debug!("make_move with move {:?}", *m);
 
+    debug!("before: position is {:?}", *p);
+
     let from = m.from();
     let to = m.to();
     let curr_piece = p.at(from).unwrap();
@@ -102,6 +104,8 @@ pub fn make_move(p: &mut Position, m: &Move) {
     }
 
     p.swap_side_to_move();
+
+    debug!("after : position is {:?}", *p);
 }
 
 pub fn unmake_move(p: &mut Position, m: &Move, extra_data: pos::ExtraData) {

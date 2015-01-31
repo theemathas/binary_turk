@@ -109,6 +109,7 @@ impl FromTo {
             },
             _ => {},
         }
+        debug!("Converted {:?} into {:?}", *self, ans);
         ans
     }
 }

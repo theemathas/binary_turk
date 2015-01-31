@@ -18,7 +18,7 @@ impl FromStr for File {
 impl fmt::Display for File {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		debug_assert!(self.0 >= 0 && self.0 < 8);
-        write!(f,"{}",(self.0 as u8 + b'a') as char)
+        write!(f, "{}", (self.0 as u8 + b'a') as char)
     }
 }
 
@@ -36,7 +36,7 @@ impl FromStr for Rank {
 impl fmt::Display for Rank {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		debug_assert!(self.0 >= 0 && self.0 < 8);
-        write!(f,"{}",(self.0 as u8 + b'1') as char)
+        write!(f, "{}", (self.0 as u8 + b'1') as char)
     }
 }
 
@@ -72,7 +72,7 @@ impl Square {
     }
     pub fn from_id(val: i32) -> Square {
         let (f, r) = (val/8, val%8);
-        Square::new(File(f),Rank(r))
+        Square::new(File(f), Rank(r))
     }
 }
 impl FromStr for Square {

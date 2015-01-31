@@ -8,7 +8,6 @@ use types::NumMoves;
 
 use super::game::{Position, Color, Piece, PieceType};
 use super::game::{Pawn, King, Queen, Bishop, Knight, Rook};
-use super::game::{is_checkmated, is_stalemated};
 
 pub type ScoreUnit = i32;
 
@@ -73,10 +72,10 @@ impl PartialOrd for Score {
 }
 
 /// Evaluates the position without searching.
-pub fn eval(p: &Position, draw_val: ScoreUnit) -> Score {
-    if is_checkmated(p.clone()) {
+pub fn eval(p: &mut Position, draw_val: ScoreUnit) -> Score {
+    if p.is_checkmated() {
         Score::LoseIn(NumMoves(0))
-    } else if is_stalemated(p.clone()) {
+    } else if p.is_stalemated() {
         Score::Value(draw_val)
     } else {
         let c = p.side_to_move();

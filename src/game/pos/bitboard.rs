@@ -3,7 +3,7 @@
 use std::collections::bitv_set::{self, BitvSet};
 use std::iter::Map;
 
-use super::square::Square;
+use super::super::square::Square;
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct BitBoard(BitvSet);

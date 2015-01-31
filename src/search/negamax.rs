@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use game::{Position, Move, make_move, unmake_move, receive_legal};
+use game::{Position, Move};
 use eval::{eval, Score, ScoreUnit};
 use types::NumPlies;
 
@@ -23,13 +23,12 @@ pub fn negamax(pos: &mut Position, depth: NumPlies, param: Param,
     if is_killed.load(Ordering::Relaxed) {
         return (Score::Value(0), None, Data);
     }
-    if   depth == NumPlies(0) {
+    if depth == NumPlies(0) {
         return (eval(pos, param.draw_val), None, Data);
     }
 
     let ans_opt: Option<(Score, Move, Data)> = {
-        let move_chan = receive_legal(pos.clone());
-        let move_iter = move_chan.iter();
+        let move_iter = pos.legal_iter();
         let mut ans_iter = move_iter.map( |curr_move| {
             let new_param = Param { draw_val: -param.draw_val };
             let (score, _next_best_move, data) = with_move(&curr_move, pos, move |new_pos| {
@@ -63,8 +62,8 @@ pub fn negamax(pos: &mut Position, depth: NumPlies, param: Param,
 
 fn with_move<T, F: FnOnce(&mut Position) -> T>(curr_move: &Move, pos: &mut Position, f: F) -> T {
     let extra_data = pos.extra_data().clone();
-    make_move(pos, curr_move);
+    pos.make_move(curr_move);
     let ans = f(pos);
-    unmake_move(pos, curr_move, extra_data);
+    pos.unmake_move(curr_move, extra_data);
     ans
 }

@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread::Thread;
 
 use uci::Response;
-use game::{Move, Position, receive_legal, make_move};
+use game::{Move, Position};
 use types::NumPlies;
 use eval::{Score, ScoreUnit};
 
@@ -42,8 +42,8 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     // This is a hack required because Send currently requires 'static
     // TODO remove the Arc when Send does not require 'static
     let search_move_pos_arc: Arc<Vec<(Move, Position)>> = Arc::new({
-        let legal_moves_chan = receive_legal(state.pos.clone());
-        let legal_moves = legal_moves_chan.iter();
+        //let legal_moves_chan = receive_legal(state.pos.clone());
+        let legal_moves = state.pos.legal_iter();
         let mut search_moves: Vec<Move> = match state.param.search_moves {
             None => legal_moves.collect(),
             Some(ref val) => legal_moves.filter(|x| val.contains(x)).collect(),
@@ -53,7 +53,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
         }
         search_moves.drain().map(|x: Move| {
             let mut new_pos = state.pos.clone();
-            make_move(&mut new_pos, &x);
+            new_pos.make_move(&x);
             (x, new_pos)
         }).collect()
     });

@@ -1,10 +1,10 @@
 //! The types and some utility functions related to pieces.
 
-use super::color::{Color,White,Black};
+use super::color::{Color, White, Black};
 
-pub use self::Piece::{WP,WK,WQ,WB,WN,WR};
-pub use self::Piece::{BP,BK,BQ,BB,BN,BR};
-pub use self::Type::{Pawn,King,Queen,Bishop,Knight,Rook};
+pub use self::Type::{Pawn, King, Queen, Bishop, Knight, Rook};
+
+use self::Piece::*;
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Piece {
@@ -23,8 +23,8 @@ pub enum Piece {
     BR,
 }
 
-pub static ALL_PIECES: [Piece; 12] = [WP, WK, WQ, WB, WN, WR,
-                                      BP, BK, BQ, BB, BN, BR];
+pub static ALL: [Piece; 12] = [WP, WK, WQ, WB, WN, WR,
+                               BP, BK, BQ, BB, BN, BR];
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Type {
@@ -54,19 +54,19 @@ impl Piece {
         }
     }
     pub fn new(c : Color, t : Type) -> Piece {
-        match (c,t) {
-            (White,Pawn) => WP,
-            (White,King) => WK,
-            (White,Queen) => WQ,
-            (White,Bishop) => WB,
-            (White,Knight) => WN,
-            (White,Rook) => WR,
-            (Black,Pawn) => BP,
-            (Black,King) => BK,
-            (Black,Queen) => BQ,
-            (Black,Bishop) => BB,
-            (Black,Knight) => BN,
-            (Black,Rook) => BR,
+        match (c, t) {
+            (White, Pawn) => WP,
+            (White, King) => WK,
+            (White, Queen) => WQ,
+            (White, Bishop) => WB,
+            (White, Knight) => WN,
+            (White, Rook) => WR,
+            (Black, Pawn) => BP,
+            (Black, King) => BK,
+            (Black, Queen) => BQ,
+            (Black, Bishop) => BB,
+            (Black, Knight) => BN,
+            (Black, Rook) => BR,
         }
     }
 }

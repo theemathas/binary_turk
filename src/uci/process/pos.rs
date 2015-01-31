@@ -1,4 +1,4 @@
-use game::{Position, FromTo, make_move};
+use game::{Position, FromTo};
 use search;
 
 pub fn setup_new(state: &mut Option<search::State>,
@@ -9,7 +9,7 @@ pub fn setup_new(state: &mut Option<search::State>,
     for x in from_to_vec.drain() {
         let temp_move = x.to_move_with_pos(&pos);
         prev_pos = Some(pos.clone());
-        make_move(&mut pos, &temp_move);
+        pos.make_move(&temp_move);
         prev_move = Some(temp_move);
     }
     *state = Some(search::State {

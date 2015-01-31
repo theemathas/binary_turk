@@ -1,15 +1,16 @@
 use std::thread::Thread;
-use std::sync::mpsc::{sync_channel, SyncSender, Receiver};
+use std::sync::mpsc::{self, sync_channel, SyncSender, Receiver};
 
-use super::square::{Square,Rank,File};
-use super::moves::Move;
-use super::color::{White,Black};
-use super::piece::Piece;
-use super::piece::Type::{Pawn,King,Queen,Bishop,Knight,Rook};
-use super::pos::Position;
-use super::castle::{Kingside,Queenside};
+use super::super::square::{Square, Rank, File};
+use super::super::moves::Move;
+use super::super::color::{White, Black};
+use super::super::piece::Piece;
+use super::super::piece::Type::{Pawn, King, Queen, Bishop, Knight, Rook};
+use super::super::castle::{Kingside, Queenside};
 
-use self::Action::{Continue,Stop};
+use super::Position;
+
+use self::Action::{Continue, Stop};
 
 macro_rules! send {
     ($tx: expr, $x: expr) => ({
@@ -33,13 +34,23 @@ impl Action {
     }
 }
 
-pub fn receive_psudo_legal(p: Position) -> Receiver<Move> {
-    let (tx,rx) = sync_channel(0);
+pub struct Iter(mpsc::Receiver<Move>);
+impl Iterator for Iter {
+    type Item = Move;
+    fn next(&mut self) -> Option<Move> { self.0.recv().ok() }
+}
+
+pub fn iter(p: &Position) -> Iter {
+    Iter(receive_psudo_legal(p.clone()))
+}
+
+fn receive_psudo_legal(p: Position) -> Receiver<Move> {
+    let (tx, rx) = sync_channel(0);
     Thread::spawn(move || gen_psudo_legal(&p, tx));
     rx
 }
 
-pub fn gen_psudo_legal(p: &Position, tx: SyncSender<Move>) {
+fn gen_psudo_legal(p: &Position, tx: SyncSender<Move>) {
     if gen_en_passant(p, &tx).is_stop() {
         return;
     }
@@ -51,10 +62,6 @@ pub fn gen_psudo_legal(p: &Position, tx: SyncSender<Move>) {
             return;
         }
     }
-}
-
-pub fn can_move_to(p: Position, to: Square) -> bool {
-    receive_psudo_legal(p).iter().any( |m| m.to() == to )
 }
 
 //Functions below return Stop if the receiver hung up.
@@ -80,9 +87,9 @@ fn shift(s: Square, dir: Diff) -> Option<Square> {
 }
 
 fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
-    let rook_slide:   &[Diff] = &[(1,0), (0,1), (-1,0), (0,-1)];
-    let bishop_slide: &[Diff] = &[(1,1), (1,-1), (-1,-1), (-1,1)];
-    let queen_slide:  &[Diff] = &[(1,0), (0,1), (-1,0), (0,-1), (1,1), (1,-1), (-1,-1), (-1,1)];
+    let rook_slide:   &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1)];
+    let bishop_slide: &[Diff] = &[(1, 1), (1, -1), (-1, -1), (-1, 1)];
+    let queen_slide:  &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, -1), (-1, 1)];
 
     let piece_type = piece_id.piece_type();
     let piece_color = piece_id.color();
@@ -118,8 +125,8 @@ fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<
 }
 
 fn gen_fixed_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
-    let king_fixed:   &[Diff] = &[(1,0), (0,1), (-1,0), (0,-1), (1,1), (1,-1), (-1,-1), (-1,1)];
-    let knight_fixed: &[Diff] = &[(2,1), (2,-1), (-2,-1), (-2,1), (1,2), (1,-2), (-1,-2), (-1,2)];
+    let king_fixed:   &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, -1), (-1, 1)];
+    let knight_fixed: &[Diff] = &[(2, 1), (2, -1), (-2, -1), (-2, 1), (1, 2), (1, -2), (-1, -2), (-1, 2)];
 
     let piece_type = piece_id.piece_type();
     let piece_color = piece_id.color();
@@ -191,7 +198,7 @@ fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
         }
     }
 
-    for dx in [1,-1].iter() {
+    for dx in [1, -1].iter() {
         let capture_dir: Diff = (*dx, dy);
         let capture_new_pos: Option<Square> = shift(from, capture_dir);
         let capture_to: Square = match capture_new_pos {
@@ -252,15 +259,15 @@ fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
     match p.side_to_move() {
         White => {
             if p.can_castle_now(Kingside, White) {
-                let from = Square::new(File(4),Rank(0));
-                let to   = Square::new(File(6),Rank(0));
+                let from = Square::new(File(4), Rank(0));
+                let to   = Square::new(File(6), Rank(0));
                 let mut curr_move = Move::new(from, to);
                 curr_move.set_castle(Some(Kingside));
                 send!(tx, curr_move);
             }
             if p.can_castle_now(Queenside, White) {
-                let from = Square::new(File(4),Rank(0));
-                let to   = Square::new(File(2),Rank(0));
+                let from = Square::new(File(4), Rank(0));
+                let to   = Square::new(File(2), Rank(0));
                 let mut curr_move = Move::new(from, to);
                 curr_move.set_castle(Some(Queenside));
                 send!(tx, curr_move);
@@ -268,15 +275,15 @@ fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
         }
         Black => {
             if p.can_castle_now(Kingside, Black) {
-                let from = Square::new(File(4),Rank(7));
-                let to   = Square::new(File(6),Rank(7));
+                let from = Square::new(File(4), Rank(7));
+                let to   = Square::new(File(6), Rank(7));
                 let mut curr_move = Move::new(from, to);
                 curr_move.set_castle(Some(Kingside));
                 send!(tx, curr_move);
             }
             if p.can_castle_now(Queenside, Black) {
-                let from = Square::new(File(4),Rank(7));
-                let to   = Square::new(File(2),Rank(7));
+                let from = Square::new(File(4), Rank(7));
+                let to   = Square::new(File(2), Rank(7));
                 let mut curr_move = Move::new(from, to);
                 curr_move.set_castle(Some(Queenside));
                 send!(tx, curr_move);

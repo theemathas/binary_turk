@@ -28,7 +28,7 @@ pub enum Response {
     Id(IdParam),
     UciOk,
     ReadyOk,
-    BestMove(Move,Option<Move>),
+    BestMove(Move, Option<Move>),
     CopyProtection(VertifyingState),
     Registration(VertifyingState),
     Info(Vec<InfoParam>),

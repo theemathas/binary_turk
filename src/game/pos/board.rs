@@ -3,9 +3,10 @@
 use std::vec;
 use std::collections::VecMap;
 
-use super::color::{Color, White, Black};
-use super::piece::{Piece, King, ALL_PIECES};
-use super::square::Square;
+use super::super::color::{Color, White, Black};
+use super::super::piece::{self, Piece, King};
+use super::super::square::Square;
+
 use super::bitboard::BitBoard;
 
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -19,7 +20,7 @@ pub struct Board {
 impl Board {
     pub fn new() -> Board {
         let mut ans = VecMap::new();
-        for x in ALL_PIECES.iter() {
+        for x in piece::ALL.iter() {
             ans.insert(*x as usize, BitBoard::new());
         }
         Board {
@@ -51,7 +52,7 @@ impl Board {
     }
 
     pub fn at(&self, s: Square) -> Option<Piece> {
-        for x in ALL_PIECES.iter() {
+        for x in piece::ALL.iter() {
             if self.is_piece_at(*x, s) {
                 return Some(*x);
             }
@@ -80,9 +81,9 @@ impl Board {
         self.piece_data(curr_king).iter().next().unwrap()
     }
 
-    fn piece_vec(&self) -> Vec<(Piece,Square)> {
+    fn piece_vec(&self) -> Vec<(Piece, Square)> {
         let mut ans: Vec<(Piece, Square)> = Vec::new();
-        for p in ALL_PIECES.iter() {
+        for p in piece::ALL.iter() {
             ans.extend(self.piece_data(*p).iter().map( |s: Square| (*p, s)  ) );
         }
         ans
@@ -90,13 +91,13 @@ impl Board {
     pub fn iter(&self) -> Iter { Iter(self.piece_vec().into_iter()) }
 }
 
-pub struct Iter(vec::IntoIter<(Piece,Square)>);
+pub struct Iter(vec::IntoIter<(Piece, Square)>);
 impl Iterator for Iter {
-    type Item = (Piece,Square);
-    fn next(&mut self) -> Option<(Piece,Square)> { self.0.next() }
+    type Item = (Piece, Square);
+    fn next(&mut self) -> Option<(Piece, Square)> { self.0.next() }
     fn size_hint(&self) -> (usize, Option<usize>) { self.0.size_hint() }
 }
 impl DoubleEndedIterator for Iter {
-    fn next_back(&mut self) -> Option<(Piece,Square)> { self.0.next_back() }
+    fn next_back(&mut self) -> Option<(Piece, Square)> { self.0.next_back() }
 }
 impl ExactSizeIterator for Iter {}

@@ -64,13 +64,13 @@ impl Board {
     pub fn is_color_at(&self, s: Square, c: Color) -> bool { self.color_data(c).at(s) }
 
     pub fn set_at(&mut self, s: Square, p: Piece) {
-        debug_assert!(self.is_empty_at(s), "set_at(), s = {}", s);
+        debug_assert!(self.is_empty_at(s), "set_at(), s = {:?}, p = {:?}", s, p);
         self.piece_data_mut(p).set_at(s);
         self.color_data_mut(p.color()).set_at(s);
         self.empty_data.remove_at(s);
     }
     pub fn remove_at(&mut self, s: Square, p: Piece) {
-        debug_assert!(self.is_piece_at(p, s), "remove_at(), s = {}", s);
+        debug_assert!(self.is_piece_at(p, s), "remove_at(), s = {:?}, p = {:?}", s, p);
         self.piece_data_mut(p).remove_at(s);
         self.color_data_mut(p.color()).remove_at(s);
         self.empty_data.set_at(s);

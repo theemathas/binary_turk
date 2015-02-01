@@ -1,5 +1,4 @@
-use std::thread::Thread;
-use std::sync::mpsc::{self, sync_channel, SyncSender, Receiver};
+use std::vec;
 
 use super::super::square::{Square, Rank, File};
 use super::super::moves::Move;
@@ -10,70 +9,30 @@ use super::super::castle::{Kingside, Queenside};
 
 use super::Position;
 
-use self::Action::{Continue, Stop};
-
-macro_rules! send {
-    ($tx: expr, $x: expr) => ({
-        match $tx.send($x) {
-            Ok(()) => (),
-            Err(_) => return Stop,
-        }
-    })
-}
-
-enum Action {
-    Continue,
-    Stop,
-}
-impl Action {
-    fn is_stop(&self) -> bool {
-        match *self {
-            Continue => false,
-            Stop => true,
-        }
-    }
-}
-
-pub struct Iter(mpsc::Receiver<Move>);
-impl Iterator for Iter {
+pub struct Iter<'a>(Box<Iterator<Item=Move>+'a>);
+impl<'a> Iterator for Iter<'a> {
     type Item = Move;
-    fn next(&mut self) -> Option<Move> { self.0.recv().ok() }
+    fn next(&mut self) -> Option<Move> { self.0.next() }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.0.size_hint() }
 }
 
-pub fn iter(p: &Position) -> Iter {
-    Iter(receive_psudo_legal(p.clone()))
+pub fn iter<'a>(p: &'a Position) -> Iter<'a> {
+    Iter(Box::new(en_passant_iter(p).chain(castle_iter(p)).chain(
+        p.piece_iter().flat_map(move |(piece_id, from)| -> vec::IntoIter<Move> {
+            move_from_iter(p, piece_id, from)
+        })
+    )))
 }
 
-fn receive_psudo_legal(p: Position) -> Receiver<Move> {
-    let (tx, rx) = sync_channel(0);
-    Thread::spawn(move || gen_psudo_legal(&p, tx));
-    rx
-}
-
-fn gen_psudo_legal(p: &Position, tx: SyncSender<Move>) {
-    if gen_en_passant(p, &tx).is_stop() {
-        return;
-    }
-    if gen_castle(p, &tx).is_stop() {
-        return;
-    }
-    for (piece_id, from) in p.piece_iter() {
-        if gen_move_from(p, piece_id, from, &tx).is_stop() {
-            return;
-        }
-    }
-}
-
-//Functions below return Stop if the receiver hung up.
-
-fn gen_move_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
+fn move_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
     if piece_id.color() != p.side_to_move() {
-        return Continue;
-    }
-    match piece_id.piece_type() {
-        Pawn => gen_pawn_from(p, piece_id, from, tx),
-        Queen|Bishop|Rook => gen_slider_from(p, piece_id, from, tx),
-        King|Knight => gen_fixed_from(p, piece_id, from, tx),
+        Vec::new().into_iter()
+    } else {
+        match piece_id.piece_type() {
+            Pawn => pawn_from_iter(p, piece_id, from),
+            Queen|Bishop|Rook => slider_from_iter(p, piece_id, from),
+            King|Knight => fixed_from_iter(p, piece_id, from),
+        }
     }
 }
 
@@ -86,10 +45,13 @@ fn shift(s: Square, dir: Diff) -> Option<Square> {
     Square::from_i32(file + dx, rank + dy)
 }
 
-fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
+fn slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
     let rook_slide:   &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1)];
     let bishop_slide: &[Diff] = &[(1, 1), (1, -1), (-1, -1), (-1, 1)];
-    let queen_slide:  &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, -1), (-1, 1)];
+    let queen_slide:  &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1),
+                                  (1, 1), (1, -1), (-1, -1), (-1, 1)];
+
+    let mut ans = Vec::new();
 
     let piece_type = piece_id.piece_type();
     let piece_color = piece_id.color();
@@ -106,7 +68,7 @@ fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<
         //while curr_pos is valid and there is no piece there.
         while curr_pos.is_some() && p.is_empty_at(curr_pos.unwrap()) {
             let curr_move = Move::new(from, curr_pos.unwrap());
-            send!(tx, curr_move);
+            ans.push(curr_move);
             curr_pos = shift(curr_pos.unwrap(), *dir);
         }
         //if curr_pos is valid
@@ -116,17 +78,21 @@ fn gen_slider_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<
             if p.is_color_at(to, piece_color.invert()) {
                 let mut curr_move = Move::new(from, to);
                 curr_move.set_capture_normal(p.at(to));
-                send!(tx, curr_move);
+                ans.push(curr_move);
             }
         }
     }
 
-    Continue
+    ans.into_iter()
 }
 
-fn gen_fixed_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
-    let king_fixed:   &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, -1), (-1, 1)];
-    let knight_fixed: &[Diff] = &[(2, 1), (2, -1), (-2, -1), (-2, 1), (1, 2), (1, -2), (-1, -2), (-1, 2)];
+fn fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+    let king_fixed:   &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1),
+                                  (1, 1), (1, -1), (-1, -1), (-1, 1)];
+    let knight_fixed: &[Diff] = &[(2, 1), (2, -1), (-2, -1), (-2, 1),
+                                  (1, 2), (1, -2), (-1, -2), (-1, 2)];
+
+    let mut ans = Vec::new();
 
     let piece_type = piece_id.piece_type();
     let piece_color = piece_id.color();
@@ -153,15 +119,17 @@ fn gen_fixed_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<M
             if is_valid {
                 let mut curr_move = Move::new(from, to);
 				if is_capture { curr_move.set_capture_normal(p.at(to)); }
-                send!(tx, curr_move);
+                ans.push(curr_move);
             }
         }
     }
 
-    Continue
+    ans.into_iter()
 }
 
-fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Move>) -> Action {
+fn pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+    let mut ans = Vec::new();
+
     let piece_color = piece_id.color();
     let from_rank = from.rank().0;
     //rank_up is the 1-based rank from the piece-owner's side.
@@ -178,22 +146,22 @@ fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
                 for new_piece in [Queen, Knight, Rook, Bishop].iter() {
                     let mut curr_move = Move::new(from, to);
                     curr_move.set_promote(Some(*new_piece));
-                    send!(tx, curr_move);
+                    ans.push(curr_move);
                 }
             },
             2 => {
                 let curr_move = Move::new(from, to);
-                send!(tx, curr_move);
+                ans.push(curr_move);
                 let to2: Square = shift(to, move_dir).unwrap();
                 if p.is_empty_at(to2) {
                     let mut curr_move2 = Move::new(from, to2);
                     curr_move2.set_pawn_double_move(true);
-                    send!(tx, curr_move2);
+                    ans.push(curr_move2);
                 }
             },
             _ => {
                 let curr_move = Move::new(from, to);
-                send!(tx, curr_move);
+                ans.push(curr_move);
             },
         }
     }
@@ -211,23 +179,25 @@ fn gen_pawn_from(p: &Position, piece_id: Piece, from: Square, tx: &SyncSender<Mo
                     let mut curr_move = Move::new(from, capture_to);
                     curr_move.set_capture_normal(Some(Piece::new(piece_color, *new_piece)));
                     curr_move.set_promote(Some(*new_piece));
-                    send!(tx, curr_move);
+                    ans.push(curr_move);
                 }
             } else {
                 let mut curr_move = Move::new(from, capture_to);
                 curr_move.set_capture_normal(p.at(capture_to));
-                send!(tx, curr_move);
+                ans.push(curr_move);
             }
         }
     }
 
-    Continue
+    ans.into_iter()
 }
 
-fn gen_en_passant(p: &Position, tx: &SyncSender<Move>) -> Action {
+fn en_passant_iter(p: &Position) -> vec::IntoIter<Move> {
+    let mut ans = Vec::new();
+
     let to_file = match p.en_passant() {
         Some(f) => f,
-        None => return Continue,
+        None => return ans.into_iter(),
     };
     let (from_rank, to_rank) = match p.side_to_move() {
         White => (Rank(4), Rank(5)),
@@ -248,14 +218,15 @@ fn gen_en_passant(p: &Position, tx: &SyncSender<Move>) -> Action {
         if p.is_piece_at(expect_piece, from) {
             let mut curr_move = Move::new(from, to);
             curr_move.set_en_passant(true);
-            send!(tx, curr_move);
+            ans.push(curr_move);
         }
     }
 
-    Continue
+    ans.into_iter()
 }
 
-fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
+fn castle_iter(p: &Position) -> vec::IntoIter<Move> {
+    let mut ans = Vec::new();
     match p.side_to_move() {
         White => {
             if p.can_castle_now(Kingside, White) {
@@ -263,14 +234,14 @@ fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
                 let to   = Square::new(File(6), Rank(0));
                 let mut curr_move = Move::new(from, to);
                 curr_move.set_castle(Some(Kingside));
-                send!(tx, curr_move);
+                ans.push(curr_move);
             }
             if p.can_castle_now(Queenside, White) {
                 let from = Square::new(File(4), Rank(0));
                 let to   = Square::new(File(2), Rank(0));
                 let mut curr_move = Move::new(from, to);
                 curr_move.set_castle(Some(Queenside));
-                send!(tx, curr_move);
+                ans.push(curr_move);
             }
         }
         Black => {
@@ -279,17 +250,17 @@ fn gen_castle(p: &Position, tx: &SyncSender<Move>) -> Action {
                 let to   = Square::new(File(6), Rank(7));
                 let mut curr_move = Move::new(from, to);
                 curr_move.set_castle(Some(Kingside));
-                send!(tx, curr_move);
+                ans.push(curr_move);
             }
             if p.can_castle_now(Queenside, Black) {
                 let from = Square::new(File(4), Rank(7));
                 let to   = Square::new(File(2), Rank(7));
                 let mut curr_move = Move::new(from, to);
                 curr_move.set_castle(Some(Queenside));
-                send!(tx, curr_move);
+                ans.push(curr_move);
             }
         }
     }
 
-    Continue
+    ans.into_iter()
 }

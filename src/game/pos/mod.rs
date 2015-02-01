@@ -123,10 +123,10 @@ impl Position {
         self.extra_data = val;
     }
 
-    pub fn legal_iter(&self) -> legal::Iter {
+    pub fn legal_iter<'a>(&'a self) -> legal::Iter<'a> {
         legal::iter(self)
     }
-    pub fn psudo_legal_iter(&self) -> psudo_legal::Iter {
+    pub fn psudo_legal_iter<'a>(&'a self) -> psudo_legal::Iter<'a> {
         psudo_legal::iter(self)
     }
 

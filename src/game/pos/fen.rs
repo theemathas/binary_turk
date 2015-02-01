@@ -73,10 +73,15 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
         _ => return Err("Invalid side to move."),
     };
     let castle = fields[2];
-    pos.set_castle(Kingside,  White, castle.char_at(0) == 'K');
-    pos.set_castle(Queenside, White, castle.char_at(1) == 'Q');
-    pos.set_castle(Kingside,  Black, castle.char_at(2) == 'k');
-    pos.set_castle(Queenside, Black, castle.char_at(3) == 'q');
+    for ch in castle.chars() {
+        match ch {
+            'K' => pos.set_castle(Kingside , White, true),
+            'Q' => pos.set_castle(Queenside, White, true),
+            'k' => pos.set_castle(Kingside , Black, true),
+            'q' => pos.set_castle(Queenside, Black, true),
+            _ => {}
+        }
+    }
     let en_passant_char = fields[3].char_at(0);
     if en_passant_char != '-' {
         pos.set_en_passant(Some(File((en_passant_char as u8 - b'a') as i32)));

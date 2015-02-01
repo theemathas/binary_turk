@@ -134,10 +134,13 @@ where T: Iterator<Item = &'a str> {
         debug!("parse_position() consumed \"startpos\"");
         words.next();
         Some(Position::start())
-    } else {
+    } else if words.peek() == Some(&"fen") {
+        words.next();
         let six_words: Vec<_> = words.by_ref().take(6).collect();
         debug!("parse_position(): six_words = {:?}", six_words);
         Position::from_fen(&*six_words.connect(" ")).ok()
+    } else {
+        None
     };
 
     debug!("parse_position() returning {:?}", ans);

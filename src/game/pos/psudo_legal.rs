@@ -177,7 +177,7 @@ fn pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<
             if rank_up == 7 {
                 for new_piece in [Queen, Knight, Rook, Bishop].iter() {
                     let mut curr_move = Move::new(from, capture_to);
-                    curr_move.set_capture_normal(Some(Piece::new(piece_color, *new_piece)));
+                    curr_move.set_capture_normal(p.at(capture_to));
                     curr_move.set_promote(Some(*new_piece));
                     ans.push(curr_move);
                 }

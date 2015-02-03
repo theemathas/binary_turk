@@ -149,7 +149,7 @@ pub fn unmake_move(p: &mut Position, m: &Move, extra_data: ExtraData) {
     } else if let Some(promote_piece) = m.promote() {
 
         p.remove_at(to, Piece::new(curr_color, promote_piece));
-        p.set_at(to, curr_piece);
+        p.set_at(from, curr_piece);
         if let Some(captured_piece) = m.capture_normal() {
             p.set_at(to, captured_piece);
         }

@@ -11,9 +11,9 @@ use super::{Position, ExtraData};
 
 pub fn make_move(p: &mut Position, m: &Move) {
 
-    debug!("make_move with move {:?}", *m);
+    debug!("make_move(): {:?}", *m);
 
-    debug!("before: position is {:?}", *p);
+    debug!("before: {:?}", *p);
 
     let from = m.from();
     let to = m.to();
@@ -107,10 +107,16 @@ pub fn make_move(p: &mut Position, m: &Move) {
 
     p.swap_side_to_move();
 
-    debug!("after : position is {:?}", *p);
+    debug!("after : {:?}", *p);
 }
 
 pub fn unmake_move(p: &mut Position, m: &Move, extra_data: ExtraData) {
+
+    debug!("unmake_move(): {:?}", *m);
+    debug!("{:?}", extra_data);
+
+    debug!("before: {:?}", *p);
+
     let from = m.from();
     let to = m.to();
     let curr_piece = p.at(to).unwrap();
@@ -160,4 +166,7 @@ pub fn unmake_move(p: &mut Position, m: &Move, extra_data: ExtraData) {
 
     p.set_extra_data(extra_data);
     p.swap_side_to_move();
+
+    debug!("after : {:?}", *p);
+
 }

@@ -8,7 +8,7 @@ use std::error::FromError;
 use super::piece::{self, Piece, Queen, Bishop, Knight, Rook, King, Pawn};
 use super::square::{Square, File, ParseSquareError};
 use super::castle::{Side, Kingside, Queenside};
-use super::pos::Position;
+use super::pos::{Position, at_in_pos, is_empty_at_in_pos};
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Move {
@@ -95,10 +95,10 @@ impl FromTo {
     pub fn to_move_with_pos(&self, pos: &Position) -> Move {
         let mut ans = Move::new(self.from, self.to);
         ans.set_promote(self.promote);
-        if !pos.is_empty_at(self.to) {
-            ans.set_capture_normal(pos.at(self.to));
+        if !is_empty_at_in_pos(pos, self.to) {
+            ans.set_capture_normal(at_in_pos(pos, self.to));
         }
-        match pos.at(self.from).map(|x| x.piece_type()) {
+        match at_in_pos(pos, self.from).map(|x| x.piece_type()) {
             Some(King) => {
                 match (self.from.file(), self.to.file()) {
                     (File(4), File(6)) => ans.set_castle(Some(Kingside)),

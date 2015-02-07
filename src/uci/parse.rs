@@ -138,7 +138,7 @@ where T: Iterator<Item = &'a str> {
         words.next();
         let six_words: Vec<_> = words.by_ref().take(6).collect();
         debug!("parse_position(): six_words = {:?}", six_words);
-        Position::from_fen(&*six_words.connect(" ")).ok()
+        six_words.connect(" ").parse::<Position>().ok()
     } else {
         None
     };

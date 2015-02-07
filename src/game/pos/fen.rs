@@ -9,14 +9,17 @@ use super::super::color::Color::{White, Black};
 
 use super::Position;
 
+#[derive(Debug)]
+pub struct ParsePosError(&'static str);
+
 pub fn start_pos() -> Position {
     fen_to_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap()
 }
 
-pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
+pub fn fen_to_position(fen: &str) -> Result<Position, ParsePosError> {
     let fields: Vec<&str> = fen.split(' ').collect();
     if fields.len() < 6 {
-        return Err("Not enough fields in FEN input.");
+        return Err(ParsePosError("Not enough fields in FEN input."));
     };
     let mut pos_str = "".to_string();
     for ch in fields[0].chars() {
@@ -25,7 +28,7 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
                 let val = {
                     match ch.to_digit(10) {
                         Some(val) => val,
-                        None => return Err("invalid character in fen"),
+                        None => return Err(ParsePosError("invalid character in fen")),
                     }
                 };
                 for _ in (0..val) {
@@ -58,7 +61,7 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
             file = file + 1;
         } else {
             match decode.get(&ch) {
-                None => return Err("Unexpected charactor found."),
+                None => return Err(ParsePosError("Unexpected charactor found.")),
                 Some(val) => {
                     pos.set_at(Square::new(File(file), Rank(rank)), *val);
                     file = file + 1;
@@ -70,7 +73,7 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
     match side_to_move {
         'w' => pos.set_side_to_move(White),
         'b' => pos.set_side_to_move(Black),
-        _ => return Err("Invalid side to move."),
+        _ => return Err(ParsePosError("Invalid side to move.")),
     };
     let castle = fields[2];
     for ch in castle.chars() {
@@ -88,7 +91,7 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
     }
     match fields[4].parse::<u32>() {
         Ok(val) => pos.set_ply_count(NumPlies(val)),
-        Err(_) => return Err("Invalid number of plies."),
+        Err(_) => return Err(ParsePosError("Invalid number of plies.")),
     }
     Ok(pos)
 }

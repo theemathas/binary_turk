@@ -60,7 +60,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     // TODO change to best_score and use it
     let mut _best_score = None::<Score>;
     let mut best_move = search_move_pos_arc[0].0.clone();
-    let mut total_search_data = Data;
+    let mut total_search_data = Data::one_node();
 
     let mut curr_plies = NumPlies(1);
 

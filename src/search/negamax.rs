@@ -4,11 +4,10 @@ use game::Position;
 use types::{NumPlies, Score, ScoreUnit};
 
 // TODO put actual data here
-pub struct Data;
+pub struct Data(());
 impl Data {
-    pub fn combine(self, _: Data) -> Data {
-        Data
-    }
+    pub fn one_node() -> Data { Data(()) }
+    pub fn combine(self, _: Data) -> Data { Data(()) }
 }
 
 // TODO put more parameters here
@@ -20,10 +19,10 @@ pub struct Param {
 pub fn negamax(pos: &mut Position, depth: NumPlies, param: Param,
                is_killed: &AtomicBool) -> (Score, Data) {
     if is_killed.load(Ordering::Relaxed) {
-        return (Score::Value(ScoreUnit(0)), Data);
+        return (Score::Value(ScoreUnit(0)), Data::one_node());
     }
     if depth == NumPlies(0) {
-        return (pos.eval(param.draw_val), Data);
+        return (pos.eval(param.draw_val), Data::one_node());
     }
 
     let ans_opt: Option<(Score, Data)> = {
@@ -60,5 +59,5 @@ pub fn negamax(pos: &mut Position, depth: NumPlies, param: Param,
         prev_ans_opt
     };
 
-    ans_opt.unwrap_or_else(||(pos.eval(param.draw_val), Data))
+    ans_opt.unwrap_or_else(||(pos.eval(param.draw_val), Data::one_node()))
 }

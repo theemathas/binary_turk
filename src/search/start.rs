@@ -164,7 +164,7 @@ fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
 
     let mut ans_iter = {
         search_move_pos.iter_mut().map( |&mut (ref mut curr_move, ref mut curr_pos)| {
-            let (next_score, _, data) =
+            let (next_score, data) =
                 negamax(curr_pos, next_depth, param.clone(), &*is_killed);
             let score = next_score.increment();
             (score, curr_move.clone(), data)

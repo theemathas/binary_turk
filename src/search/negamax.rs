@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use game::{Position, Move};
+use game::Position;
 use types::{NumPlies, Score, ScoreUnit};
 
 // TODO put actual data here
@@ -18,39 +18,39 @@ pub struct Param {
 }
 
 pub fn negamax(pos: &mut Position, depth: NumPlies, param: Param,
-               is_killed: &AtomicBool) -> (Score, Option<Move>, Data) {
+               is_killed: &AtomicBool) -> (Score, Data) {
     if is_killed.load(Ordering::Relaxed) {
-        return (Score::Value(ScoreUnit(0)), None, Data);
+        return (Score::Value(ScoreUnit(0)), Data);
     }
     if depth == NumPlies(0) {
-        return (pos.eval(param.draw_val), None, Data);
+        return (pos.eval(param.draw_val), Data);
     }
 
-    let ans_opt: Option<(Score, Move, Data)> = {
+    let ans_opt: Option<(Score, Data)> = {
         let temp = pos.clone();
         let move_iter = temp.legal_iter();
 
-        let mut prev_ans_opt: Option<(Score, Move, Data)> = None;
+        let mut prev_ans_opt: Option<(Score, Data)> = None;
 
         for curr_move in move_iter {
             let new_param = Param { draw_val: -param.draw_val };
-            let (temp_score, _next_best_move, curr_data) = pos.with_move(&curr_move, move |new_pos| {
+            let (temp_score, curr_data) = pos.with_move(&curr_move, move |new_pos| {
                 negamax(new_pos, NumPlies(depth.0 - 1), new_param, is_killed)
             });
             let curr_score = temp_score.increment();
 
             let new_ans = match prev_ans_opt {
-                None => (curr_score, curr_move, curr_data),
+                None => (curr_score, curr_data),
                 Some(prev_ans) => {
 
-                    let (prev_score, prev_move, prev_data) = prev_ans;
+                    let (prev_score, prev_data) = prev_ans;
 
                     let combined_data = prev_data.combine(curr_data);
 
                     if curr_score > prev_score {
-                        (curr_score, curr_move, combined_data)
+                        (curr_score, combined_data)
                     } else {
-                        (prev_score, prev_move, combined_data)
+                        (prev_score, combined_data)
                     }
                 },
             };
@@ -60,8 +60,5 @@ pub fn negamax(pos: &mut Position, depth: NumPlies, param: Param,
         prev_ans_opt
     };
 
-    match ans_opt {
-        Some((ans_score, ans_move, ans_data)) => (ans_score, Some(ans_move), ans_data),
-        None => return (pos.eval(param.draw_val), None, Data),
-    }
+    ans_opt.unwrap_or_else(||(pos.eval(param.draw_val), Data))
 }

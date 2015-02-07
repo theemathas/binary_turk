@@ -162,28 +162,34 @@ fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
 
     let param = negamax::Param { draw_val: next_draw_val };
 
-    let mut ans_iter = {
-        search_move_pos.iter_mut().map( |&mut (ref mut curr_move, ref mut curr_pos)| {
-            let (next_score, data) =
-                negamax(curr_pos, next_depth, param.clone(), &*is_killed);
-            let score = next_score.increment();
-            (score, curr_move.clone(), data)
-        })
-    };
+    let mut prev_ans_opt: Option<(Score, Move, Data)> = None;
 
-    let first_ans: (Score, Move, Data) = ans_iter.next().unwrap();
-    let ans = ans_iter.fold(first_ans, |prev_ans, curr_ans| {
-        let (prev_score, prev_move, prev_data) = prev_ans;
-        let (curr_score, curr_move, curr_data) = curr_ans;
+    for &mut (ref curr_move_ref, ref mut curr_pos) in search_move_pos.iter_mut() {
+        let curr_move = curr_move_ref.clone();
+        let (temp_score, curr_data) =
+            negamax(curr_pos, next_depth, param.clone(), &*is_killed);
+        let curr_score = temp_score.increment();
 
-        let combined_data = prev_data.combine(curr_data);
+        let new_ans = match prev_ans_opt {
+            None => (curr_score, curr_move, curr_data),
+            Some(prev_ans) => {
+                let (prev_score, prev_move, prev_data) = prev_ans;
 
-        if curr_score > prev_score {
-            (curr_score, curr_move, combined_data)
-        } else {
-            (prev_score, prev_move, combined_data)
-        }
-    });
+                let combined_data = prev_data.combine(curr_data);
+
+                if curr_score > prev_score {
+                    (curr_score, curr_move, combined_data)
+                } else {
+                    (prev_score, prev_move, combined_data)
+                }
+            },
+        };
+
+        prev_ans_opt = Some(new_ans);
+    }
+
+    let ans = prev_ans_opt.unwrap();
+
     let _ = tx.send(ans);
 
     // TODO respond to kill_rx

@@ -162,33 +162,41 @@ fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
 
     let param = negamax::Param { draw_val: next_draw_val };
 
-    let mut prev_ans_opt: Option<(Score, Move, Data)> = None;
+    let mut prev_ans_opt: Option<(Score, Move)> = None;
+    let mut prev_data = Data::one_node();
 
     for &mut (ref curr_move_ref, ref mut curr_pos) in search_move_pos.iter_mut() {
         let curr_move = curr_move_ref.clone();
+
+        let prev_best_score_opt = prev_ans_opt.as_ref().map(|x| x.0);
         let (temp_score, curr_data) =
-            negamax(curr_pos, next_depth, param.clone(), &*is_killed);
+            negamax(curr_pos,
+                    prev_best_score_opt,
+                    None,
+                    next_depth,
+                    param.clone(),
+                    &*is_killed);
         let curr_score = temp_score.increment();
 
         let new_ans = match prev_ans_opt {
-            None => (curr_score, curr_move, curr_data),
+            None => (curr_score, curr_move),
             Some(prev_ans) => {
-                let (prev_score, prev_move, prev_data) = prev_ans;
-
-                let combined_data = prev_data.combine(curr_data);
+                let (prev_score, prev_move) = prev_ans;
 
                 if curr_score > prev_score {
-                    (curr_score, curr_move, combined_data)
+                    (curr_score, curr_move)
                 } else {
-                    (prev_score, prev_move, combined_data)
+                    (prev_score, prev_move)
                 }
             },
         };
+        let new_data = prev_data.combine(curr_data);
 
         prev_ans_opt = Some(new_ans);
+        prev_data = new_data;
     }
 
-    let ans = prev_ans_opt.unwrap();
+    let (best_score, best_move) = prev_ans_opt.unwrap();
 
-    let _ = tx.send(ans);
+    let _ = tx.send((best_score, best_move, prev_data));
 }

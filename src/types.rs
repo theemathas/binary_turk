@@ -62,6 +62,14 @@ impl Score {
             Score::LoseIn(val) => Score::WinIn(NumMoves(val.0+1)),
         }
     }
+    pub fn decrement(self) -> Score {
+        match self {
+            Score::Value(val) => Score::Value(-val),
+            Score::WinIn(val) => Score::LoseIn(NumMoves(
+                if val.0 == 0 { 0 } else { val.0 - 1 } )),
+            Score::LoseIn(val) => Score::WinIn(val),
+        }
+    }
 }
 impl fmt::Display for Score {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

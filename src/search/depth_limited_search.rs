@@ -33,7 +33,7 @@ pub fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
         let curr_move = curr_move_ref.clone();
 
         let prev_best_score_opt = prev_ans_opt.as_ref().map(|x| x.0);
-        let (temp_score, curr_data) =
+        let (temp_score, temp_data) =
             negamax(curr_pos,
                     prev_best_score_opt,
                     None,
@@ -41,6 +41,7 @@ pub fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
                     param.clone(),
                     &*is_killed);
         let curr_score = temp_score.increment();
+        let curr_data = temp_data.increment();
 
         let new_ans = match prev_ans_opt {
             None => (curr_score, curr_move),

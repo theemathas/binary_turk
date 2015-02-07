@@ -38,7 +38,7 @@ pub fn negamax(pos: &mut Position,
             let new_param = Param { draw_val: -param.draw_val };
             let new_alpha = beta.map(|x| x.decrement());
             let new_beta = prev_score_opt.map(|x| x.decrement());
-            let (temp_score, curr_data) = pos.with_move(&curr_move, move |new_pos| {
+            let (temp_score, temp_data) = pos.with_move(&curr_move, move |new_pos| {
                 negamax(new_pos,
                         new_alpha,
                         new_beta,
@@ -47,6 +47,7 @@ pub fn negamax(pos: &mut Position,
                         is_killed)
             });
             let curr_score = temp_score.increment();
+            let curr_data = temp_data.increment();
 
             let new_score = match prev_score_opt {
                 None => curr_score,

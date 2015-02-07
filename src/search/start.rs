@@ -57,7 +57,8 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
         }).collect()
     });
 
-    let mut best_score = None::<Score>;
+    // TODO change to best_score and use it
+    let mut _best_score = None::<Score>;
     let mut best_move = search_move_pos_arc[0].0.clone();
     let mut total_search_data = Data;
 
@@ -117,7 +118,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                 let (temp_best_score, temp_best_move, curr_search_data) = search_res.ok()
                     .expect("depth_limited_search unexpectedly dropped Sender");
 
-                best_score = Some(temp_best_score);
+                _best_score = Some(temp_best_score);
                 best_move = temp_best_move;
 
                 total_search_data = total_search_data.combine(curr_search_data);
@@ -163,7 +164,7 @@ fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
 
     let mut ans_iter = {
         search_move_pos.iter_mut().map( |&mut (ref mut curr_move, ref mut curr_pos)| {
-            let (next_score, next_move_opt, data) =
+            let (next_score, _, data) =
                 negamax(curr_pos, next_depth, param.clone(), &*is_killed);
             let score = next_score.increment();
             (score, curr_move.clone(), data)

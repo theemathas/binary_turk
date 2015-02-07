@@ -1,7 +1,6 @@
 use time::precise_time_ns;
 
 use game::Move;
-use timer::Timer;
 
 use super::super::types::GoParam;
 use super::super::state::State;

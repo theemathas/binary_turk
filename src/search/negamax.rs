@@ -6,7 +6,7 @@ use types::{NumPlies, Score, ScoreUnit};
 // TODO put actual data here
 pub struct Data;
 impl Data {
-    pub fn combine(self, other: Data) -> Data {
+    pub fn combine(self, _: Data) -> Data {
         Data
     }
 }

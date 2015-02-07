@@ -87,8 +87,8 @@ pub fn fen_to_position(fen: &str) -> Result<Position, &str> {
         pos.set_en_passant(Some(File((en_passant_char as u8 - b'a') as i32)));
     }
     match fields[4].parse::<u32>() {
-        None => return Err("Invalid number of plies."),
-        Some(val) => pos.set_ply_count(NumPlies(val)),
+        Ok(val) => pos.set_ply_count(NumPlies(val)),
+        Err(_) => return Err("Invalid number of plies."),
     }
     Ok(pos)
 }

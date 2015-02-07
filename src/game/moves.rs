@@ -3,9 +3,10 @@
 use std::str::FromStr;
 use std::fmt;
 use std::num::SignedInt;
+use std::error::FromError;
 
 use super::piece::{self, Piece, Queen, Bishop, Knight, Rook, King, Pawn};
-use super::square::{Square, File};
+use super::square::{Square, File, ParseSquareError};
 use super::castle::{Side, Kingside, Queenside};
 use super::pos::Position;
 
@@ -76,6 +77,11 @@ impl fmt::Display for Move {
     }
 }
 
+pub struct ParseFromToError(());
+impl FromError<ParseSquareError> for ParseFromToError {
+    fn from_error(_: ParseSquareError) -> Self { ParseFromToError(()) }
+}
+
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct FromTo {
     from: Square,
@@ -114,12 +120,11 @@ impl FromTo {
     }
 }
 impl FromStr for FromTo {
-    fn from_str(s: &str) -> Option<FromTo> {
-        if s.len() != 4 && s.len() != 5 { return None; }
-        let from: Square = match FromStr::from_str(&s[0..2]) {
-            Some(val) => val, None => return None };
-        let to:   Square = match FromStr::from_str(&s[2..4]) {
-            Some(val) => val, None => return None };
+    type Err = ParseFromToError;
+    fn from_str(s: &str) -> Result<FromTo, ParseFromToError> {
+        if s.len() != 4 && s.len() != 5 { return Err(ParseFromToError(())); }
+        let from: Square = try!(FromStr::from_str(&s[0..2]));
+        let to  : Square = try!(FromStr::from_str(&s[2..4]));
         let mut ans = FromTo::new(from, to);
         if s.len() == 5 {
             ans.promote = Some( match s.as_bytes()[4] {
@@ -127,9 +132,9 @@ impl FromStr for FromTo {
                 b'b' => Bishop,
                 b'n' => Knight,
                 b'r' => Rook,
-                _ => return None,
+                _ => return Err(ParseFromToError(())),
             });
         }
-        Some(ans)
+        Ok(ans)
     }
 }

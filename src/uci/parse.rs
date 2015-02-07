@@ -84,14 +84,14 @@ fn parse_on_off(words: &mut Iterator<Item = &str>) -> Option<bool> {
     ans
 }
 
-fn parse_option_val<'a, T>(_words: &mut Peekable<&'a str, T>) -> Option<options::NameAndVal>
+fn parse_option_val<'a, T>(_words: &mut Peekable<T>) -> Option<options::NameAndVal>
 where T: Iterator<Item = &'a str> {
     debug!("dummy option parsing");
     // TODO parse options.
     Some((options::Name::Dummy, options::Val::Spin(1)))
 }
 
-fn parse_register_vec<'a, T>(words: &mut Peekable<&'a str, T>) -> Option<Vec<RegisterParam>>
+fn parse_register_vec<'a, T>(words: &mut Peekable<T>) -> Option<Vec<RegisterParam>>
 where T: Iterator<Item = &'a str> {
     let mut res = Vec::<RegisterParam>::new();
     while let Some(next_word) = words.next() {
@@ -128,7 +128,7 @@ where T: Iterator<Item = &'a str> {
     ans
 }
 
-fn parse_position<'a, T>(words: &mut Peekable<&'a str, T>) -> Option<Position>
+fn parse_position<'a, T>(words: &mut Peekable<T>) -> Option<Position>
 where T: Iterator<Item = &'a str> {
     let ans = if words.peek() == Some(&"startpos") {
         debug!("parse_position() consumed \"startpos\"");
@@ -148,11 +148,11 @@ where T: Iterator<Item = &'a str> {
     ans
 }
 
-fn parse_move_vec<'a, T>(words: &mut Peekable<&'a str, T>) -> Option<Vec<FromTo>>
+fn parse_move_vec<'a, T>(words: &mut Peekable<T>) -> Option<Vec<FromTo>>
 where T: Iterator<Item = &'a str> {
     let mut res = Vec::<FromTo>::new();
     debug!("parse_move_vec() peeked at {:?}", words.peek());
-    while let Some(val) = words.peek().and_then(|val| FromStr::from_str(*val)) {
+    while let Some(val) = words.peek().and_then(|val| FromStr::from_str(*val).ok()) {
         debug!("parse_move_vec(): val = {:?}", val);
         res.push(val);
         words.next();
@@ -165,30 +165,30 @@ where T: Iterator<Item = &'a str> {
     ans
 }
 
-fn parse_go_param_vec<'a, T>(words: &mut Peekable<&'a str, T>) -> Option<Vec<GoParam>>
+fn parse_go_param_vec<'a, T>(words: &mut Peekable<T>) -> Option<Vec<GoParam>>
 where T: Iterator<Item = &'a str> {
     let mut res = Vec::<GoParam>::new();
     while let Some(next_word) = words.next() {
         match next_word {
             "search moves" => parse_move_vec(words).map(|x| GoParam::SearchMoves(x)),
             "ponder" => Some(GoParam::Ponder),
-            "wtime"     => words.next().and_then(|s| s.parse::<i64>())
+            "wtime"     => words.next().and_then(|s| s.parse::<i64>().ok())
                                        .map(|x| GoParam::Time(White, Duration::milliseconds(x))),
-            "btime"     => words.next().and_then(|s| s.parse::<i64>())
+            "btime"     => words.next().and_then(|s| s.parse::<i64>().ok())
                                        .map(|x| GoParam::Time(Black, Duration::milliseconds(x))),
-            "winc"      => words.next().and_then(|s| s.parse::<i64>())
+            "winc"      => words.next().and_then(|s| s.parse::<i64>().ok())
                                        .map(|x| GoParam::IncTime(White, Duration::milliseconds(x))),
-            "binc"      => words.next().and_then(|s| s.parse::<i64>())
+            "binc"      => words.next().and_then(|s| s.parse::<i64>().ok())
                                        .map(|x| GoParam::IncTime(Black, Duration::milliseconds(x))),
-            "movestogo" => words.next().and_then(|s| s.parse::<u32>())
+            "movestogo" => words.next().and_then(|s| s.parse::<u32>().ok())
                                        .map(|x| GoParam::MovesToGo(NumMoves(x))),
-            "depth"     => words.next().and_then(|s| s.parse::<u32>())
+            "depth"     => words.next().and_then(|s| s.parse::<u32>().ok())
                                        .map(|x| GoParam::Depth(NumPlies(x))),
-            "nodes"     => words.next().and_then(|s| s.parse::<u64>())
+            "nodes"     => words.next().and_then(|s| s.parse::<u64>().ok())
                                        .map(|x| GoParam::Nodes(NumNodes(x))),
-            "mate"      => words.next().and_then(|s| s.parse::<u32>())
+            "mate"      => words.next().and_then(|s| s.parse::<u32>().ok())
                                        .map(|x| GoParam::Mate(NumMoves(x))),
-            "movetime"  => words.next().and_then(|s| s.parse::<i64>())
+            "movetime"  => words.next().and_then(|s| s.parse::<i64>().ok())
                                        .map(|x| GoParam::MoveTime(Duration::milliseconds(x))),
             "infinite" => Some(GoParam::Infinite),
             _ => None,

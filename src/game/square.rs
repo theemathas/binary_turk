@@ -2,16 +2,28 @@
 
 use std::str::FromStr;
 use std::fmt;
+use std::error::FromError;
+
+pub struct ParseFileError(());
+pub struct ParseRankError(());
+pub struct ParseSquareError(());
+impl FromError<ParseFileError> for ParseSquareError {
+    fn from_error(_: ParseFileError) -> Self { ParseSquareError(()) }
+}
+impl FromError<ParseRankError> for ParseSquareError {
+    fn from_error(_: ParseRankError) -> Self { ParseSquareError(()) }
+}
 
 // File and Rank are 0-based.
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct File(pub i32);
 impl FromStr for File {
-    fn from_str(s: &str) -> Option<File> {
-        if s.len() != 1 { return None; }
+    type Err = ParseFileError;
+    fn from_str(s: &str) -> Result<File, ParseFileError> {
+        if s.len() != 1 { return Err(ParseFileError(())); }
         match s.as_bytes()[0] {
-            ch @ b'a' ... b'h' => Some(File((ch - b'a') as i32)),
-            _ => None,
+            ch @ b'a' ... b'h' => Ok(File((ch - b'a') as i32)),
+            _ => Err(ParseFileError(())),
         }
     }
 }
@@ -25,11 +37,12 @@ impl fmt::Display for File {
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct Rank(pub i32);
 impl FromStr for Rank {
-    fn from_str(s: &str) -> Option<Rank> {
-        if s.len() != 1 { return None; }
+    type Err = ParseRankError;
+    fn from_str(s: &str) -> Result<Rank, ParseRankError> {
+        if s.len() != 1 { return Err(ParseRankError(())); }
         match s.as_bytes()[0] {
-            ch @ b'1' ... b'8' => Some(Rank((ch - b'1') as i32)),
-            _ => None,
+            ch @ b'1' ... b'8' => Ok(Rank((ch - b'1') as i32)),
+            _ => Err(ParseRankError(())),
         }
     }
 }
@@ -76,13 +89,12 @@ impl Square {
     }
 }
 impl FromStr for Square {
-    fn from_str(s: &str) -> Option<Square> {
-        if s.len() != 2 { return None; }
-        let f: File = match FromStr::from_str(&s[0..1]) {
-            Some(val) => val, None => return None };
-        let r: Rank = match FromStr::from_str(&s[1..2]) {
-            Some(val) => val, None => return None };
-        Some(Square::new(f, r))
+    type Err = ParseSquareError;
+    fn from_str(s: &str) -> Result<Square, ParseSquareError> {
+        if s.len() != 2 { return Err(ParseSquareError(())); }
+        let f: File = try!(FromStr::from_str(&s[0..1]));
+        let r: Rank = try!(FromStr::from_str(&s[1..2]));
+        Ok(Square::new(f, r))
     }
 }
 impl fmt::Display for Square {

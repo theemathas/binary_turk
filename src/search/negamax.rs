@@ -1,8 +1,7 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use game::{Position, Move};
-use eval::{eval, Score, ScoreUnit};
-use types::NumPlies;
+use types::{NumPlies, Score, ScoreUnit};
 
 // TODO put actual data here
 pub struct Data;
@@ -21,10 +20,10 @@ pub struct Param {
 pub fn negamax(pos: &mut Position, depth: NumPlies, param: Param,
                is_killed: &AtomicBool) -> (Score, Option<Move>, Data) {
     if is_killed.load(Ordering::Relaxed) {
-        return (Score::Value(0), None, Data);
+        return (Score::Value(ScoreUnit(0)), None, Data);
     }
     if depth == NumPlies(0) {
-        return (eval(pos, param.draw_val), None, Data);
+        return (pos.eval(param.draw_val), None, Data);
     }
 
     let ans_opt: Option<(Score, Move, Data)> = {
@@ -57,7 +56,7 @@ pub fn negamax(pos: &mut Position, depth: NumPlies, param: Param,
 
     match ans_opt {
         Some((ans_score, ans_move, ans_data)) => (ans_score, Some(ans_move), ans_data),
-        None => return (eval(pos, param.draw_val), None, Data),
+        None => return (pos.eval(param.draw_val), None, Data),
     }
 }
 

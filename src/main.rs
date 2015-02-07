@@ -9,7 +9,6 @@ use std::old_io as io;
 
 mod types;
 mod game;
-mod eval;
 mod search;
 mod timer;
 mod uci;

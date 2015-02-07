@@ -2,8 +2,7 @@ use std::time::Duration;
 use std::fmt;
 
 use game::{Move, FromTo, Color};
-use eval::Score;
-use types::{NumNodes, NumVariations, PerMill, NumCpu, NumPlies, NumMoves};
+use types::{NumNodes, NumVariations, PerMill, NumCpu, NumPlies, NumMoves, Score};
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum RegisterParam {

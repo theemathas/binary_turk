@@ -1,6 +1,6 @@
 //! Implements the game representation
 
-use types::NumPlies;
+use types::{NumPlies, Score, ScoreUnit};
 
 use super::piece::Piece;
 use super::color::Color;
@@ -17,6 +17,7 @@ mod psudo_legal;
 mod make_move;
 mod mate;
 mod fen;
+mod eval;
 
 /// Data required to unmake moves
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -153,6 +154,10 @@ impl Position {
     }
     pub fn has_legal_moves(&mut self) -> bool {
         mate::has_legal_moves(self)
+    }
+
+    pub fn eval(&mut self, draw_val: ScoreUnit) -> Score {
+        eval::eval(self, draw_val)
     }
 }
 

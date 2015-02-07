@@ -5,8 +5,7 @@ use std::thread::Thread;
 
 use uci::Response;
 use game::{Move, Position};
-use types::NumPlies;
-use eval::{Score, ScoreUnit};
+use types::{NumPlies, Score, ScoreUnit};
 
 use super::types::{State, Cmd};
 use super::negamax::{self, negamax, Data};
@@ -155,7 +154,7 @@ fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
     let mut search_move_pos = (*search_move_pos_arc).clone();
 
     // TODO Take this draw_val value from somewhere else
-    let draw_val: ScoreUnit = 0;
+    let draw_val = ScoreUnit(0);
 
     let next_depth = NumPlies(depth.0 - 1);
     let next_draw_val = -draw_val;

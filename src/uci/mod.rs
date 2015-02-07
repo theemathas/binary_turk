@@ -1,5 +1,5 @@
 pub use self::start::start;
-pub use self::types::{Cmd, Response};
+pub use self::types::{Cmd, Response, InfoParam};
 
 mod types;
 mod state;

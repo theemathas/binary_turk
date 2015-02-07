@@ -8,6 +8,7 @@ use game::{Move, Position};
 use types::{NumPlies, Score};
 
 use super::types::{State, Cmd, Data};
+use super::send_info::send_info;
 use super::depth_limited_search::depth_limited_search;
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
@@ -57,12 +58,11 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
         }).collect()
     });
 
-    // TODO change to best_score and use it
-    let mut _best_score = None::<Score>;
+    let mut best_score = None::<Score>;
     let mut best_move = search_move_pos_arc[0].0.clone();
     let mut total_search_data = Data::one_node();
 
-    let mut curr_plies = NumPlies(1);
+    let mut curr_depth = NumPlies(1);
 
     let (search_tx, mut search_rx) = channel::<(Score, Move, Data)>();
     // This is a hack required because Send currently requires 'static
@@ -72,9 +72,9 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     let temp_search_move_pos_arc = search_move_pos_arc.clone();
     let temp_is_killed = is_killed.clone();
 
-    debug!("Starting depth limited search with depth = {} plies", curr_plies.0);
+    debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
     let mut search_guard = Thread::scoped(move ||
-        depth_limited_search(temp_search_move_pos_arc, curr_plies, search_tx, temp_is_killed));
+        depth_limited_search(temp_search_move_pos_arc, curr_depth, search_tx, temp_is_killed));
 
     loop {
         // This is a hack to get around a problem in select! {}
@@ -99,7 +99,11 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                         is_killed.store(true, Ordering::SeqCst);
 
                         debug!("reporting result");
-                        // TODO send info again
+                        send_info(&tx,
+                                  best_move.clone(),
+                                  best_score.unwrap(),
+                                  curr_depth,
+                                  &total_search_data);
                         tx.send(Response::BestMove(best_move, None))
                           .ok().expect("output channel unexpectedly closed");
 
@@ -118,15 +122,18 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                 let (temp_best_score, temp_best_move, curr_search_data) = search_res.ok()
                     .expect("depth_limited_search unexpectedly dropped Sender");
 
-                _best_score = Some(temp_best_score);
+                best_score = Some(temp_best_score);
                 best_move = temp_best_move;
 
                 total_search_data = total_search_data.combine(curr_search_data);
 
-                // TODO use search data
-                // TODO send info
+                send_info(&tx,
+                          best_move.clone(),
+                          best_score.unwrap(),
+                          curr_depth,
+                          &total_search_data);
 
-                curr_plies.0 += 1;
+                curr_depth.0 += 1;
 
                 let (new_search_tx, new_search_rx) = channel::<(Score, Move, Data)>();
                 search_rx_opt = Some(new_search_rx);
@@ -134,9 +141,9 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                 let temp_search_move_pos_arc = search_move_pos_arc.clone();
                 let temp_is_killed = is_killed.clone();
 
-                debug!("Starting depth limited search with depth = {} plies", curr_plies.0);
+                debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
                 search_guard = Thread::scoped(move ||
-                    depth_limited_search(temp_search_move_pos_arc, curr_plies,
+                    depth_limited_search(temp_search_move_pos_arc, curr_depth,
                                          new_search_tx, temp_is_killed));
             }
         }

@@ -4,12 +4,7 @@ use std::cmp::max;
 use game::Position;
 use types::{NumPlies, Score, ScoreUnit};
 
-// TODO put actual data here
-pub struct Data(());
-impl Data {
-    pub fn one_node() -> Data { Data(()) }
-    pub fn combine(self, _: Data) -> Data { Data(()) }
-}
+use super::types::Data;
 
 // TODO put more parameters here
 #[derive(Clone)]

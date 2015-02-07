@@ -35,3 +35,11 @@ pub enum Cmd {
     PonderHit,
     Stop,
 }
+
+// TODO put actual data here
+#[derive(Debug)]
+pub struct Data(());
+impl Data {
+    pub fn one_node() -> Data { Data(()) }
+    pub fn combine(self, _: Data) -> Data { Data(()) }
+}

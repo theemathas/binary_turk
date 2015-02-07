@@ -7,9 +7,8 @@ use uci::Response;
 use game::{Move, Position};
 use types::{NumPlies, Score};
 
-use super::types::{State, Cmd};
+use super::types::{State, Cmd, Data};
 use super::depth_limited_search::depth_limited_search;
-use super::negamax::Data;
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     if state.param.ponder {

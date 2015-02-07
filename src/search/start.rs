@@ -191,6 +191,4 @@ fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
     let ans = prev_ans_opt.unwrap();
 
     let _ = tx.send(ans);
-
-    // TODO respond to kill_rx
 }

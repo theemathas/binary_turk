@@ -1,28 +1,47 @@
 //! Implements a bitboard for a single piece.
 
-use std::collections::bitv_set::{self, BitvSet};
-use std::iter::Map;
+use std::num::Int;
 
 use super::super::square::Square;
 
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct BitBoard(BitvSet);
+pub struct BitBoard(u64);
 impl BitBoard {
-    pub fn new() -> BitBoard { BitBoard(BitvSet::with_capacity(64)) }
-    pub fn new_full() -> BitBoard {
-        let mut ans = BitvSet::with_capacity(64);
-        for i in 0..64_us {
-            ans.insert(i);
-        }
-        BitBoard(ans)
+    pub fn new() -> BitBoard { BitBoard(0_u64) }
+    pub fn new_full() -> BitBoard { BitBoard(!0_u64) }
+
+    pub fn at(&self, s: Square) -> bool {
+        self.0 & (1_u64 << s.to_id()) != 0
+    }
+    pub fn set_at(&mut self, s: Square) {
+        debug_assert!(!self.at(s));
+        self.0 |= 1_u64 << s.to_id();
+    }
+    pub fn remove_at(&mut self, s: Square) {
+        debug_assert!(self.at(s));
+        self.0 ^= 1_u64 << s.to_id();
     }
 
-    pub fn at(&self, s: Square) -> bool { self.0.contains(&(s.to_id() as usize)) }
-    pub fn set_at(&mut self, s: Square) { self.0.insert(s.to_id() as usize); }
-    pub fn remove_at(&mut self, s: Square) { self.0.remove(&(s.to_id() as usize)); }
+    pub fn iter(&self) -> Iter {
+        Iter(self.0)
+    }
+}
 
-    pub fn iter(&self) -> Map<bitv_set::Iter, fn(usize)->Square> {
-        fn map_fn(x: usize) -> Square { Square::from_id(x as i32) };
-        self.0.iter().map( map_fn as fn(usize)->Square )
+#[derive(Debug)]
+pub struct Iter(u64);
+impl Iterator for Iter {
+    type Item = Square;
+    fn next(&mut self) -> Option<Square> {
+        if self.0 == 0 {
+            None
+        } else {
+            let res = self.0.trailing_zeros();
+            self.0 &= !(1 << res);
+            Some(Square::from_id(res as i32))
+        }
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let res = self.0.count_ones();
+        (res, Some(res))
     }
 }

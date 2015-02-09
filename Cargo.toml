@@ -8,3 +8,6 @@ authors = ["Theemathas Chirananthavat <theemathas@gmail.com>"]
 time = "*"
 log = "*"
 env_logger = "*"
+
+[dependencies.types]
+path = "types"

@@ -7,7 +7,7 @@ extern crate env_logger;
 
 use std::old_io as io;
 
-mod types;
+extern crate types;
 mod game;
 mod search;
 mod timer;

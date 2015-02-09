@@ -5,6 +5,7 @@ dependencies = [
  "env_logger 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "types 0.0.1",
 ]
 
 [[package]]
@@ -44,4 +45,8 @@ dependencies = [
  "gcc 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "types"
+version = "0.0.1"
 

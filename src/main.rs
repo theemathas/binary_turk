@@ -1,14 +1,15 @@
-#![feature(core, io, collections, std_misc, unicode)]
+#![feature(core, io, collections, std_misc)]
 
 extern crate time;
 #[macro_use]
 extern crate log;
 extern crate env_logger;
 
+extern crate types;
+extern crate game;
+
 use std::old_io as io;
 
-extern crate types;
-mod game;
 mod search;
 mod timer;
 mod uci;

@@ -1,5 +1,11 @@
 //! This module is for everything about the rules of chess.
 
+#![feature(core, collections, unicode)]
+
+#[macro_use]
+extern crate log;
+extern crate types;
+
 pub use self::color::{Color, White, Black};
 pub use self::piece::Piece;
 pub use self::piece::Type as PieceType;

@@ -44,14 +44,14 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
     let search_move_pos_arc: Arc<Vec<(Move, Position)>> = Arc::new({
         //let legal_moves_chan = receive_legal(state.pos.clone());
         let legal_moves = state.pos.legal_iter();
-        let mut search_moves: Vec<Move> = match state.param.search_moves {
+        let search_moves: Vec<Move> = match state.param.search_moves {
             None => legal_moves.collect(),
             Some(ref val) => legal_moves.filter(|x| val.contains(x)).collect(),
         };
         if search_moves.is_empty() {
             panic!("No legal moves searched in searched position");
         }
-        search_moves.drain().map(|x: Move| {
+        search_moves.into_iter().map(|x: Move| {
             let mut new_pos = state.pos.clone();
             new_pos.make_move(&x);
             (x, new_pos)

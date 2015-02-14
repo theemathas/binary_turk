@@ -4,8 +4,8 @@ version = "0.0.1"
 dependencies = [
  "env_logger 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "game 0.0.1",
- "log 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "time 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "time 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "types 0.0.1",
 ]
 
@@ -14,7 +14,7 @@ name = "env_logger"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "log 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -22,7 +22,7 @@ dependencies = [
 name = "game"
 version = "0.0.1"
 dependencies = [
- "log 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "types 0.0.1",
 ]
 
@@ -33,12 +33,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "libc"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "log"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -48,11 +48,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "time"
-version = "0.1.16"
+version = "0.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "gcc 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

@@ -1,6 +1,6 @@
 use time::precise_time_ns;
 
-use std::sync::mpsc::{sync_channel, SyncSender};
+use std::sync::mpsc::{sync_channel, channel, SyncSender};
 use std::thread::Thread;
 
 use search;
@@ -8,6 +8,7 @@ use timer::Timer;
 
 use super::types::{Cmd, Response, ID_DATA};
 use super::state::{State, Mode};
+use super::output::engine_response_output;
 use self::time_start::time_start;
 
 mod go_param;
@@ -87,10 +88,12 @@ pub fn process(state: &mut State,
                     if let Cmd::Go(param) = cmd {
                         go_param::setup(state, param);
                         let (search_tx, search_rx) = sync_channel::<search::Cmd>(0);
+                        let (response_tx, response_rx) = channel::<search::Response>();
                         let search_state = state.search_state.as_ref().unwrap().clone();
                         let output = output.clone();
                         let temp = Thread::scoped(move ||
-                                                  search::start(search_state, search_rx, output));
+                            search::start(search_state, search_rx, response_tx));
+                        Thread::spawn(move || engine_response_output(response_rx, output));
 
                         state.search_tx = Some(search_tx);
                         state.search_guard = Some(temp);

@@ -1,17 +1,16 @@
-use std::sync::mpsc::{SyncSender, Receiver, channel};
+use std::sync::mpsc::{Sender, Receiver, channel};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread::Thread;
 
-use uci::Response;
 use game::{Move, Position};
 use types::{NumPlies, Score};
 
 use super::types::{State, Cmd, Data};
-use super::send_info::send_info;
+use super::types::Response::{self, Report};
 use super::depth_limited_search::depth_limited_search;
 
-pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
+pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     if state.param.ponder {
         debug!("pondering, waiting for next command");
         // Actually should ponder, but now just waits for our move.
@@ -99,11 +98,10 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
                         is_killed.store(true, Ordering::SeqCst);
 
                         debug!("reporting result");
-                        send_info(&tx,
-                                  best_move.clone(),
-                                  best_score.unwrap(),
-                                  curr_depth,
-                                  &total_search_data);
+                        tx.send(Report(curr_depth,
+                                       total_search_data.nodes,
+                                       best_score.unwrap(),
+                                       vec![best_move.clone()])).unwrap();
                         tx.send(Response::BestMove(best_move, None))
                           .ok().expect("output channel unexpectedly closed");
 
@@ -127,11 +125,10 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:SyncSender<Response>) {
 
                 total_search_data = total_search_data.combine(curr_search_data);
 
-                send_info(&tx,
-                          best_move.clone(),
-                          best_score.unwrap(),
-                          curr_depth,
-                          &total_search_data);
+                tx.send(Report(curr_depth,
+                               total_search_data.nodes,
+                               best_score.unwrap(),
+                               vec![best_move.clone()])).unwrap();
 
                 curr_depth.0 += 1;
 

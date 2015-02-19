@@ -1,5 +1,5 @@
 use game::{Position, Move};
-use types::{NumNodes, NumMoves, NumPlies};
+use types::{NumNodes, NumMoves, NumPlies, Score};
 
 #[derive(Clone, Debug)]
 pub struct State {
@@ -34,6 +34,12 @@ pub enum Cmd {
     SetDebug(bool),
     PonderHit,
     Stop,
+}
+
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub enum Response {
+    BestMove(Move, Option<Move>),
+    Report(NumPlies, NumNodes, Score, Vec<Move>),
 }
 
 // TODO put actual data here

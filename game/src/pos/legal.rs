@@ -1,5 +1,5 @@
-use super::super::square::Square;
-use super::super::moves::Move;
+use square::Square;
+use moves::Move;
 
 use super::Position;
 

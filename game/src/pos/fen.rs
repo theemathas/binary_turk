@@ -2,10 +2,10 @@ use std::collections::HashMap;
 
 use types::NumPlies;
 
-use super::super::square::{File, Rank, Square};
-use super::super::castle::{Kingside, Queenside};
-use super::super::piece::Piece::*;
-use super::super::color::Color::{White, Black};
+use square::{File, Rank, Square};
+use castle::{Kingside, Queenside};
+use piece::Piece::*;
+use color::Color::{White, Black};
 
 use super::Position;
 

@@ -1,6 +1,6 @@
 //! The types and some utility functions related to pieces.
 
-use super::color::{Color, White, Black};
+use color::{Color, White, Black};
 
 pub use self::Type::{Pawn, King, Queen, Bishop, Knight, Rook};
 

@@ -2,8 +2,8 @@
 
 use types::{ScoreUnit, Score, NumMoves};
 
-use super::super::{Color, Piece, PieceType};
-use super::super::{Pawn, King, Queen, Bishop, Knight, Rook};
+use {Color, Piece, PieceType};
+use {Pawn, King, Queen, Bishop, Knight, Rook};
 use super::Position;
 
 /// Evaluates the position without searching.

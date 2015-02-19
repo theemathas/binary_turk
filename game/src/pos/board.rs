@@ -3,9 +3,9 @@
 use std::vec;
 use std::collections::VecMap;
 
-use super::super::color::{Color, White, Black};
-use super::super::piece::{self, Piece, King};
-use super::super::square::Square;
+use color::{Color, White, Black};
+use piece::{self, Piece, King};
+use square::Square;
 
 use super::bitboard::BitBoard;
 

@@ -1,5 +1,5 @@
-use super::color::{Color, White, Black};
-use super::square::{Square, File, Rank};
+use color::{Color, White, Black};
+use square::{Square, File, Rank};
 
 pub use self::Side::{Kingside, Queenside};
 

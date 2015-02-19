@@ -1,11 +1,11 @@
 use types::NumPlies;
 
-use super::super::color::{White, Black};
-use super::super::piece::Piece::{self, WK, WR, BK, BR};
-use super::super::piece::Pawn;
-use super::super::square::{Square, File, Rank};
-use super::super::moves::Move;
-use super::super::castle::{Kingside, Queenside};
+use color::{White, Black};
+use piece::Piece::{self, WK, WR, BK, BR};
+use piece::Pawn;
+use square::{Square, File, Rank};
+use moves::Move;
+use castle::{Kingside, Queenside};
 
 use super::{Position, ExtraData};
 

@@ -5,10 +5,10 @@ use std::fmt;
 use std::num::SignedInt;
 use std::error::FromError;
 
-use super::piece::{self, Piece, Queen, Bishop, Knight, Rook, King, Pawn};
-use super::square::{Square, File, ParseSquareError};
-use super::castle::{Side, Kingside, Queenside};
-use super::pos::{Position, at_in_pos, is_empty_at_in_pos};
+use piece::{self, Piece, Queen, Bishop, Knight, Rook, King, Pawn};
+use square::{Square, File, ParseSquareError};
+use castle::{Side, Kingside, Queenside};
+use pos::{Position, at_in_pos, is_empty_at_in_pos};
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Move {

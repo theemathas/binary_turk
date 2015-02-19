@@ -2,7 +2,7 @@
 
 use std::num::Int;
 
-use super::super::square::Square;
+use square::Square;
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct BitBoard(u64);

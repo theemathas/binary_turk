@@ -1,11 +1,11 @@
 use std::vec;
 
-use super::super::square::{Square, Rank, File};
-use super::super::moves::Move;
-use super::super::color::{White, Black};
-use super::super::piece::Piece;
-use super::super::piece::Type::{Pawn, King, Queen, Bishop, Knight, Rook};
-use super::super::castle::{Kingside, Queenside};
+use square::{Square, Rank, File};
+use moves::Move;
+use color::{White, Black};
+use piece::Piece;
+use piece::Type::{Pawn, King, Queen, Bishop, Knight, Rook};
+use castle::{Kingside, Queenside};
 
 use super::Position;
 

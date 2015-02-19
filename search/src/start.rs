@@ -4,11 +4,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread::Thread;
 
 use game::{Move, Position};
-use types::{NumPlies, Score};
-
-use super::types::{State, Cmd, Data};
-use super::types::Response::{self, Report};
-use super::depth_limited_search::depth_limited_search;
+use types::{NumPlies, Score, State, Cmd, Data};
+use types::Response::{self, Report};
+use depth_limited_search::depth_limited_search;
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     if state.param.ponder {

@@ -5,6 +5,7 @@ dependencies = [
  "env_logger 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "game 0.0.1",
  "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "search 0.0.1",
  "time 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "types 0.0.1",
 ]
@@ -45,6 +46,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "regex"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "search"
+version = "0.0.1"
+dependencies = [
+ "game 0.0.1",
+ "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "types 0.0.1",
+]
 
 [[package]]
 name = "time"

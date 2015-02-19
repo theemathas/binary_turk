@@ -3,10 +3,8 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
 use game::{Move, Position};
-use types::{NumPlies, Score, ScoreUnit};
-
-use super::types::Data;
-use super::negamax::{self, negamax};
+use types::{NumPlies, Score, ScoreUnit, Data};
+use negamax::{self, negamax};
 
 pub fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
                             depth: NumPlies,

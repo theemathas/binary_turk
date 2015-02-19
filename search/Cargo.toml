@@ -1,19 +1,14 @@
 [package]
 
-name = "chess_project"
+name = "search"
 version = "0.0.1"
 authors = ["Theemathas Chirananthavat <theemathas@gmail.com>"]
 
 [dependencies]
-time = "*"
 log = "*"
-env_logger = "*"
-
-[dependencies.types]
-path = "types"
 
 [dependencies.game]
-path = "game"
+path = "../game"
 
-[dependencies.search]
-path = "search"
+[dependencies.types]
+path = "../types"

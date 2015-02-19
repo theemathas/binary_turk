@@ -1,5 +1,8 @@
+extern crate types;
+
+pub use self::types::*;
+
 use game::{Position, Move};
-use types::{NumNodes, NumMoves, NumPlies, Score};
 
 #[derive(Clone, Debug)]
 pub struct State {

@@ -2,9 +2,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::cmp::max;
 
 use game::Position;
-use types::{NumPlies, Score, ScoreUnit};
-
-use super::types::Data;
+use types::{NumPlies, Score, ScoreUnit, Data};
 
 // TODO put more parameters here
 #[derive(Clone)]

@@ -1,0 +1,26 @@
+[root]
+name = "search"
+version = "0.0.1"
+dependencies = [
+ "game 0.0.1",
+ "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "types 0.0.1",
+]
+
+[[package]]
+name = "game"
+version = "0.0.1"
+dependencies = [
+ "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "types 0.0.1",
+]
+
+[[package]]
+name = "log"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "types"
+version = "0.0.1"
+

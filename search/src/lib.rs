@@ -1,3 +1,10 @@
+#![feature(std_misc)]
+
+#[macro_use]
+extern crate log;
+
+extern crate game;
+
 pub use self::types::{State, Param, Cmd, Response};
 pub use self::start::start;
 

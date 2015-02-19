@@ -4,9 +4,11 @@ use std::thread::Thread;
 
 use game::Color;
 use types::NumMoves;
-use uci;
 
 mod control;
+
+#[derive(Copy, Clone, Debug)]
+pub struct TimeOut(());
 
 #[derive(Clone, Debug)]
 pub enum Timer {
@@ -19,7 +21,7 @@ impl Timer {
         // TODO what is the right default value for Timer?
         Timer::Infinite
     }
-    pub fn start(self, c: Color, tx: SyncSender<uci::Cmd>, rx_kill: Receiver<()>) {
+    pub fn start(self, c: Color, tx: SyncSender<TimeOut>, rx_kill: Receiver<()>) {
         Thread::spawn(move || control::start(self, c, tx, rx_kill));
     }
 

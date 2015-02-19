@@ -4,18 +4,17 @@ use std::old_io::Timer as StdTimer;
 use std::cmp;
 
 use game::Color;
-use uci;
 
-use super::Timer;
+use super::{Timer, TimeOut};
 
-pub fn start(data: Timer, c: Color, tx: SyncSender<uci::Cmd>, rx_kill: Receiver<()>) {
+pub fn start(data: Timer, c: Color, tx: SyncSender<TimeOut>, rx_kill: Receiver<()>) {
     match data {
         Timer::Infinite => return,
         Timer::Exact(val) => {
             let mut timer = StdTimer::new().unwrap();
             let rx_timer = timer.oneshot(val);
             select!(
-                _ = rx_timer.recv() => { let _ = tx.send(uci::Cmd::Stop); },
+                _ = rx_timer.recv() => { let _ = tx.send(TimeOut(())); },
                 _ = rx_kill.recv() => {}
             )
         },
@@ -27,7 +26,7 @@ pub fn start(data: Timer, c: Color, tx: SyncSender<uci::Cmd>, rx_kill: Receiver<
             let mut timer = StdTimer::new().unwrap();
             let rx_timer = timer.oneshot(val);
             select!(
-                _ = rx_timer.recv() => { let _ = tx.send(uci::Cmd::Stop); },
+                _ = rx_timer.recv() => { let _ = tx.send(TimeOut(())); },
                 _ = rx_kill.recv() => {}
             )
         },

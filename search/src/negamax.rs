@@ -8,18 +8,18 @@ use types::{NumPlies, Score, ScoreUnit, Data};
 #[derive(Clone)]
 pub struct Param {
     pub draw_val: ScoreUnit,
+    pub depth: NumPlies,
 }
 
 pub fn negamax(pos: &mut Position,
                alpha: Option<Score>,
                beta: Option<Score>,
-               depth: NumPlies,
                param: Param,
                is_killed: &AtomicBool) -> (Score, Data) {
     if is_killed.load(Ordering::Relaxed) {
         return (Score::Value(ScoreUnit(0)), Data::one_node());
     }
-    if depth == NumPlies(0) {
+    if param.depth == NumPlies(0) {
         return (pos.eval(param.draw_val), Data::one_node());
     }
 
@@ -33,14 +33,16 @@ pub fn negamax(pos: &mut Position,
 
         for curr_move in move_iter {
 
-            let new_param = Param { draw_val: -param.draw_val };
+            let new_param = Param {
+                draw_val: -param.draw_val,
+                depth: NumPlies(param.depth.0 - 1)
+            };
             let new_alpha = beta.map(|x| x.decrement());
             let new_beta = prev_score_opt.map(|x| x.decrement());
             let (temp_score, temp_data) = pos.with_move(&curr_move, move |new_pos| {
                 negamax(new_pos,
                         new_alpha,
                         new_beta,
-                        NumPlies(depth.0 - 1),
                         new_param,
                         is_killed)
             });

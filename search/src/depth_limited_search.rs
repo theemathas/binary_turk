@@ -22,7 +22,10 @@ pub fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
     let next_depth = NumPlies(depth.0 - 1);
     let next_draw_val = -draw_val;
 
-    let param = negamax::Param { draw_val: next_draw_val };
+    let param = negamax::Param {
+        draw_val: next_draw_val,
+        depth: next_depth,
+    };
 
     let mut prev_ans_opt: Option<(Score, Move)> = None;
     let mut prev_data = Data::one_node();
@@ -35,7 +38,6 @@ pub fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
             negamax(curr_pos,
                     prev_best_score_opt,
                     None,
-                    next_depth,
                     param.clone(),
                     &*is_killed);
         let curr_score = temp_score.increment();

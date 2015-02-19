@@ -1,8 +1,8 @@
 use std::old_io::stdio::StdinReader;
 use std::sync::mpsc::SyncSender;
 
-use super::types::Cmd;
-use super::parse::parse;
+use types::Cmd;
+use parse::parse;
 
 pub fn parse_input(mut input: StdinReader, tx: SyncSender<Cmd>) {
     let mut inbuf = input.lock();

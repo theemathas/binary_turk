@@ -6,8 +6,8 @@ use search;
 use search::Response::BestMove as EngineBestMove;
 use search::Response::Report as EngineReport;
 
-use super::types::Response::{self, BestMove, Info};
-use super::InfoParam::{self, Depth, NodesSearched, PrincipalVariation};
+use types::Response::{self, BestMove, Info};
+use InfoParam::{self, Depth, NodesSearched, PrincipalVariation};
 
 pub fn format_output(mut output: LineBufferedWriter<StdWriter>, rx: Receiver<Response>) {
     for x in rx.iter() {

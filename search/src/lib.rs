@@ -5,8 +5,8 @@ extern crate log;
 
 extern crate game;
 
-pub use self::types::{State, Param, Cmd, Response};
-pub use self::start::start;
+pub use types::{State, Param, Cmd, Response};
+pub use start::start;
 
 mod types;
 

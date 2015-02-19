@@ -5,7 +5,7 @@ use std::cmp;
 
 use game::Color;
 
-use super::{Timer, TimeOut};
+use {Timer, TimeOut};
 
 pub fn start(data: Timer, c: Color, tx: SyncSender<TimeOut>, rx_kill: Receiver<()>) {
     match data {

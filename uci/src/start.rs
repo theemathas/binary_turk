@@ -3,11 +3,11 @@ use std::old_io::LineBufferedWriter;
 use std::thread::Thread;
 use std::sync::mpsc::sync_channel;
 
-use super::types::{Cmd, Response};
-use super::process::process;
-use super::state::State;
-use super::input::parse_input;
-use super::output::format_output;
+use types::{Cmd, Response};
+use process::process;
+use state::State;
+use input::parse_input;
+use output::format_output;
 
 pub fn start(input: StdinReader, output: LineBufferedWriter<StdWriter>) {
     let mut state = State::new();

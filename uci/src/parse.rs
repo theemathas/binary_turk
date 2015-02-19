@@ -3,9 +3,8 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use game::{Position, FromTo, White, Black};
-use super::types::{Cmd, RegisterParam, GoParam};
-use super::types::options;
-use types::{NumNodes, NumPlies, NumMoves};
+use types::{NumNodes, NumPlies, NumMoves, Cmd, RegisterParam, GoParam};
+use types::options;
 
 pub fn parse(s: &str) -> Option<Cmd> {
     let mut words = s.words().peekable();

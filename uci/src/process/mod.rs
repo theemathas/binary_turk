@@ -5,10 +5,10 @@ use std::thread::Thread;
 
 use search;
 use timer::Timer;
+use types::{Cmd, Response, ID_DATA};
+use state::{State, Mode};
+use output::engine_response_output;
 
-use super::types::{Cmd, Response, ID_DATA};
-use super::state::{State, Mode};
-use super::output::engine_response_output;
 use self::time_start::time_start;
 
 mod go_param;

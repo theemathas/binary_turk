@@ -2,9 +2,8 @@ use std::sync::mpsc::{sync_channel, SyncSender};
 use std::thread::Thread;
 
 use timer::TimeOut;
-
-use super::super::state::State;
-use super::super::types::Cmd;
+use state::State;
+use types::Cmd;
 
 pub fn time_start(state: &mut State, cmd_tx: SyncSender<Cmd>) {
     let c = state.search_state.as_ref()

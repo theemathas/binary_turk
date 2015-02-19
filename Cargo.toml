@@ -17,3 +17,6 @@ path = "game"
 
 [dependencies.search]
 path = "search"
+
+[dependencies.timer]
+path = "timer"

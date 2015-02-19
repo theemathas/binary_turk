@@ -1,3 +1,8 @@
+#![feature(std_misc, io)]
+
+extern crate types;
+extern crate game;
+
 use std::time::Duration;
 use std::sync::mpsc::{SyncSender, Receiver};
 use std::thread::Thread;
@@ -67,7 +72,7 @@ impl Timer {
 }
 
 #[derive(Clone, Debug)]
-struct RemainData {
+pub struct RemainData {
     w_time: Option<Duration>,
     b_time: Option<Duration>,
     w_inc: Duration,

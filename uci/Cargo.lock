@@ -1,18 +1,13 @@
 [root]
-name = "chess_project"
+name = "uci"
 version = "0.0.1"
 dependencies = [
- "env_logger 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "uci 0.0.1",
-]
-
-[[package]]
-name = "env_logger"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
+ "game 0.0.1",
  "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "search 0.0.1",
+ "time 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
+ "timer 0.0.1",
+ "types 0.0.1",
 ]
 
 [[package]]
@@ -36,11 +31,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "log"
 version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "regex"
-version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -72,16 +62,4 @@ dependencies = [
 [[package]]
 name = "types"
 version = "0.0.1"
-
-[[package]]
-name = "uci"
-version = "0.0.1"
-dependencies = [
- "game 0.0.1",
- "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "search 0.0.1",
- "time 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
- "timer 0.0.1",
- "types 0.0.1",
-]
 

@@ -1,3 +1,13 @@
+#![feature(std_misc, io, collections)]
+
+extern crate time;
+#[macro_use]
+extern crate log;
+
+extern crate game;
+extern crate search;
+extern crate timer;
+
 pub use self::start::start;
 pub use self::types::{Cmd, Response, InfoParam};
 

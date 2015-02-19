@@ -5,18 +5,7 @@ version = "0.0.1"
 authors = ["Theemathas Chirananthavat <theemathas@gmail.com>"]
 
 [dependencies]
-time = "*"
-log = "*"
 env_logger = "*"
 
-[dependencies.types]
-path = "types"
-
-[dependencies.game]
-path = "game"
-
-[dependencies.search]
-path = "search"
-
-[dependencies.timer]
-path = "timer"
+[dependencies.uci]
+path = "uci"

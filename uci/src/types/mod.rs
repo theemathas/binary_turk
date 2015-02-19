@@ -1,7 +1,10 @@
+extern crate types;
+
 use std::fmt;
 
 use game::{Position, Move, FromTo};
 
+pub use self::types::*;
 pub use self::param::{RegisterParam, GoParam, IdParam, InfoParam, ScoreType};
 pub use self::param::ID_DATA;
 

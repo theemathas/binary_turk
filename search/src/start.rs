@@ -1,7 +1,7 @@
 use std::sync::mpsc::{Sender, Receiver, channel};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::thread::Thread;
+use std::thread;
 
 use game::{Move, Position};
 use types::{NumPlies, Score, State, Cmd, Data};
@@ -70,7 +70,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     let temp_is_killed = is_killed.clone();
 
     debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
-    let mut search_guard = Thread::scoped(move ||
+    let mut search_guard = thread::scoped(move ||
         depth_limited_search(temp_search_move_pos_arc, curr_depth, search_tx, temp_is_killed));
 
     loop {
@@ -104,7 +104,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
                           .ok().expect("output channel unexpectedly closed");
 
                         debug!("attempting join of depth_limited_search");
-                        search_guard.join().ok().expect("depth_limited_search panicked");
+                        search_guard.join();
                         debug!("joined depth_limited_search");
                         return;
                     }
@@ -113,7 +113,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
             search_res = search_rx.recv() => {
                 debug!("receiving result from depth_limited_search");
 
-                search_guard.join().ok().expect("depth_limited_search panicked");
+                search_guard.join();
 
                 let (temp_best_score, temp_best_move, curr_search_data) = search_res.ok()
                     .expect("depth_limited_search unexpectedly dropped Sender");
@@ -137,7 +137,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
                 let temp_is_killed = is_killed.clone();
 
                 debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
-                search_guard = Thread::scoped(move ||
+                search_guard = thread::scoped(move ||
                     depth_limited_search(temp_search_move_pos_arc, curr_depth,
                                          new_search_tx, temp_is_killed));
             }

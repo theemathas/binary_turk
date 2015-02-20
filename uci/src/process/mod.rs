@@ -1,7 +1,7 @@
 use time::precise_time_ns;
 
 use std::sync::mpsc::{sync_channel, channel, SyncSender};
-use std::thread::Thread;
+use std::thread;
 
 use search;
 use timer::Timer;
@@ -91,9 +91,9 @@ pub fn process(state: &mut State,
                         let (response_tx, response_rx) = channel::<search::Response>();
                         let search_state = state.search_state.as_ref().unwrap().clone();
                         let output = output.clone();
-                        let temp = Thread::scoped(move ||
+                        let temp = thread::scoped(move ||
                             search::start(search_state, search_rx, response_tx));
-                        Thread::spawn(move || engine_response_output(response_rx, output));
+                        thread::spawn(move || engine_response_output(response_rx, output));
 
                         state.search_tx = Some(search_tx);
                         state.search_guard = Some(temp);
@@ -123,8 +123,7 @@ pub fn process(state: &mut State,
                         Cmd::Stop => {
                             state.search_tx.as_ref().unwrap().send(search::Cmd::Stop)
                                  .ok().expect("state.search_tx was closed");
-                            state.search_guard.take().unwrap().join()
-                                 .ok().expect("search thread is panicking");
+                            state.search_guard.take().unwrap().join();
                             state.search_tx = None;
                             state.start_search_time = None;
                             state.start_move_time = None;

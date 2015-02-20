@@ -1,6 +1,6 @@
 use std::old_io::stdio::{StdinReader, StdWriter};
 use std::old_io::LineBufferedWriter;
-use std::thread::Thread;
+use std::thread;
 use std::sync::mpsc::sync_channel;
 
 use types::{Cmd, Response};
@@ -13,9 +13,9 @@ pub fn start(input: StdinReader, output: LineBufferedWriter<StdWriter>) {
     let mut state = State::new();
     let (cmd_tx, cmd_rx) = sync_channel::<Cmd>(0);
     let temp = cmd_tx.clone();
-    let _input_guard = Thread::spawn(move || parse_input(input, temp));
+    let _input_guard = thread::spawn(move || parse_input(input, temp));
     let (resp_tx, resp_rx) = sync_channel::<Response>(0);
-    let _output_guard = Thread::spawn(move || format_output(output, resp_rx));
+    let _output_guard = thread::spawn(move || format_output(output, resp_rx));
     for cmd in cmd_rx.iter() {
         debug!("cmd = {:?}", cmd);
         if cmd == Cmd::Quit {

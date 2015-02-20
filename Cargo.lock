@@ -11,7 +11,7 @@ name = "env_logger"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -19,7 +19,7 @@ dependencies = [
 name = "game"
 version = "0.0.1"
 dependencies = [
- "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "types 0.0.1",
 ]
 
@@ -35,7 +35,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "log"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -48,7 +48,7 @@ name = "search"
 version = "0.0.1"
 dependencies = [
  "game 0.0.1",
- "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "types 0.0.1",
 ]
 
@@ -78,7 +78,7 @@ name = "uci"
 version = "0.0.1"
 dependencies = [
  "game 0.0.1",
- "log 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "search 0.0.1",
  "time 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "timer 0.0.1",

@@ -1,11 +1,11 @@
-#![feature(std_misc, io)]
+#![feature(std_misc, old_io)]
 
 extern crate types;
 extern crate game;
 
 use std::time::Duration;
 use std::sync::mpsc::{SyncSender, Receiver};
-use std::thread::Thread;
+use std::thread;
 
 use game::Color;
 use types::NumMoves;
@@ -27,7 +27,7 @@ impl Timer {
         Timer::Infinite
     }
     pub fn start(self, c: Color, tx: SyncSender<TimeOut>, rx_kill: Receiver<()>) {
-        Thread::spawn(move || control::start(self, c, tx, rx_kill));
+        thread::spawn(move || control::start(self, c, tx, rx_kill));
     }
 
     pub fn time(&mut self, c: Color, val: Duration) -> &mut Timer {

@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::cmp::max;
 
-use game::Position;
+use game::{Position, Move};
 use types::{NumPlies, Score, ScoreUnit, Data};
 
 // TODO put more parameters here
@@ -16,16 +16,31 @@ pub fn negamax(pos: &mut Position,
                beta: Option<Score>,
                param: Param,
                is_killed: &AtomicBool) -> (Score, Data) {
+    negamax_generic(pos, alpha, beta, param, is_killed,
+                    &mut |x| Box::new(x.legal_iter()),
+                    &mut |x, draw_val| (x.eval(draw_val), Data::one_node()))
+}
+
+// TODO somehow eliminate the Box
+fn negamax_generic<F, G>(pos: &mut Position,
+                         alpha: Option<Score>,
+                         beta: Option<Score>,
+                         param: Param,
+                         is_killed: &AtomicBool,
+                         move_gen_fn: &mut F,
+                         eval_fn: &mut G) -> (Score, Data) where
+for<'a> F: FnMut(&'a Position) -> Box<Iterator<Item = Move> + 'a>,
+for<'b> G: FnMut(&'b mut Position, ScoreUnit) -> (Score, Data) {
     if is_killed.load(Ordering::Relaxed) {
         return (Score::Value(ScoreUnit(0)), Data::one_node());
     }
     if param.depth == NumPlies(0) {
-        return (pos.eval(param.draw_val), Data::one_node());
+        return eval_fn(pos, param.draw_val);
     }
 
     let (has_legal, score_opt, data): (bool, Option<Score>, Data) = {
         let temp = pos.clone();
-        let move_iter = temp.legal_iter();
+        let move_iter = move_gen_fn(&temp);
 
         let mut has_legal = false;
         let mut prev_score_opt: Option<Score> = alpha;
@@ -33,19 +48,20 @@ pub fn negamax(pos: &mut Position,
 
         for curr_move in move_iter {
 
+            let new_alpha = beta.map(|x| x.decrement());
+            let new_beta = prev_score_opt.map(|x| x.decrement());
             let new_param = Param {
                 draw_val: -param.draw_val,
                 depth: NumPlies(param.depth.0 - 1)
             };
-            let new_alpha = beta.map(|x| x.decrement());
-            let new_beta = prev_score_opt.map(|x| x.decrement());
-            let (temp_score, temp_data) = pos.with_move(&curr_move, move |new_pos| {
-                negamax(new_pos,
-                        new_alpha,
-                        new_beta,
-                        new_param,
-                        is_killed)
-            });
+            let (temp_score, temp_data) = pos.with_move(&curr_move, |new_pos|
+                negamax_generic(new_pos,
+                                new_alpha,
+                                new_beta,
+                                new_param,
+                                is_killed,
+                                move_gen_fn,
+                                eval_fn));
             let curr_score = temp_score.increment();
             let curr_data = temp_data.increment();
 
@@ -70,11 +86,9 @@ pub fn negamax(pos: &mut Position,
         (has_legal, prev_score_opt, prev_data)
     };
 
-    let score = if has_legal {
-        score_opt.unwrap()
+    if has_legal {
+        (score_opt.unwrap(), data)
     } else {
-        pos.eval(param.draw_val)
-    };
-
-    (score, data)
+        eval_fn(pos, param.draw_val)
+    }
 }

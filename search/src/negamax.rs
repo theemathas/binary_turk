@@ -34,7 +34,7 @@ fn quiescence(pos: &mut Position,
               param: Param,
               is_killed: &AtomicBool) -> (Score, Data) {
     negamax_generic(pos, alpha, beta, param, is_killed,
-                    &mut |x| Box::new(x.noisy_iter()),
+                    &mut |x| Box::new(x.legal_noisy_iter()),
                     &mut |x, draw_val| (x.eval(draw_val), Data::one_node()),
                     &mut |x, draw_val| Some(x.eval(draw_val)))
 }

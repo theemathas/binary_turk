@@ -1,4 +1,5 @@
 use std::vec;
+use std::iter;
 
 use square::{Square, Rank, File};
 use moves::Move;
@@ -9,29 +10,67 @@ use castle::{Kingside, Queenside};
 
 use super::Position;
 
-pub struct Iter<'a>(Box<Iterator<Item=Move>+'a>);
+pub struct Iter<'a>(iter::Chain<NoisyIter<'a>, QuietIter<'a>>);
 impl<'a> Iterator for Iter<'a> {
     type Item = Move;
     fn next(&mut self) -> Option<Move> { self.0.next() }
     fn size_hint(&self) -> (usize, Option<usize>) { self.0.size_hint() }
 }
 
+pub struct NoisyIter<'a>(Box<Iterator<Item = Move> + 'a>);
+impl<'a> Iterator for NoisyIter<'a> {
+    type Item = Move;
+    fn next(&mut self) -> Option<Move> { self.0.next() }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.0.size_hint() }
+}
+
+pub struct QuietIter<'a>(Box<Iterator<Item = Move> + 'a>);
+impl<'a> Iterator for QuietIter<'a> {
+    type Item = Move;
+    fn next(&mut self) -> Option<Move> { self.0.next() }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.0.size_hint() }
+}
+
 pub fn iter<'a>(p: &'a Position) -> Iter<'a> {
-    Iter(Box::new(en_passant_iter(p).chain(castle_iter(p)).chain(
-        p.piece_iter().flat_map(move |(piece_id, from)| -> vec::IntoIter<Move> {
-            move_from_iter(p, piece_id, from)
+    Iter(noisy_iter(p).chain(quiet_iter(p)))
+}
+
+pub fn noisy_iter<'a>(p: &'a Position) -> NoisyIter<'a> {
+    NoisyIter(Box::new(en_passant_iter(p).chain(
+        p.piece_iter().flat_map(move |(piece_id, from)| {
+            noisy_move_from_iter(p, piece_id, from)
         })
     )))
 }
 
-fn move_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+pub fn quiet_iter<'a>(p: &'a Position) -> QuietIter<'a> {
+    QuietIter(Box::new(castle_iter(p).chain(
+        p.piece_iter().flat_map(move |(piece_id, from)| {
+            quiet_move_from_iter(p, piece_id, from)
+        })
+    )))
+}
+
+fn quiet_move_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
     if piece_id.color() != p.side_to_move() {
         Vec::new().into_iter()
     } else {
         match piece_id.piece_type() {
-            Pawn => pawn_from_iter(p, piece_id, from),
-            Queen|Bishop|Rook => slider_from_iter(p, piece_id, from),
-            King|Knight => fixed_from_iter(p, piece_id, from),
+            Pawn => quiet_pawn_from_iter(p, piece_id, from),
+            Queen|Bishop|Rook => quiet_slider_from_iter(p, piece_id, from),
+            King|Knight => quiet_fixed_from_iter(p, piece_id, from),
+        }
+    }
+}
+
+fn noisy_move_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+    if piece_id.color() != p.side_to_move() {
+        Vec::new().into_iter()
+    } else {
+        match piece_id.piece_type() {
+            Pawn => noisy_pawn_from_iter(p, piece_id, from),
+            Queen|Bishop|Rook => noisy_slider_from_iter(p, piece_id, from),
+            King|Knight => noisy_fixed_from_iter(p, piece_id, from),
         }
     }
 }
@@ -45,21 +84,21 @@ fn shift(s: Square, dir: Diff) -> Option<Square> {
     Square::from_i32(file + dx, rank + dy)
 }
 
-fn slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
-    let rook_slide:   &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1)];
-    let bishop_slide: &[Diff] = &[(1, 1), (1, -1), (-1, -1), (-1, 1)];
-    let queen_slide:  &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1),
+static ROOK_SLIDE:   [Diff; 4] = [(1, 0), (0, 1), (-1, 0), (0, -1)];
+static BISHOP_SLIDE: [Diff; 4] = [(1, 1), (1, -1), (-1, -1), (-1, 1)];
+static QUEEN_SLIDE:  [Diff; 8] = [(1, 0), (0, 1), (-1, 0), (0, -1),
                                   (1, 1), (1, -1), (-1, -1), (-1, 1)];
+
+fn quiet_slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
 
     let mut ans = Vec::new();
 
     let piece_type = piece_id.piece_type();
-    let piece_color = piece_id.color();
 
-    let slide = match piece_type {
-        Rook => rook_slide,
-        Bishop => bishop_slide,
-        Queen => queen_slide,
+    let slide: &[Diff] = match piece_type {
+        Rook => &ROOK_SLIDE,
+        Bishop => &BISHOP_SLIDE,
+        Queen => &QUEEN_SLIDE,
         _ => panic!(),
     };
 
@@ -69,6 +108,31 @@ fn slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIte
         while curr_pos.is_some() && p.is_empty_at(curr_pos.unwrap()) {
             let curr_move = Move::new(from, curr_pos.unwrap());
             ans.push(curr_move);
+            curr_pos = shift(curr_pos.unwrap(), *dir);
+        }
+    }
+
+    ans.into_iter()
+}
+
+fn noisy_slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+
+    let mut ans = Vec::new();
+
+    let piece_type = piece_id.piece_type();
+    let piece_color = piece_id.color();
+
+    let slide: &[Diff] = match piece_type {
+        Rook => &ROOK_SLIDE,
+        Bishop => &BISHOP_SLIDE,
+        Queen => &QUEEN_SLIDE,
+        _ => panic!(),
+    };
+
+    for dir in slide.iter() {
+        let mut curr_pos = shift(from, *dir);
+        //while curr_pos is valid and there is no piece there.
+        while curr_pos.is_some() && p.is_empty_at(curr_pos.unwrap()) {
             curr_pos = shift(curr_pos.unwrap(), *dir);
         }
         //if curr_pos is valid
@@ -86,20 +150,20 @@ fn slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIte
     ans.into_iter()
 }
 
-fn fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
-    let king_fixed:   &[Diff] = &[(1, 0), (0, 1), (-1, 0), (0, -1),
+static KING_FIXED:   [Diff; 8] = [(1, 0), (0, 1), (-1, 0), (0, -1),
                                   (1, 1), (1, -1), (-1, -1), (-1, 1)];
-    let knight_fixed: &[Diff] = &[(2, 1), (2, -1), (-2, -1), (-2, 1),
+static KNIGHT_FIXED: [Diff; 8] = [(2, 1), (2, -1), (-2, -1), (-2, 1),
                                   (1, 2), (1, -2), (-1, -2), (-1, 2)];
+
+fn quiet_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
 
     let mut ans = Vec::new();
 
     let piece_type = piece_id.piece_type();
-    let piece_color = piece_id.color();
 
     let fixed = match piece_type {
-        King => king_fixed,
-        Knight => knight_fixed,
+        King => KING_FIXED,
+        Knight => KNIGHT_FIXED,
         _ => panic!(),
     };
 
@@ -107,18 +171,8 @@ fn fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter
         let new_pos = shift(from, *dir);
         if new_pos.is_some() {
             let to = new_pos.unwrap();
-            let (is_valid, is_capture) = {
-                if p.is_empty_at(to) {
-                    (true, false)
-                } else if p.is_color_at(to, piece_color) {
-                    (false, false)
-                } else {
-                    (true, true)
-                }
-            };
-            if is_valid {
-                let mut curr_move = Move::new(from, to);
-				if is_capture { curr_move.set_capture_normal(p.at(to)); }
+            if p.is_empty_at(to) {
+                let curr_move = Move::new(from, to);
                 ans.push(curr_move);
             }
         }
@@ -127,7 +181,71 @@ fn fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter
     ans.into_iter()
 }
 
-fn pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+fn noisy_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+
+    let mut ans = Vec::new();
+
+    let piece_type = piece_id.piece_type();
+    let piece_color = piece_id.color();
+
+    let fixed = match piece_type {
+        King => KING_FIXED,
+        Knight => KNIGHT_FIXED,
+        _ => panic!(),
+    };
+
+    for dir in fixed.iter() {
+        let new_pos = shift(from, *dir);
+        if new_pos.is_some() {
+            let to = new_pos.unwrap();
+            if p.is_color_at(to, piece_color.invert()) {
+                let mut curr_move = Move::new(from, to);
+				curr_move.set_capture_normal(p.at(to));
+                ans.push(curr_move);
+            }
+        }
+    }
+
+    ans.into_iter()
+}
+
+fn quiet_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+    let mut ans = Vec::new();
+
+    let piece_color = piece_id.color();
+    let from_rank = from.rank().0;
+    //rank_up is the 1-based rank from the piece-owner's side.
+    let (dy, rank_up): (i32, i32) = match piece_color {
+        White => ( 1, 1 + from_rank ),
+        Black => (-1, 8 - from_rank ),
+    };
+    let move_dir: Diff = (0, dy);
+    let to: Square = shift(from, move_dir).unwrap();
+    // if destination is empty
+    if p.is_empty_at(to) {
+        match rank_up {
+            7 => {},
+            2 => {
+                let curr_move = Move::new(from, to);
+                ans.push(curr_move);
+                let to2: Square = shift(to, move_dir).unwrap();
+                if p.is_empty_at(to2) {
+                    let mut curr_move2 = Move::new(from, to2);
+                    curr_move2.set_pawn_double_move(true);
+                    ans.push(curr_move2);
+                }
+            },
+            _ => {
+                let curr_move = Move::new(from, to);
+                ans.push(curr_move);
+            },
+        }
+    }
+
+    ans.into_iter()
+}
+
+fn noisy_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
     let mut ans = Vec::new();
 
     let piece_color = piece_id.color();
@@ -149,20 +267,7 @@ fn pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<
                     ans.push(curr_move);
                 }
             },
-            2 => {
-                let curr_move = Move::new(from, to);
-                ans.push(curr_move);
-                let to2: Square = shift(to, move_dir).unwrap();
-                if p.is_empty_at(to2) {
-                    let mut curr_move2 = Move::new(from, to2);
-                    curr_move2.set_pawn_double_move(true);
-                    ans.push(curr_move2);
-                }
-            },
-            _ => {
-                let curr_move = Move::new(from, to);
-                ans.push(curr_move);
-            },
+            _ => {},
         }
     }
 

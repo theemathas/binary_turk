@@ -21,7 +21,6 @@ mod make_move;
 mod mate;
 mod fen;
 mod eval;
-mod noisy;
 
 /// Data required to unmake moves
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -125,14 +124,24 @@ impl Position {
         self.extra_data = val;
     }
 
-    pub fn legal_iter<'a>(&'a self) -> legal::Iter<'a> {
-        legal::iter(self)
-    }
     fn psudo_legal_iter<'a>(&'a self) -> psudo_legal::Iter<'a> {
         psudo_legal::iter(self)
     }
-    pub fn noisy_iter<'a>(&'a self) -> noisy::Iter<'a> {
-        noisy::iter(self)
+    fn psudo_legal_noisy_iter<'a>(&'a self) -> psudo_legal::NoisyIter {
+        psudo_legal::noisy_iter(self)
+    }
+    fn psudo_legal_quiet_iter<'a>(&'a self) -> psudo_legal::QuietIter {
+        psudo_legal::quiet_iter(self)
+    }
+
+    pub fn legal_iter<'a>(&'a self) -> legal::Iter<'a> {
+        legal::iter(self)
+    }
+    pub fn legal_noisy_iter<'a>(&'a self) -> legal::NoisyIter<'a> {
+        legal::noisy_iter(self)
+    }
+    pub fn legal_quiet_iter<'a>(&'a self) -> legal::QuietIter<'a> {
+        legal::quiet_iter(self)
     }
 
     fn can_move_to(&self, to: Square) -> bool {

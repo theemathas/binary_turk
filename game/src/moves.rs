@@ -64,6 +64,9 @@ impl Move {
     pub fn is_noisy(&self) -> bool {
         self.capture_normal().is_some() || self.is_en_passant() || self.promote().is_some()
     }
+    pub fn is_quiet(&self) -> bool {
+        !self.is_noisy()
+    }
 }
 impl fmt::Display for Move {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

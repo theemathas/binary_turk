@@ -18,6 +18,22 @@ pub fn negamax(pos: &mut Position,
                is_killed: &AtomicBool) -> (Score, Data) {
     negamax_generic(pos, alpha, beta, param, is_killed,
                     &mut |x| Box::new(x.legal_iter()),
+                    &mut |x, draw_val| {
+                        let quiescence_param = Param {
+                            draw_val: draw_val,
+                            depth: NumPlies(20)
+                        };
+                        quiescence(x, alpha, beta, quiescence_param, is_killed)
+                    })
+}
+
+fn quiescence(pos: &mut Position,
+              alpha: Option<Score>,
+              beta: Option<Score>,
+              param: Param,
+              is_killed: &AtomicBool) -> (Score, Data) {
+    negamax_generic(pos, alpha, beta, param, is_killed,
+                    &mut |x| Box::new(x.noisy_iter()),
                     &mut |x, draw_val| (x.eval(draw_val), Data::one_node()))
 }
 

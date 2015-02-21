@@ -60,6 +60,10 @@ impl Move {
     pub fn set_pawn_double_move(&mut self, val: bool) {
         self.is_pawn_double_move = val;
     }
+
+    pub fn is_noisy(&self) -> bool {
+        self.capture_normal().is_some() || self.is_en_passant() || self.promote().is_some()
+    }
 }
 impl fmt::Display for Move {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

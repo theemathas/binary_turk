@@ -24,7 +24,8 @@ pub fn negamax(pos: &mut Position,
                             depth: NumPlies(20)
                         };
                         quiescence(x, alpha, beta, quiescence_param, is_killed)
-                    })
+                    },
+                    &mut |_, _| None)
 }
 
 fn quiescence(pos: &mut Position,
@@ -34,19 +35,22 @@ fn quiescence(pos: &mut Position,
               is_killed: &AtomicBool) -> (Score, Data) {
     negamax_generic(pos, alpha, beta, param, is_killed,
                     &mut |x| Box::new(x.noisy_iter()),
-                    &mut |x, draw_val| (x.eval(draw_val), Data::one_node()))
+                    &mut |x, draw_val| (x.eval(draw_val), Data::one_node()),
+                    &mut |x, draw_val| Some(x.eval(draw_val)))
 }
 
 // TODO somehow eliminate the Box
-fn negamax_generic<F, G>(pos: &mut Position,
-                         alpha: Option<Score>,
-                         beta: Option<Score>,
-                         param: Param,
-                         is_killed: &AtomicBool,
-                         move_gen_fn: &mut F,
-                         eval_fn: &mut G) -> (Score, Data) where
+fn negamax_generic<F, G, H>(pos: &mut Position,
+                            alpha: Option<Score>,
+                            beta: Option<Score>,
+                            param: Param,
+                            is_killed: &AtomicBool,
+                            move_gen_fn: &mut F,
+                            eval_fn: &mut G,
+                            stand_pat_fn: &mut H) -> (Score, Data) where
 for<'a> F: FnMut(&'a Position) -> Box<Iterator<Item = Move> + 'a>,
-for<'b> G: FnMut(&'b mut Position, ScoreUnit) -> (Score, Data) {
+for<'b> G: FnMut(&'b mut Position, ScoreUnit) -> (Score, Data),
+for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     if is_killed.load(Ordering::Relaxed) {
         return (Score::Value(ScoreUnit(0)), Data::one_node());
     }
@@ -54,12 +58,29 @@ for<'b> G: FnMut(&'b mut Position, ScoreUnit) -> (Score, Data) {
         return eval_fn(pos, param.draw_val);
     }
 
-    let (has_legal, score_opt, data): (bool, Option<Score>, Data) = {
+    let (has_legal, score_opt, data): (bool, Option<Score>, Data) = (|| {
         let temp = pos.clone();
         let move_iter = move_gen_fn(&temp);
 
         let mut has_legal = false;
         let mut prev_score_opt: Option<Score> = alpha;
+
+        if let Some(stand_pat_score) = stand_pat_fn(pos, param.draw_val) {
+            let new_score = match prev_score_opt {
+                None => stand_pat_score,
+                Some(prev_score) => max(prev_score, stand_pat_score),
+            };
+
+            has_legal = true;
+            prev_score_opt = Some(new_score);
+
+            if let Some(beta_val) = beta {
+                if new_score >= beta_val {
+                    return (true, beta, Data::one_node());
+                }
+            }
+        }
+
         let mut prev_data = Data::one_node();
 
         for curr_move in move_iter {
@@ -77,7 +98,8 @@ for<'b> G: FnMut(&'b mut Position, ScoreUnit) -> (Score, Data) {
                                 new_param,
                                 is_killed,
                                 move_gen_fn,
-                                eval_fn));
+                                eval_fn,
+                                stand_pat_fn));
             let curr_score = temp_score.increment();
             let curr_data = temp_data.increment();
 
@@ -100,7 +122,7 @@ for<'b> G: FnMut(&'b mut Position, ScoreUnit) -> (Score, Data) {
         }
 
         (has_legal, prev_score_opt, prev_data)
-    };
+    })();
 
     if has_legal {
         (score_opt.unwrap(), data)

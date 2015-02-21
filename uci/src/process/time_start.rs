@@ -13,10 +13,11 @@ pub fn time_start(state: &mut State, cmd_tx: SyncSender<Cmd>) {
     let (time_out_tx, time_out_rx) = sync_channel::<TimeOut>(0);
 
     state.timer.clone().start(c, time_out_tx, timer_kill_rx);
-    //state.timer.clone().start(c, cmd_tx, timer_kill_rx);
     thread::spawn(move || {
-        let _ = time_out_rx.recv().unwrap();
-        cmd_tx.send(Cmd::Stop).unwrap();
+        let recv_res = time_out_rx.recv();
+        if recv_res.is_ok() {
+            cmd_tx.send(Cmd::Stop).unwrap();
+        }
     });
 
     state.timer_kill_tx = Some(timer_kill_tx);

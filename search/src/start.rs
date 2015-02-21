@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 
 use game::{Move, Position};
-use types::{NumPlies, Score, State, Cmd, Data};
+use types::{NumPlies, Score, ScoreUnit, State, Cmd, Data};
 use types::Response::{self, Report};
 use depth_limited_search::depth_limited_search;
 
@@ -55,7 +55,8 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
         }).collect()
     });
 
-    let mut best_score = None::<Score>;
+    // this is just a placeholder score
+    let mut best_score = Score::Value(ScoreUnit(0));
     let mut best_move = search_move_pos_arc[0].0.clone();
     let mut total_search_data = Data::one_node();
 
@@ -98,7 +99,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
                         debug!("reporting result");
                         tx.send(Report(curr_depth,
                                        total_search_data.nodes,
-                                       best_score.unwrap(),
+                                       best_score,
                                        vec![best_move.clone()])).unwrap();
                         tx.send(Response::BestMove(best_move, None))
                           .ok().expect("output channel unexpectedly closed");
@@ -118,14 +119,14 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
                 let (temp_best_score, temp_best_move, curr_search_data) = search_res.ok()
                     .expect("depth_limited_search unexpectedly dropped Sender");
 
-                best_score = Some(temp_best_score);
+                best_score = temp_best_score;
                 best_move = temp_best_move;
 
                 total_search_data = total_search_data.combine(curr_search_data);
 
                 tx.send(Report(curr_depth,
                                total_search_data.nodes,
-                               best_score.unwrap(),
+                               best_score,
                                vec![best_move.clone()])).unwrap();
 
                 curr_depth.0 += 1;

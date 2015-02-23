@@ -1,5 +1,5 @@
 [root]
-name = "chess_project"
+name = "binary_turk"
 version = "0.0.1"
 dependencies = [
  "env_logger 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",

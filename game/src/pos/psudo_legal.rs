@@ -9,6 +9,7 @@ use piece::Type::{Pawn, King, Queen, Bishop, Knight, Rook};
 use castle::{Kingside, Queenside};
 
 use super::Position;
+use super::bitboard::BitBoard;
 
 pub struct Iter<'a>(iter::Chain<NoisyIter<'a>, QuietIter<'a>>);
 impl<'a> Iterator for Iter<'a> {
@@ -155,58 +156,55 @@ static KING_FIXED:   [Diff; 8] = [(1, 0), (0, 1), (-1, 0), (0, -1),
 static KNIGHT_FIXED: [Diff; 8] = [(2, 1), (2, -1), (-2, -1), (-2, 1),
                                   (1, 2), (1, -2), (-1, -2), (-1, 2)];
 
-fn quiet_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+lazy_static! {
+    static ref KING_FIXED_TABLE: [BitBoard; 64] = fixed_table_gen(&KING_FIXED);
+    static ref KNIGHT_FIXED_TABLE: [BitBoard; 64] = fixed_table_gen(&KNIGHT_FIXED);
+}
 
-    let mut ans = Vec::new();
+fn fixed_table_gen(diffs: &[Diff]) -> [BitBoard; 64] {
+    let mut ans = [BitBoard::new(); 64];
+    for i in 0..64 {
+        ans[i as usize] = fixed_from_square_gen(Square::from_id(i), diffs);
+    }
+    ans
+}
 
-    let piece_type = piece_id.piece_type();
-
-    let fixed = match piece_type {
-        King => KING_FIXED,
-        Knight => KNIGHT_FIXED,
-        _ => panic!(),
-    };
-
-    for dir in fixed.iter() {
-        let new_pos = shift(from, *dir);
-        if new_pos.is_some() {
-            let to = new_pos.unwrap();
-            if p.is_empty_at(to) {
-                let curr_move = Move::new(from, to);
-                ans.push(curr_move);
-            }
+fn fixed_from_square_gen(from: Square, diffs: &[Diff]) -> BitBoard {
+    let mut ans = BitBoard::new();
+    for dir in diffs {
+        if let Some(to) = shift(from, *dir) {
+            ans.set_at(to);
         }
     }
+    ans
+}
 
-    ans.into_iter()
+fn quiet_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+
+    let table: &[BitBoard; 64] = &match piece_id.piece_type() {
+        King => *KING_FIXED_TABLE,
+        Knight => *KNIGHT_FIXED_TABLE,
+        _ => panic!(),
+    };
+    let to_bits = table[from.to_id() as usize].intersect(p.data.empty_data());
+
+    to_bits.iter().map(|to: Square| Move::new(from, to)).collect::<Vec<_>>().into_iter()
 }
 
 fn noisy_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
 
-    let mut ans = Vec::new();
-
-    let piece_type = piece_id.piece_type();
-    let piece_color = piece_id.color();
-
-    let fixed = match piece_type {
-        King => KING_FIXED,
-        Knight => KNIGHT_FIXED,
+    let table: &[BitBoard; 64] = &match piece_id.piece_type() {
+        King => *KING_FIXED_TABLE,
+        Knight => *KNIGHT_FIXED_TABLE,
         _ => panic!(),
     };
+    let to_bits = table[from.to_id() as usize].intersect(p.data.color_data(piece_id.color().invert()));
 
-    for dir in fixed.iter() {
-        let new_pos = shift(from, *dir);
-        if new_pos.is_some() {
-            let to = new_pos.unwrap();
-            if p.is_color_at(to, piece_color.invert()) {
-                let mut curr_move = Move::new(from, to);
-				curr_move.set_capture_normal(p.at(to));
-                ans.push(curr_move);
-            }
-        }
-    }
-
-    ans.into_iter()
+    to_bits.iter().map(|to: Square| {
+        let mut curr_move = Move::new(from, to);
+        curr_move.set_capture_normal(p.at(to));
+        curr_move
+    }).collect::<Vec<_>>().into_iter()
 }
 
 fn quiet_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {

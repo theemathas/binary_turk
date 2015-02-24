@@ -1,6 +1,10 @@
 //! This module is for everything about the rules of chess.
 
 #![feature(core, collections, unicode)]
+#![feature(plugin)]
+
+#[macro_use]
+extern crate lazy_static;
 
 #[macro_use]
 extern crate log;

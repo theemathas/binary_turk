@@ -31,7 +31,10 @@ impl Board {
         &mut self.data[p as usize]
     }
 
-    fn color_data(&self, c: Color) -> BitBoard {
+    pub fn empty_data(&self) -> BitBoard {
+        self.empty_data
+    }
+    pub fn color_data(&self, c: Color) -> BitBoard {
         match c {
             White => self.white_data,
             Black => self.black_data,

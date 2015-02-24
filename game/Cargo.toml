@@ -6,3 +6,4 @@ authors = ["Theemathas Chirananthavat <theemathas@gmail.com>"]
 
 [dependencies]
 log = "*"
+lazy_static = "*"

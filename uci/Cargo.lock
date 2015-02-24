@@ -7,19 +7,23 @@ dependencies = [
  "search 0.0.1",
  "time 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "timer 0.0.1",
- "types 0.0.1",
 ]
 
 [[package]]
 name = "game"
 version = "0.0.1"
 dependencies = [
+ "lazy_static 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "types 0.0.1",
 ]
 
 [[package]]
 name = "gcc"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "lazy_static"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
@@ -39,7 +43,6 @@ version = "0.0.1"
 dependencies = [
  "game 0.0.1",
  "log 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "types 0.0.1",
 ]
 
 [[package]]
@@ -56,10 +59,5 @@ name = "timer"
 version = "0.0.1"
 dependencies = [
  "game 0.0.1",
- "types 0.0.1",
 ]
-
-[[package]]
-name = "types"
-version = "0.0.1"
 

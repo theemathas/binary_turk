@@ -25,6 +25,10 @@ impl BitBoard {
     pub fn iter(self) -> Iter {
         Iter(self.0)
     }
+
+    pub fn intersect(self, other: BitBoard) -> BitBoard {
+        BitBoard(self.0 & other.0)
+    }
 }
 
 #[derive(Copy, Clone, Debug)]

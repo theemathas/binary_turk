@@ -10,6 +10,12 @@ use square::{Square, File, ParseSquareError};
 use castle::{Side, Kingside, Queenside};
 use pos::{Position, at_in_pos, is_empty_at_in_pos};
 
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
+pub struct NumPlies(pub u32);
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
+pub struct NumMoves(pub u32);
+
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Move {
     from: Square,

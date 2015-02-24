@@ -1,10 +1,8 @@
-use types::NumPlies;
-
 use color::{White, Black};
 use piece::Piece::{self, WK, WR, BK, BR};
 use piece::Pawn;
 use square::{Square, File, Rank};
-use moves::Move;
+use moves::{Move, NumPlies};
 use castle::{Kingside, Queenside};
 
 use super::{Position, ExtraData};

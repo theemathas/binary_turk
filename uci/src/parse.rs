@@ -2,8 +2,9 @@ use std::iter::Peekable;
 use std::str::FromStr;
 use std::time::Duration;
 
-use game::{Position, FromTo, White, Black};
-use types::{NumNodes, NumPlies, NumMoves, Cmd, RegisterParam, GoParam};
+use game::{Position, FromTo, White, Black, NumPlies, NumMoves};
+use search::NumNodes;
+use types::{Cmd, RegisterParam, GoParam};
 use types::options;
 
 pub fn parse(s: &str) -> Option<Cmd> {

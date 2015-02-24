@@ -2,8 +2,8 @@ use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
-use game::{Move, Position};
-use types::{NumPlies, Score, ScoreUnit, Data};
+use game::{Move, Position, Score, ScoreUnit, NumPlies};
+use types::Data;
 use negamax::{self, negamax};
 
 pub fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,

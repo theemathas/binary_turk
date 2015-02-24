@@ -1,15 +1,21 @@
-extern crate types;
-
 use std::fmt;
 
 use game::{Position, Move, FromTo};
 
-pub use self::types::*;
 pub use self::param::{RegisterParam, GoParam, IdParam, InfoParam, ScoreType};
 pub use self::param::ID_DATA;
 
 pub mod options;
 mod param;
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
+pub struct NumVariations(pub u32);
+
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+pub struct PerMill(pub u32);
+
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+pub struct NumCpu(pub u32);
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Cmd {

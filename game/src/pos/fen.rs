@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use types::NumPlies;
-
+use moves::NumPlies;
 use square::{File, Rank, Square};
 use castle::{Kingside, Queenside};
 use piece::Piece::*;

@@ -9,6 +9,3 @@ log = "*"
 
 [dependencies.game]
 path = "../game"
-
-[dependencies.types]
-path = "../types"

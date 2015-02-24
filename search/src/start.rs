@@ -3,8 +3,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 
-use game::{Move, Position};
-use types::{NumPlies, Score, ScoreUnit, State, Cmd, Data};
+use game::{Move, Position, Score, ScoreUnit, NumPlies};
+use types::{State, Cmd, Data};
 use types::Response::{self, Report};
 use depth_limited_search::depth_limited_search;
 

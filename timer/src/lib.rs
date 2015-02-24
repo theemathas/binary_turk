@@ -1,14 +1,12 @@
 #![feature(std_misc, old_io)]
 
-extern crate types;
 extern crate game;
 
 use std::time::Duration;
 use std::sync::mpsc::{SyncSender, Receiver};
 use std::thread;
 
-use game::Color;
-use types::NumMoves;
+use game::{Color, NumMoves};
 
 mod control;
 

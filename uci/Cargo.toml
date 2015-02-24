@@ -8,9 +8,6 @@ authors = ["Theemathas Chirananthavat <theemathas@gmail.com>"]
 time = "*"
 log = "*"
 
-[dependencies.types]
-path = "../types"
-
 [dependencies.game]
 path = "../game"
 

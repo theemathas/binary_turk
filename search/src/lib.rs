@@ -5,7 +5,7 @@ extern crate log;
 
 extern crate game;
 
-pub use types::{State, Param, Cmd, Response};
+pub use types::{NumNodes, State, Param, Cmd, Response};
 pub use start::start;
 
 mod types;

@@ -2,13 +2,13 @@
 
 use std::str::FromStr;
 
-use types::{NumPlies, Score, ScoreUnit};
+pub use self::eval::{Score, ScoreUnit};
 
 use super::piece::Piece;
 use super::color::Color;
 use super::square::{File, Square};
 use super::castle::{CastlingData, Side};
-use super::moves::Move;
+use super::moves::{Move, NumPlies};
 
 use self::board::Board;
 use self::fen::{fen_to_position, ParsePosError};

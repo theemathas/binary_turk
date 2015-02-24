@@ -6,6 +6,3 @@ authors = ["Theemathas Chirananthavat <theemathas@gmail.com>"]
 
 [dependencies]
 log = "*"
-
-[dependencies.types]
-path = "../types"

@@ -1,8 +1,5 @@
 //! implements the board representation
 
-use std::vec;
-use std::collections::VecMap;
-
 use color::{Color, White, Black};
 use piece::{self, Piece, King};
 use square::Square;
@@ -11,7 +8,7 @@ use super::bitboard::BitBoard;
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Board {
-    data: VecMap<BitBoard>,
+    data: [BitBoard; 12],
     white_data: BitBoard,
     black_data: BitBoard,
     empty_data: BitBoard,
@@ -19,29 +16,25 @@ pub struct Board {
 
 impl Board {
     pub fn new() -> Board {
-        let mut ans = VecMap::new();
-        for x in piece::ALL.iter() {
-            ans.insert(*x as usize, BitBoard::new());
-        }
         Board {
-            data: ans,
+            data: [BitBoard::new(); 12],
             white_data: BitBoard::new(),
             black_data: BitBoard::new(),
             empty_data: BitBoard::new_full(),
         }
     }
 
-    fn piece_data(&self, p: Piece) -> &BitBoard {
-        self.data.get(&(p as usize)).unwrap()
+    fn piece_data(&self, p: Piece) -> BitBoard {
+        self.data[p as usize]
     }
     fn piece_data_mut(&mut self, p: Piece) -> &mut BitBoard {
-        self.data.get_mut(&(p as usize)).unwrap()
+        &mut self.data[p as usize]
     }
 
-    fn color_data(&self, c: Color) -> &BitBoard {
+    fn color_data(&self, c: Color) -> BitBoard {
         match c {
-            White => &self.white_data,
-            Black => &self.black_data,
+            White => self.white_data,
+            Black => self.black_data,
         }
     }
     fn color_data_mut(&mut self, c: Color) -> &mut BitBoard {
@@ -81,23 +74,16 @@ impl Board {
         self.piece_data(curr_king).iter().next().unwrap()
     }
 
-    fn piece_vec(&self) -> Vec<(Piece, Square)> {
-        let mut ans: Vec<(Piece, Square)> = Vec::new();
-        for p in piece::ALL.iter() {
-            ans.extend(self.piece_data(*p).iter().map( |s: Square| (*p, s)  ) );
-        }
-        ans
+    pub fn iter<'a>(&'a self) -> Iter<'a> {
+        Iter(Box::new(piece::ALL.iter().cloned().flat_map(move |p| {
+            self.piece_data(p).iter().map(move |s: Square| (p, s))
+        })))
     }
-    pub fn iter(&self) -> Iter { Iter(self.piece_vec().into_iter()) }
 }
 
-pub struct Iter(vec::IntoIter<(Piece, Square)>);
-impl Iterator for Iter {
+pub struct Iter<'a>(Box<Iterator<Item = (Piece, Square)> + 'a>);
+impl<'a> Iterator for Iter<'a> {
     type Item = (Piece, Square);
     fn next(&mut self) -> Option<(Piece, Square)> { self.0.next() }
     fn size_hint(&self) -> (usize, Option<usize>) { self.0.size_hint() }
 }
-impl DoubleEndedIterator for Iter {
-    fn next_back(&mut self) -> Option<(Piece, Square)> { self.0.next_back() }
-}
-impl ExactSizeIterator for Iter {}

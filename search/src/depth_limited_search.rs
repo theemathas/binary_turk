@@ -1,20 +1,16 @@
 use std::sync::mpsc::Sender;
-use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
 use game::{Move, Position, Score, ScoreUnit, NumPlies};
 use types::Data;
 use negamax::{self, negamax};
 
-pub fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
+pub fn depth_limited_search(search_move_pos: &[(Move, Position)],
                             depth: NumPlies,
                             tx: Sender<(Score, Move, Data)>,
-                            is_killed: Arc<AtomicBool>) {
-    debug_assert!(!search_move_pos_arc.is_empty());
+                            is_killed: &AtomicBool) {
+    debug_assert!(!search_move_pos.is_empty());
     debug_assert!(depth.0 >= 1);
-
-    // TODO This clone() shouldn't be needed
-    let mut search_move_pos = (*search_move_pos_arc).clone();
 
     // TODO Take this draw_val value from somewhere else
     let draw_val = ScoreUnit(0);
@@ -30,16 +26,16 @@ pub fn depth_limited_search(search_move_pos_arc: Arc<Vec<(Move, Position)>>,
     let mut prev_ans_opt: Option<(Score, Move)> = None;
     let mut prev_data = Data::one_node();
 
-    for &mut (ref curr_move_ref, ref mut curr_pos) in search_move_pos.iter_mut() {
+    for &(ref curr_move_ref, ref curr_pos) in search_move_pos.iter() {
         let curr_move = curr_move_ref.clone();
 
         let prev_best_score_opt = prev_ans_opt.as_ref().map(|x| x.0);
         let (temp_score, temp_data) =
-            negamax(curr_pos,
+            negamax(&mut curr_pos.clone(),
                     prev_best_score_opt,
                     None,
                     param.clone(),
-                    &*is_killed);
+                    is_killed);
         let curr_score = temp_score.increment();
         let curr_data = temp_data.increment();
 

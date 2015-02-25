@@ -52,9 +52,9 @@ pub fn quiet_iter<'a>(p: &'a Position) -> QuietIter<'a> {
     )))
 }
 
-fn quiet_move_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+fn quiet_move_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move>> {
     if piece_id.color() != p.side_to_move() {
-        Vec::new().into_iter()
+        Box::new(None.into_iter())
     } else {
         match piece_id.piece_type() {
             Pawn => quiet_pawn_from_iter(p, piece_id, from),
@@ -64,9 +64,9 @@ fn quiet_move_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::Int
     }
 }
 
-fn noisy_move_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+fn noisy_move_from_iter<'a>(p: &'a Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move> + 'a> {
     if piece_id.color() != p.side_to_move() {
-        Vec::new().into_iter()
+        Box::new(None.into_iter())
     } else {
         match piece_id.piece_type() {
             Pawn => noisy_pawn_from_iter(p, piece_id, from),
@@ -90,65 +90,100 @@ static BISHOP_SLIDE: [Diff; 4] = [(1, 1), (1, -1), (-1, -1), (-1, 1)];
 static QUEEN_SLIDE:  [Diff; 8] = [(1, 0), (0, 1), (-1, 0), (0, -1),
                                   (1, 1), (1, -1), (-1, -1), (-1, 1)];
 
-fn quiet_slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
-
-    let mut ans = Vec::new();
-
-    let piece_type = piece_id.piece_type();
-
-    let slide: &[Diff] = match piece_type {
-        Rook => &ROOK_SLIDE,
-        Bishop => &BISHOP_SLIDE,
-        Queen => &QUEEN_SLIDE,
-        _ => panic!(),
-    };
-
-    for dir in slide.iter() {
-        let mut curr_pos = shift(from, *dir);
-        //while curr_pos is valid and there is no piece there.
-        while curr_pos.is_some() && p.is_empty_at(curr_pos.unwrap()) {
-            let curr_move = Move::new(from, curr_pos.unwrap());
-            ans.push(curr_move);
-            curr_pos = shift(curr_pos.unwrap(), *dir);
-        }
-    }
-
-    ans.into_iter()
+lazy_static! {
+    static ref ROOK_SLIDE_TABLE: [BitBoard; 64] = slider_table_gen(&ROOK_SLIDE);
+    static ref BISHOP_SLIDE_TABLE: [BitBoard; 64] = slider_table_gen(&BISHOP_SLIDE);
+    static ref QUEEN_SLIDE_TABLE: [BitBoard; 64] = slider_table_gen(&QUEEN_SLIDE);
+    static ref BEHIND_TABLE: [[BitBoard; 64]; 64] = behind_table_gen();
 }
 
-fn noisy_slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+fn behind_table_gen() -> [[BitBoard; 64]; 64] {
+    let mut ans = [[BitBoard::new(); 64]; 64];
+    for i in 0..64 {
+        ans[i as usize] = behind_from_square_gen(Square::from_id(i));
+    }
+    ans
+}
 
-    let mut ans = Vec::new();
+fn behind_from_square_gen(from: Square) -> [BitBoard; 64] {
+    let mut ans = [BitBoard::new(); 64];
 
-    let piece_type = piece_id.piece_type();
-    let piece_color = piece_id.color();
+    for &dir in &QUEEN_SLIDE {
 
-    let slide: &[Diff] = match piece_type {
-        Rook => &ROOK_SLIDE,
-        Bishop => &BISHOP_SLIDE,
-        Queen => &QUEEN_SLIDE,
-        _ => panic!(),
-    };
+        let mut to = from;
+        while let Some(temp_to) = shift(to, dir) {
+            to = temp_to;
 
-    for dir in slide.iter() {
-        let mut curr_pos = shift(from, *dir);
-        //while curr_pos is valid and there is no piece there.
-        while curr_pos.is_some() && p.is_empty_at(curr_pos.unwrap()) {
-            curr_pos = shift(curr_pos.unwrap(), *dir);
-        }
-        //if curr_pos is valid
-        if curr_pos.is_some() {
-            let to = curr_pos.unwrap();
-            //if there is an enemy at the destination
-            if p.is_color_at(to, piece_color.invert()) {
-                let mut curr_move = Move::new(from, to);
-                curr_move.set_capture_normal(p.at(to));
-                ans.push(curr_move);
+            let curr_ans: &mut BitBoard = &mut ans[to.to_id() as usize];
+
+            let mut blocked = to;
+            while let Some(temp_blocked) = shift(blocked, dir) {
+                blocked = temp_blocked;
+
+                curr_ans.set_at(blocked);
             }
         }
     }
+    ans
+}
 
-    ans.into_iter()
+fn slider_table_gen(diffs: &[Diff]) -> [BitBoard; 64] {
+    let mut ans = [BitBoard::new(); 64];
+    for i in 0..64 {
+        ans[i as usize] = slider_from_square_gen(Square::from_id(i), diffs);
+    }
+    ans
+}
+
+fn slider_from_square_gen(from: Square, diffs: &[Diff]) -> BitBoard {
+    let mut ans = BitBoard::new();
+    for &dir in diffs {
+        let mut to = from;
+        while let Some(temp) = shift(to, dir) {
+            to = temp;
+            ans.set_at(to);
+        }
+    }
+    ans
+}
+
+fn reachable_from_bitboard(p: &Position, piece_id: Piece, from: Square) -> BitBoard {
+    let piece_type = piece_id.piece_type();
+    let table: &[BitBoard; 64] = &match piece_type {
+        Rook => *ROOK_SLIDE_TABLE,
+        Bishop => *BISHOP_SLIDE_TABLE,
+        Queen => *QUEEN_SLIDE_TABLE,
+        _ => panic!(),
+    };
+    let mut ans: BitBoard = table[from.to_id() as usize];
+    let potential_blocker: BitBoard = ans.intersect(!p.data.empty_data());
+
+    for blocker_square in potential_blocker.iter() {
+        ans = ans.intersect(
+            !BEHIND_TABLE[from.to_id() as usize][blocker_square.to_id() as usize]);
+    }
+
+    ans
+}
+
+fn quiet_slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move>> {
+    let to_bitboard = reachable_from_bitboard(p, piece_id, from);
+
+    let ans = to_bitboard.intersect(p.data.empty_data());
+
+    Box::new(ans.iter().map(move |to: Square| Move::new(from, to)))
+}
+
+fn noisy_slider_from_iter<'a>(p: &'a Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move> + 'a> {
+    let to_bitboard = reachable_from_bitboard(p, piece_id, from);
+
+    let ans = to_bitboard.intersect(p.data.color_data(p.side_to_move().invert()));
+
+    Box::new(ans.iter().map(move |to: Square| {
+        let mut ans = Move::new(from, to);
+        ans.set_capture_normal(p.at(to));
+        ans
+    }))
 }
 
 static KING_FIXED:   [Diff; 8] = [(1, 0), (0, 1), (-1, 0), (0, -1),
@@ -179,7 +214,7 @@ fn fixed_from_square_gen(from: Square, diffs: &[Diff]) -> BitBoard {
     ans
 }
 
-fn quiet_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+fn quiet_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move>> {
 
     let table: &[BitBoard; 64] = &match piece_id.piece_type() {
         King => *KING_FIXED_TABLE,
@@ -188,10 +223,10 @@ fn quiet_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::In
     };
     let to_bits = table[from.to_id() as usize].intersect(p.data.empty_data());
 
-    to_bits.iter().map(|to: Square| Move::new(from, to)).collect::<Vec<_>>().into_iter()
+    Box::new(to_bits.iter().map(move |to: Square| Move::new(from, to)))
 }
 
-fn noisy_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+fn noisy_fixed_from_iter<'a>(p: &'a Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move> + 'a> {
 
     let table: &[BitBoard; 64] = &match piece_id.piece_type() {
         King => *KING_FIXED_TABLE,
@@ -200,14 +235,14 @@ fn noisy_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::In
     };
     let to_bits = table[from.to_id() as usize].intersect(p.data.color_data(piece_id.color().invert()));
 
-    to_bits.iter().map(|to: Square| {
+    Box::new(to_bits.iter().map(move |to: Square| {
         let mut curr_move = Move::new(from, to);
         curr_move.set_capture_normal(p.at(to));
         curr_move
-    }).collect::<Vec<_>>().into_iter()
+    }))
 }
 
-fn quiet_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+fn quiet_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move>> {
     let mut ans = Vec::new();
 
     let piece_color = piece_id.color();
@@ -240,10 +275,10 @@ fn quiet_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::Int
         }
     }
 
-    ans.into_iter()
+    Box::new(ans.into_iter())
 }
 
-fn noisy_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::IntoIter<Move> {
+fn noisy_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move>> {
     let mut ans = Vec::new();
 
     let piece_color = piece_id.color();
@@ -292,7 +327,7 @@ fn noisy_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> vec::Int
         }
     }
 
-    ans.into_iter()
+    Box::new(ans.into_iter())
 }
 
 fn en_passant_iter(p: &Position) -> vec::IntoIter<Move> {

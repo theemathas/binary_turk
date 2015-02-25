@@ -1,6 +1,7 @@
 //! Implements a bitboard for a single piece.
 
 use std::num::Int;
+use std::ops::Not;
 
 use square::Square;
 
@@ -29,6 +30,10 @@ impl BitBoard {
     pub fn intersect(self, other: BitBoard) -> BitBoard {
         BitBoard(self.0 & other.0)
     }
+}
+impl Not for BitBoard {
+    type Output = BitBoard;
+    fn not(self) -> BitBoard { BitBoard(!(self.0)) }
 }
 
 #[derive(Copy, Clone, Debug)]

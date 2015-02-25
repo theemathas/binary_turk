@@ -1,7 +1,7 @@
 //! This module is for statically evaluating a position.
 
 use std::fmt;
-use std::ops::{Add, Sub, Neg};
+use std::ops::{Add, Sub, Neg, Mul};
 use std::cmp::Ordering;
 
 use moves::NumMoves;
@@ -22,6 +22,10 @@ impl Sub for ScoreUnit {
 impl Neg for ScoreUnit {
     type Output = Self;
     fn neg(self) -> Self { ScoreUnit(-self.0) }
+}
+impl Mul<i32> for ScoreUnit {
+    type Output = Self;
+    fn mul(self, rhs: i32) -> Self { ScoreUnit(self.0 * rhs) }
 }
 
 /// An assessment of the position.
@@ -99,7 +103,14 @@ pub fn eval(p: &mut Position, draw_val: ScoreUnit) -> Score {
     } else {
         let c = p.side_to_move();
         // TODO change fold() to sum() when possible
-        Score::Value(p.piece_iter().map( |(piece, _pos)| val_for_color(piece, c) ).fold(ScoreUnit(0), |x, y| x+y))
+        let piece_eval = p.piece_iter()
+                          .map( |(piece, _pos)| val_for_color(piece, c) )
+                          .fold(ScoreUnit(0), |x, y| x+y);
+        let our_mobility = p.psudo_legal_iter().count();
+        p.swap_side_to_move();
+        let his_mobility = p.psudo_legal_iter().count();
+        p.swap_side_to_move();
+        Score::Value(piece_eval + VALUE_PER_MOBILITY * (our_mobility as i32- his_mobility as i32))
     }
 }
 
@@ -111,6 +122,8 @@ fn val_for_color(piece: Piece, c: Color) -> ScoreUnit {
         -val
     }
 }
+
+const VALUE_PER_MOBILITY: ScoreUnit = ScoreUnit(5);
 
 fn val_of_piece_type(piece_type: PieceType) -> ScoreUnit {
     ScoreUnit(match piece_type {

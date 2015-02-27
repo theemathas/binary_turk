@@ -8,6 +8,8 @@ extern crate lazy_static;
 #[macro_use]
 extern crate log;
 
+extern crate rand;
+
 pub use color::{Color, White, Black};
 pub use piece::Piece;
 pub use piece::Type as PieceType;
@@ -18,6 +20,7 @@ pub use moves::{NumPlies, NumMoves};
 pub use pos::Position;
 pub use pos::ExtraData as PosExtraData;
 pub use pos::{ScoreUnit, Score};
+pub use pos::ZobristHash;
 
 mod color;
 mod piece;

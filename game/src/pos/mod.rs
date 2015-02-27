@@ -3,6 +3,7 @@
 use std::str::FromStr;
 
 pub use self::eval::{Score, ScoreUnit};
+pub use self::hash::ZobristHash;
 
 use super::piece::Piece;
 use super::color::Color;
@@ -21,6 +22,7 @@ mod make_move;
 mod mate;
 mod fen;
 mod eval;
+mod hash;
 
 /// Data required to unmake moves
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -36,6 +38,7 @@ pub struct Position {
     data: Board,
     side_to_move: Color,
     extra_data: ExtraData,
+    hash: ZobristHash,
 }
 impl Position {
     fn new() -> Position {
@@ -47,6 +50,7 @@ impl Position {
                 en_passant: None,
                 ply_count: NumPlies(0),
             },
+            hash: ZobristHash(0),
         }
     }
     pub fn start() -> Self {
@@ -68,9 +72,11 @@ impl Position {
 
     fn set_at(&mut self, s: Square, p: Piece) {
         self.data.set_at(s, p);
+        self.hash = self.hash ^ hash::piece_square(p, s);
     }
     fn remove_at(&mut self, s: Square, p: Piece) {
         self.data.remove_at(s, p);
+        self.hash = self.hash ^ hash::piece_square(p, s);
     }
 
     fn king_square(&self, c: Color) -> Square {
@@ -84,7 +90,10 @@ impl Position {
         self.side_to_move
     }
     fn set_side_to_move(&mut self, c: Color) {
-        self.side_to_move = c;
+        if self.side_to_move != c {
+            self.side_to_move = c;
+            self.hash = self.hash ^ hash::side_to_move();
+        }
     }
     fn swap_side_to_move(&mut self) {
         let c = self.side_to_move.invert();
@@ -100,14 +109,24 @@ impl Position {
             side.require_empty_squares(c).iter().all( |x| self.is_empty_at(*x) )
     }
     fn set_castle(&mut self, side:Side, c:Color, val: bool) {
-        self.extra_data.castling.set(side, c, val);
+        let old_val = self.extra_data.castling.get(side, c);
+        if val != old_val {
+            self.extra_data.castling.set(side, c, val);
+            self.hash = self.hash ^ hash::castling(side, c);
+        }
     }
 
     fn en_passant(&self) -> Option<File> {
         self.extra_data.en_passant
     }
     fn set_en_passant(&mut self, val: Option<File>) {
+        if let Some(old_file) = self.extra_data.en_passant {
+            self.hash = self.hash ^ hash::en_passant(old_file);
+        }
         self.extra_data.en_passant = val;
+        if let Some(file) = val {
+            self.hash = self.hash ^ hash::en_passant(file);
+        }
     }
 
     fn ply_count(&self) -> NumPlies {
@@ -121,8 +140,16 @@ impl Position {
         &self.extra_data
     }
     fn set_extra_data(&mut self, val: ExtraData) {
-        self.extra_data = val;
+        for &side in &[Side::Kingside, Side::Queenside] {
+            for &color in &[Color::White, Color::Black] {
+                self.set_castle(side, color, val.castling.get(side, color));
+            }
+        }
+        self.set_en_passant(val.en_passant);
+        self.set_ply_count(val.ply_count);
     }
+
+    pub fn hash(&self) -> ZobristHash { self.hash }
 
     fn psudo_legal_iter<'a>(&'a self) -> psudo_legal::Iter<'a> {
         psudo_legal::iter(self)

@@ -4,6 +4,22 @@ use std::cmp::max;
 use game::{Position, Move, Score, ScoreUnit, NumPlies};
 use types::{Data};
 
+#[derive(Copy, Clone, Debug)]
+pub enum Bound {
+    Exact(Score),
+    Lower(Score),
+    Upper(Score),
+}
+impl Bound {
+    pub fn as_score(self) -> Score {
+        match self {
+            Bound::Exact(x) => x,
+            Bound::Lower(x) => x,
+            Bound::Upper(x) => x,
+        }
+    }
+}
+
 // TODO put more parameters here
 #[derive(Clone)]
 pub struct Param {
@@ -15,7 +31,7 @@ pub fn negamax(pos: &mut Position,
                alpha: Option<Score>,
                beta: Option<Score>,
                param: Param,
-               is_killed: &AtomicBool) -> (Score, Data) {
+               is_killed: &AtomicBool) -> (Bound, Data) {
     negamax_generic(pos, alpha, beta, param, is_killed,
                     &mut |x| Box::new(x.legal_iter()),
                     &mut |x, draw_val, inner_alpha, inner_beta| {
@@ -32,10 +48,10 @@ fn quiescence(pos: &mut Position,
               alpha: Option<Score>,
               beta: Option<Score>,
               param: Param,
-              is_killed: &AtomicBool) -> (Score, Data) {
+              is_killed: &AtomicBool) -> (Bound, Data) {
     negamax_generic(pos, alpha, beta, param, is_killed,
                     &mut |x| Box::new(x.legal_noisy_iter()),
-                    &mut |x, draw_val, _, _| (x.eval(draw_val), Data::one_node()),
+                    &mut |x, draw_val, _, _| (Bound::Exact(x.eval(draw_val)), Data::one_node()),
                     &mut |x, draw_val| Some(x.eval(draw_val)))
 }
 
@@ -47,12 +63,12 @@ fn negamax_generic<F, G, H>(pos: &mut Position,
                             is_killed: &AtomicBool,
                             move_gen_fn: &mut F,
                             eval_fn: &mut G,
-                            stand_pat_fn: &mut H) -> (Score, Data) where
+                            stand_pat_fn: &mut H) -> (Bound, Data) where
 for<'a> F: FnMut(&'a Position) -> Box<Iterator<Item = Move> + 'a>,
-for<'b> G: FnMut(&'b mut Position, ScoreUnit, Option<Score>, Option<Score>) -> (Score, Data),
+for<'b> G: FnMut(&'b mut Position, ScoreUnit, Option<Score>, Option<Score>) -> (Bound, Data),
 for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     if is_killed.load(Ordering::Relaxed) {
-        return (Score::Value(ScoreUnit(0)), Data::one_node());
+        return (Bound::Exact(Score::Value(ScoreUnit(0))), Data::one_node());
     }
     if param.depth == NumPlies(0) {
         return eval_fn(pos, param.draw_val, alpha, beta);
@@ -91,7 +107,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
                 draw_val: -param.draw_val,
                 depth: NumPlies(param.depth.0 - 1)
             };
-            let (temp_score, temp_data) = pos.with_move(&curr_move, |new_pos|
+            let (temp_bound, temp_data) = pos.with_move(&curr_move, |new_pos|
                 negamax_generic(new_pos,
                                 new_alpha,
                                 new_beta,
@@ -100,7 +116,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
                                 move_gen_fn,
                                 eval_fn,
                                 stand_pat_fn));
-            let curr_score = temp_score.increment();
+            let curr_score = temp_bound.as_score().increment();
             let curr_data = temp_data.increment();
 
             let new_score = match prev_score_opt {
@@ -125,7 +141,17 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     })();
 
     if has_legal {
-        (score_opt.unwrap(), data)
+        let score = score_opt.unwrap();
+        let bound = {
+            if alpha.is_some() && score <= alpha.unwrap() {
+                Bound::Upper(alpha.unwrap())
+            } else if beta.is_some() && score >= beta.unwrap() {
+                Bound::Lower(beta.unwrap())
+            } else {
+                Bound::Exact(score)
+            }
+        };
+        (bound, data)
     } else {
         eval_fn(pos, param.draw_val, alpha, beta)
     }

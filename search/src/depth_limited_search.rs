@@ -30,13 +30,13 @@ pub fn depth_limited_search(search_move_pos: &[(Move, Position)],
         let curr_move = curr_move_ref.clone();
 
         let prev_best_score_opt = prev_ans_opt.as_ref().map(|x| x.0);
-        let (temp_score, temp_data) =
+        let (temp_bound, temp_data) =
             negamax(&mut curr_pos.clone(),
                     prev_best_score_opt,
                     None,
                     param.clone(),
                     is_killed);
-        let curr_score = temp_score.increment();
+        let curr_score = temp_bound.as_score().increment();
         let curr_data = temp_data.increment();
 
         let new_ans = match prev_ans_opt {

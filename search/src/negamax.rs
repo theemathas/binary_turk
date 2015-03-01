@@ -24,7 +24,7 @@ impl Bound {
 #[derive(Clone)]
 pub struct Param {
     pub draw_val: ScoreUnit,
-    pub depth: NumPlies,
+    pub depth: Option<NumPlies>,
 }
 
 pub fn negamax(pos: &mut Position,
@@ -37,7 +37,7 @@ pub fn negamax(pos: &mut Position,
                     &mut |x, draw_val, inner_alpha, inner_beta| {
                         let quiescence_param = Param {
                             draw_val: draw_val,
-                            depth: NumPlies(20)
+                            depth: None,
                         };
                         quiescence(x, inner_alpha, inner_beta, quiescence_param, is_killed)
                     },
@@ -70,7 +70,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     if is_killed.load(Ordering::Relaxed) {
         return (Bound::Exact(Score::Value(ScoreUnit(0))), Data::one_node());
     }
-    if param.depth == NumPlies(0) {
+    if param.depth == Some(NumPlies(0)) {
         return eval_fn(pos, param.draw_val, alpha, beta);
     }
 
@@ -105,7 +105,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
             let new_beta = prev_score_opt.map(|x| x.decrement());
             let new_param = Param {
                 draw_val: -param.draw_val,
-                depth: NumPlies(param.depth.0 - 1)
+                depth: param.depth.map(|x| NumPlies(x.0 - 1))
             };
             let (temp_bound, temp_data) = pos.with_move(&curr_move, |new_pos|
                 negamax_generic(new_pos,

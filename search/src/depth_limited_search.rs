@@ -20,7 +20,7 @@ pub fn depth_limited_search(search_move_pos: &[(Move, Position)],
 
     let param = negamax::Param {
         draw_val: next_draw_val,
-        depth: next_depth,
+        depth: Some(next_depth),
     };
 
     let mut prev_ans_opt: Option<(Score, Move)> = None;

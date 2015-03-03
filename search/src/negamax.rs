@@ -43,7 +43,7 @@ pub fn negamax(pos: &mut Position,
                beta: Option<Score>,
                param: Param,
                table: &mut TranspositionTable,
-               is_killed: &AtomicBool) -> (Bound, Data) {
+               is_killed: &AtomicBool) -> (Bound, Option<Move>, Data) {
     negamax_generic(pos, alpha, beta, param, table, is_killed,
                     &mut |x| Box::new(x.legal_iter()),
                     &mut |x, draw_val, inner_alpha, inner_beta, table| {
@@ -51,7 +51,9 @@ pub fn negamax(pos: &mut Position,
                             draw_val: draw_val,
                             depth: None,
                         };
-                        quiescence(x, inner_alpha, inner_beta, quiescence_param, table, is_killed)
+                        let (bound, _, data) = quiescence(x, inner_alpha, inner_beta, quiescence_param,
+                                                          table, is_killed);
+                        (bound, data)
                     },
                     &mut |_, _| None)
 }
@@ -61,7 +63,7 @@ fn quiescence(pos: &mut Position,
               beta: Option<Score>,
               param: Param,
               table: &mut TranspositionTable,
-              is_killed: &AtomicBool) -> (Bound, Data) {
+              is_killed: &AtomicBool) -> (Bound, Option<Move>, Data) {
     negamax_generic(pos, alpha, beta, param, table, is_killed,
                     &mut |x| Box::new(x.legal_noisy_iter()),
                     &mut |x, draw_val, _, _, _| (Bound::Exact(x.eval(draw_val)), Data::one_node()),
@@ -77,42 +79,44 @@ fn negamax_generic<F, G, H>(pos: &mut Position,
                             is_killed: &AtomicBool,
                             move_gen_fn: &mut F,
                             eval_fn: &mut G,
-                            stand_pat_fn: &mut H) -> (Bound, Data) where
+                            stand_pat_fn: &mut H) -> (Bound, Option<Move>, Data) where
 for<'a> F: FnMut(&'a Position) -> Box<Iterator<Item = Move> + 'a>,
 for<'b> G: FnMut(&'b mut Position, ScoreUnit, Option<Score>, Option<Score>,
                  &mut TranspositionTable) -> (Bound, Data),
 for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     if is_killed.load(Ordering::Relaxed) {
-        return (Bound::Exact(Score::Value(ScoreUnit(0))), Data::one_node());
+        return (Bound::Exact(Score::Value(ScoreUnit(0))), None, Data::one_node());
     }
 
     if let Some(data_ref) = table.get(pos) {
         if data_ref.depth >= param.depth.unwrap_or(NumPlies(0)) {
             let table_bound = data_ref.bound;
+            let table_best_move_opt = data_ref.best_move_opt.clone();
             let lower_than_alpha = alpha.is_some() &&
                                    !table_bound.is_lower() &&
                                    table_bound.as_score() <= alpha.unwrap();
-            if lower_than_alpha { return (Bound::Upper(alpha.unwrap()), Data::one_node()); }
+            if lower_than_alpha { return (Bound::Upper(alpha.unwrap()), table_best_move_opt, Data::one_node()); }
             let higher_than_beta = beta.is_some() &&
                                    !table_bound.is_upper() &&
                                    table_bound.as_score() >= beta.unwrap();
-            if higher_than_beta { return (Bound::Lower(beta.unwrap()), Data::one_node()); }
-            if table_bound.is_exact() { return (table_bound, Data::one_node()); }
+            if higher_than_beta { return (Bound::Lower(beta.unwrap()), table_best_move_opt, Data::one_node()); }
+            if table_bound.is_exact() { return (table_bound, table_best_move_opt, Data::one_node()); }
         }
     }
 
     if param.depth == Some(NumPlies(0)) {
-        let ans = eval_fn(pos, param.draw_val, alpha, beta, table);
-        table.set(pos, NumPlies(0), ans.0);
-        return ans;
+        let (bound, data) = eval_fn(pos, param.draw_val, alpha, beta, table);
+        table.set(pos, NumPlies(0), None, bound);
+        return (bound, None, data);
     }
 
-    let (has_legal, score_opt, data): (bool, Option<Score>, Data) = (|| {
+    let (has_legal, score_opt, best_move_opt, data): (bool, Option<Score>, Option<Move>, Data) = (|| {
         let temp = pos.clone();
         let move_iter = move_gen_fn(&temp);
 
         let mut has_legal = false;
         let mut prev_score_opt: Option<Score> = alpha;
+        let mut prev_best_move_opt: Option<Move> = None;
 
         if let Some(stand_pat_score) = stand_pat_fn(pos, param.draw_val) {
             let new_score = match prev_score_opt {
@@ -125,7 +129,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
 
             if let Some(beta_val) = beta {
                 if new_score >= beta_val {
-                    return (true, beta, Data::one_node());
+                    return (true, beta, None, Data::one_node());
                 }
             }
         }
@@ -140,7 +144,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
                 draw_val: -param.draw_val,
                 depth: param.depth.map(|x| NumPlies(x.0 - 1))
             };
-            let (temp_bound, temp_data) = pos.with_move(&curr_move, |new_pos|
+            let (temp_bound, _, temp_data) = pos.with_move(&curr_move, |new_pos|
                 negamax_generic(new_pos,
                                 new_alpha,
                                 new_beta,
@@ -153,14 +157,21 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
             let curr_score = temp_bound.as_score().increment();
             let curr_data = temp_data.increment();
 
-            let new_score = match prev_score_opt {
-                None => curr_score,
-                Some(prev_score) => max(prev_score, curr_score),
+            let (new_score, new_best_move_opt) = match prev_score_opt {
+                None => (curr_score, Some(curr_move)),
+                Some(prev_score) => {
+                    if curr_score <= prev_score {
+                        (prev_score, prev_best_move_opt)
+                    } else {
+                        (curr_score, Some(curr_move))
+                    }
+                }
             };
             let new_data = prev_data.combine(curr_data);
 
             has_legal = true;
             prev_score_opt = Some(new_score);
+            prev_best_move_opt = new_best_move_opt;
             prev_data = new_data;
 
             if let Some(beta_val) = beta {
@@ -171,7 +182,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
             }
         }
 
-        (has_legal, prev_score_opt, prev_data)
+        (has_legal, prev_score_opt, prev_best_move_opt, prev_data)
     })();
 
     if has_legal {
@@ -185,11 +196,11 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
                 Bound::Exact(score)
             }
         };
-        table.set(pos, param.depth.unwrap_or(NumPlies(0)), bound);
-        (bound, data)
+        table.set(pos, param.depth.unwrap_or(NumPlies(0)), best_move_opt.clone(), bound);
+        (bound, best_move_opt, data)
     } else {
-        let ans = eval_fn(pos, param.draw_val, alpha, beta, table);
-        table.set(pos, param.depth.unwrap_or(NumPlies(0)), ans.0);
-        ans
+        let (bound, data) = eval_fn(pos, param.draw_val, alpha, beta, table);
+        table.set(pos, param.depth.unwrap_or(NumPlies(0)), None, bound);
+        (bound, None, data)
     }
 }

@@ -1,11 +1,13 @@
 use std::sync::mpsc::{Sender, Receiver, channel};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
+use std::mem::transmute;
 
 use game::{Move, Position, Score, ScoreUnit, NumPlies};
 use types::{State, Cmd, Data};
 use types::Response::{self, Report};
 use depth_limited_search::depth_limited_search;
+use transposition_table::TranspositionTable;
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     if state.param.ponder {
@@ -59,15 +61,19 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
 
     let mut curr_depth = NumPlies(1);
 
+    let mut table = TranspositionTable::with_capacity(10000000);
+
     let (search_tx, mut search_rx) = channel::<(Score, Move, Data)>();
     let is_killed = AtomicBool::new(false);
 
-    let temp_search_move_pos = &search_move_pos;
-    let temp_is_killed = &is_killed;
-
     debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
-    let mut search_guard = thread::scoped(move ||
-        depth_limited_search(temp_search_move_pos, curr_depth, search_tx, temp_is_killed));
+    let mut search_guard = {
+        let temp_search_move_pos = &search_move_pos;
+        let temp_is_killed = &is_killed;
+        let temp_table: &mut TranspositionTable = unsafe {transmute(&mut table) };
+        thread::scoped(move ||
+        depth_limited_search(temp_search_move_pos, curr_depth, temp_table, search_tx, temp_is_killed))
+    };
 
     loop {
         // This is a hack to get around a problem in select! {}
@@ -129,13 +135,15 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
                 let (new_search_tx, new_search_rx) = channel::<(Score, Move, Data)>();
                 search_rx_opt = Some(new_search_rx);
 
-                let temp_search_move_pos = &search_move_pos;
-                let temp_is_killed = &is_killed;
-
                 debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
-                search_guard = thread::scoped(move ||
-                    depth_limited_search(temp_search_move_pos, curr_depth,
-                                         new_search_tx, temp_is_killed));
+                search_guard = {
+                    let temp_search_move_pos = &search_move_pos;
+                    let temp_is_killed = &is_killed;
+                    let temp_table: &mut TranspositionTable = unsafe { transmute(&mut table) };
+                    thread::scoped(move ||
+                    depth_limited_search(temp_search_move_pos, curr_depth, temp_table,
+                                         new_search_tx, temp_is_killed))
+                };
             }
         }
         if let Some(val) = search_rx_opt { search_rx = val; }

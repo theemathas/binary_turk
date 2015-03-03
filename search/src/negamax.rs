@@ -4,6 +4,8 @@ use std::cmp::max;
 use game::{Position, Move, Score, ScoreUnit, NumPlies};
 use types::{Data};
 
+use transposition_table::TranspositionTable;
+
 #[derive(Copy, Clone, Debug)]
 pub enum Bound {
     Exact(Score),
@@ -18,6 +20,15 @@ impl Bound {
             Bound::Upper(x) => x,
         }
     }
+    pub fn is_exact(self) -> bool {
+        if let Bound::Exact(_) = self { true } else { false }
+    }
+    pub fn is_lower(self) -> bool {
+        if let Bound::Lower(_) = self { true } else { false }
+    }
+    pub fn is_upper(self) -> bool {
+        if let Bound::Upper(_) = self { true } else { false }
+    }
 }
 
 // TODO put more parameters here
@@ -31,15 +42,16 @@ pub fn negamax(pos: &mut Position,
                alpha: Option<Score>,
                beta: Option<Score>,
                param: Param,
+               table: &mut TranspositionTable,
                is_killed: &AtomicBool) -> (Bound, Data) {
-    negamax_generic(pos, alpha, beta, param, is_killed,
+    negamax_generic(pos, alpha, beta, param, table, is_killed,
                     &mut |x| Box::new(x.legal_iter()),
-                    &mut |x, draw_val, inner_alpha, inner_beta| {
+                    &mut |x, draw_val, inner_alpha, inner_beta, table| {
                         let quiescence_param = Param {
                             draw_val: draw_val,
                             depth: None,
                         };
-                        quiescence(x, inner_alpha, inner_beta, quiescence_param, is_killed)
+                        quiescence(x, inner_alpha, inner_beta, quiescence_param, table, is_killed)
                     },
                     &mut |_, _| None)
 }
@@ -48,10 +60,11 @@ fn quiescence(pos: &mut Position,
               alpha: Option<Score>,
               beta: Option<Score>,
               param: Param,
+              table: &mut TranspositionTable,
               is_killed: &AtomicBool) -> (Bound, Data) {
-    negamax_generic(pos, alpha, beta, param, is_killed,
+    negamax_generic(pos, alpha, beta, param, table, is_killed,
                     &mut |x| Box::new(x.legal_noisy_iter()),
-                    &mut |x, draw_val, _, _| (Bound::Exact(x.eval(draw_val)), Data::one_node()),
+                    &mut |x, draw_val, _, _, _| (Bound::Exact(x.eval(draw_val)), Data::one_node()),
                     &mut |x, draw_val| Some(x.eval(draw_val)))
 }
 
@@ -60,18 +73,37 @@ fn negamax_generic<F, G, H>(pos: &mut Position,
                             alpha: Option<Score>,
                             beta: Option<Score>,
                             param: Param,
+                            table: &mut TranspositionTable,
                             is_killed: &AtomicBool,
                             move_gen_fn: &mut F,
                             eval_fn: &mut G,
                             stand_pat_fn: &mut H) -> (Bound, Data) where
 for<'a> F: FnMut(&'a Position) -> Box<Iterator<Item = Move> + 'a>,
-for<'b> G: FnMut(&'b mut Position, ScoreUnit, Option<Score>, Option<Score>) -> (Bound, Data),
+for<'b> G: FnMut(&'b mut Position, ScoreUnit, Option<Score>, Option<Score>,
+                 &mut TranspositionTable) -> (Bound, Data),
 for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     if is_killed.load(Ordering::Relaxed) {
         return (Bound::Exact(Score::Value(ScoreUnit(0))), Data::one_node());
     }
     if param.depth == Some(NumPlies(0)) {
-        return eval_fn(pos, param.draw_val, alpha, beta);
+        let ans = eval_fn(pos, param.draw_val, alpha, beta, table);
+        table.set(pos, NumPlies(0), ans.0);
+        return ans;
+    }
+
+    if let Some(data_ref) = table.get(pos) {
+        if data_ref.depth >= param.depth.unwrap_or(NumPlies(0)) {
+            let table_bound = data_ref.bound;
+            let lower_than_alpha = alpha.is_some() &&
+                                   !table_bound.is_lower() &&
+                                   table_bound.as_score() <= alpha.unwrap();
+            if lower_than_alpha { return (Bound::Upper(alpha.unwrap()), Data::one_node()); }
+            let higher_than_beta = beta.is_some() &&
+                                   !table_bound.is_upper() &&
+                                   table_bound.as_score() >= beta.unwrap();
+            if higher_than_beta { return (Bound::Lower(beta.unwrap()), Data::one_node()); }
+            if table_bound.is_exact() { return (table_bound, Data::one_node()); }
+        }
     }
 
     let (has_legal, score_opt, data): (bool, Option<Score>, Data) = (|| {
@@ -112,6 +144,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
                                 new_alpha,
                                 new_beta,
                                 new_param,
+                                table,
                                 is_killed,
                                 move_gen_fn,
                                 eval_fn,
@@ -151,8 +184,11 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
                 Bound::Exact(score)
             }
         };
+        table.set(pos, param.depth.unwrap_or(NumPlies(0)), bound);
         (bound, data)
     } else {
-        eval_fn(pos, param.draw_val, alpha, beta)
+        let ans = eval_fn(pos, param.draw_val, alpha, beta, table);
+        table.set(pos, param.depth.unwrap_or(NumPlies(0)), ans.0);
+        ans
     }
 }

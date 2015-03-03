@@ -14,3 +14,5 @@ mod start;
 
 mod depth_limited_search;
 mod negamax;
+
+mod transposition_table;

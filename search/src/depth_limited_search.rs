@@ -4,9 +4,11 @@ use std::sync::atomic::AtomicBool;
 use game::{Move, Position, Score, ScoreUnit, NumPlies};
 use types::Data;
 use negamax::{self, negamax};
+use transposition_table::TranspositionTable;
 
 pub fn depth_limited_search(search_move_pos: &[(Move, Position)],
                             depth: NumPlies,
+                            table: &mut TranspositionTable,
                             tx: Sender<(Score, Move, Data)>,
                             is_killed: &AtomicBool) {
     debug_assert!(!search_move_pos.is_empty());
@@ -35,6 +37,7 @@ pub fn depth_limited_search(search_move_pos: &[(Move, Position)],
                     prev_best_score_opt,
                     None,
                     param.clone(),
+                    table,
                     is_killed);
         let curr_score = temp_bound.as_score().increment();
         let curr_data = temp_data.increment();

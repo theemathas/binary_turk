@@ -18,12 +18,12 @@ pub fn negamax(pos: &mut Position,
                is_killed: &AtomicBool) -> (Score, Data) {
     negamax_generic(pos, alpha, beta, param, is_killed,
                     &mut |x| Box::new(x.legal_iter()),
-                    &mut |x, draw_val| {
+                    &mut |x, draw_val, inner_alpha, inner_beta| {
                         let quiescence_param = Param {
                             draw_val: draw_val,
                             depth: NumPlies(20)
                         };
-                        quiescence(x, alpha, beta, quiescence_param, is_killed)
+                        quiescence(x, inner_alpha, inner_beta, quiescence_param, is_killed)
                     },
                     &mut |_, _| None)
 }
@@ -35,7 +35,7 @@ fn quiescence(pos: &mut Position,
               is_killed: &AtomicBool) -> (Score, Data) {
     negamax_generic(pos, alpha, beta, param, is_killed,
                     &mut |x| Box::new(x.legal_noisy_iter()),
-                    &mut |x, draw_val| (x.eval(draw_val), Data::one_node()),
+                    &mut |x, draw_val, _, _| (x.eval(draw_val), Data::one_node()),
                     &mut |x, draw_val| Some(x.eval(draw_val)))
 }
 
@@ -49,13 +49,13 @@ fn negamax_generic<F, G, H>(pos: &mut Position,
                             eval_fn: &mut G,
                             stand_pat_fn: &mut H) -> (Score, Data) where
 for<'a> F: FnMut(&'a Position) -> Box<Iterator<Item = Move> + 'a>,
-for<'b> G: FnMut(&'b mut Position, ScoreUnit) -> (Score, Data),
+for<'b> G: FnMut(&'b mut Position, ScoreUnit, Option<Score>, Option<Score>) -> (Score, Data),
 for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     if is_killed.load(Ordering::Relaxed) {
         return (Score::Value(ScoreUnit(0)), Data::one_node());
     }
     if param.depth == NumPlies(0) {
-        return eval_fn(pos, param.draw_val);
+        return eval_fn(pos, param.draw_val, alpha, beta);
     }
 
     let (has_legal, score_opt, data): (bool, Option<Score>, Data) = (|| {
@@ -127,6 +127,6 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     if has_legal {
         (score_opt.unwrap(), data)
     } else {
-        eval_fn(pos, param.draw_val)
+        eval_fn(pos, param.draw_val, alpha, beta)
     }
 }

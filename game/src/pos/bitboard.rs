@@ -50,7 +50,7 @@ impl Iterator for Iter {
         }
     }
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let res = self.0.count_ones();
+        let res = self.0.count_ones() as usize;
         (res, Some(res))
     }
 }

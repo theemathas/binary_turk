@@ -85,11 +85,6 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     if is_killed.load(Ordering::Relaxed) {
         return (Bound::Exact(Score::Value(ScoreUnit(0))), Data::one_node());
     }
-    if param.depth == Some(NumPlies(0)) {
-        let ans = eval_fn(pos, param.draw_val, alpha, beta, table);
-        table.set(pos, NumPlies(0), ans.0);
-        return ans;
-    }
 
     if let Some(data_ref) = table.get(pos) {
         if data_ref.depth >= param.depth.unwrap_or(NumPlies(0)) {
@@ -104,6 +99,12 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
             if higher_than_beta { return (Bound::Lower(beta.unwrap()), Data::one_node()); }
             if table_bound.is_exact() { return (table_bound, Data::one_node()); }
         }
+    }
+
+    if param.depth == Some(NumPlies(0)) {
+        let ans = eval_fn(pos, param.draw_val, alpha, beta, table);
+        table.set(pos, NumPlies(0), ans.0);
+        return ans;
     }
 
     let (has_legal, score_opt, data): (bool, Option<Score>, Data) = (|| {

@@ -88,10 +88,11 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
         return (Bound::Exact(Score::Value(ScoreUnit(0))), None, Data::one_node());
     }
 
+    let mut table_best_move_opt = None;
     if let Some(data_ref) = table.get(pos) {
+        table_best_move_opt = data_ref.best_move_opt.clone();
         if data_ref.depth >= param.depth.unwrap_or(NumPlies(0)) {
             let table_bound = data_ref.bound;
-            let table_best_move_opt = data_ref.best_move_opt.clone();
             let lower_than_alpha = alpha.is_some() &&
                                    !table_bound.is_lower() &&
                                    table_bound.as_score() <= alpha.unwrap();
@@ -103,6 +104,8 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
             if table_bound.is_exact() { return (table_bound, table_best_move_opt, Data::one_node()); }
         }
     }
+    let table_best_move_opt = table_best_move_opt;
+
 
     if param.depth == Some(NumPlies(0)) {
         let (bound, data) = eval_fn(pos, param.draw_val, alpha, beta, table);
@@ -112,7 +115,20 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
 
     let (has_legal, score_opt, best_move_opt, data): (bool, Option<Score>, Option<Move>, Data) = (|| {
         let temp = pos.clone();
-        let move_iter = move_gen_fn(&temp);
+        let move_iter: Box<Iterator<Item = Move>> = {
+            let normal_iter = move_gen_fn(&temp);
+            if let Some(ref table_move) = table_best_move_opt {
+                let is_table_move_valid = move_gen_fn(&temp).any(|y| y == *table_move);
+                if is_table_move_valid {
+                    Box::new(Some(table_move.clone()).into_iter()
+                                            .chain(normal_iter.filter(move |x| *x != *table_move)))
+                } else {
+                    normal_iter
+                }
+            } else {
+                normal_iter
+            }
+        };
 
         let mut has_legal = false;
         let mut prev_score_opt: Option<Score> = alpha;

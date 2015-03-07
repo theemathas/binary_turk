@@ -18,7 +18,12 @@ impl TranspositionTable {
     pub fn get<'a>(&'a self, pos: &Position) -> Option<&'a Data> {
         let hash = pos.hash();
         let idx = (hash.0 % (self.0.len() as u64)) as usize;
-        self.0[idx].as_ref().and_then(|x| if x.hash == hash { Some(x) } else { None })
+        self.0[idx].as_ref().and_then(|x| {
+            let is_correct_pos = x.hash == hash &&
+                                 x.best_move_opt.as_ref()
+                                  .map_or(true, |y| pos.legal_iter().any(|z| *y == z));
+            if is_correct_pos { Some(x) } else { None }
+        })
     }
     // TODO implement a better replacement scheme
     pub fn set(&mut self, pos: &Position, depth: NumPlies, best_move_opt: Option<Move>, bound: Bound) {

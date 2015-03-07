@@ -106,7 +106,6 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     }
     let table_best_move_opt = table_best_move_opt;
 
-
     if param.depth == Some(NumPlies(0)) {
         let (bound, data) = eval_fn(pos, param.draw_val, alpha, beta, table);
         table.set(pos, NumPlies(0), None, bound);

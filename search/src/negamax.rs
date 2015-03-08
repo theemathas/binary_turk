@@ -35,21 +35,49 @@ impl Bound {
 #[derive(Clone)]
 pub struct Param {
     pub draw_val: ScoreUnit,
-    pub depth: Option<NumPlies>,
+    pub eval_depth: Option<NumPlies>,
+    pub table_depth: NumPlies,
 }
 
-pub fn negamax(pos: &mut Position,
-               alpha: Option<Score>,
-               beta: Option<Score>,
-               param: Param,
-               table: &mut TranspositionTable,
-               is_killed: &AtomicBool) -> (Bound, Option<Move>, Data) {
+pub fn negamax_root(pos: &mut Position,
+                    alpha: Option<Score>,
+                    beta: Option<Score>,
+                    draw_val: ScoreUnit,
+                    depth: NumPlies,
+                    table: &mut TranspositionTable,
+                    is_killed: &AtomicBool,
+                    search_moves: &[Move]) -> (Bound, Option<Move>, Data) {
+    let next_depth = NumPlies(depth.0 - 1);
+    let param = Param { draw_val: draw_val, eval_depth: Some(NumPlies(1)), table_depth: depth };
+    negamax_generic(pos, alpha, beta, param, table, is_killed,
+                    &mut |_| Box::new(search_moves.to_vec().into_iter()),
+                    &mut |inner_pos, inner_draw_val, inner_alpha, inner_beta, inner_table| {
+                        let inner_param = Param {
+                            draw_val: inner_draw_val,
+                            eval_depth: Some(next_depth),
+                            table_depth: next_depth,
+                        };
+                        let (bound, _, data) =
+                            negamax_inner(inner_pos, inner_alpha, inner_beta,
+                                          inner_param, inner_table, is_killed);
+                        (bound, data)
+                    },
+                    &mut |_, _| None)
+}
+
+fn negamax_inner(pos: &mut Position,
+                 alpha: Option<Score>,
+                 beta: Option<Score>,
+                 param: Param,
+                 table: &mut TranspositionTable,
+                 is_killed: &AtomicBool) -> (Bound, Option<Move>, Data) {
     negamax_generic(pos, alpha, beta, param, table, is_killed,
                     &mut |x| Box::new(x.legal_iter()),
                     &mut |x, draw_val, inner_alpha, inner_beta, table| {
                         let quiescence_param = Param {
                             draw_val: draw_val,
-                            depth: None,
+                            eval_depth: None,
+                            table_depth: NumPlies(0),
                         };
                         let (bound, _, data) = quiescence(x, inner_alpha, inner_beta, quiescence_param,
                                                           table, is_killed);
@@ -91,7 +119,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     let mut table_best_move_opt = None;
     if let Some(data_ref) = table.get(pos) {
         table_best_move_opt = data_ref.best_move_opt.clone();
-        if data_ref.depth >= param.depth.unwrap_or(NumPlies(0)) {
+        if data_ref.depth >= param.table_depth {
             let table_bound = data_ref.bound;
             let lower_than_alpha = alpha.is_some() &&
                                    !table_bound.is_lower() &&
@@ -106,7 +134,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
     }
     let table_best_move_opt = table_best_move_opt;
 
-    if param.depth == Some(NumPlies(0)) {
+    if param.eval_depth == Some(NumPlies(0)) {
         let (bound, data) = eval_fn(pos, param.draw_val, alpha, beta, table);
         table.set(pos, NumPlies(0), None, bound);
         return (bound, None, data);
@@ -157,7 +185,8 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
             let new_beta = prev_score_opt.map(|x| x.decrement());
             let new_param = Param {
                 draw_val: -param.draw_val,
-                depth: param.depth.map(|x| NumPlies(x.0 - 1))
+                eval_depth: param.eval_depth.map(|x| NumPlies(x.0 - 1)),
+                table_depth: NumPlies(param.table_depth.0 - 1),
             };
             let (temp_bound, _, temp_data) = pos.with_move(&curr_move, |new_pos|
                 negamax_generic(new_pos,
@@ -211,11 +240,11 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
                 Bound::Exact(score)
             }
         };
-        table.set(pos, param.depth.unwrap_or(NumPlies(0)), best_move_opt.clone(), bound);
+        table.set(pos, param.table_depth, best_move_opt.clone(), bound);
         (bound, best_move_opt, data)
     } else {
         let (bound, data) = eval_fn(pos, param.draw_val, alpha, beta, table);
-        table.set(pos, param.depth.unwrap_or(NumPlies(0)), None, bound);
+        table.set(pos, param.table_depth, None, bound);
         (bound, None, data)
     }
 }

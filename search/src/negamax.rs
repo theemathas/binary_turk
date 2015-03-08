@@ -1,5 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::cmp::max;
+use std::num::Int;
 
 use game::{Position, Move, Score, ScoreUnit, NumPlies};
 use types::{Data};
@@ -186,7 +187,7 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
             let new_param = Param {
                 draw_val: -param.draw_val,
                 eval_depth: param.eval_depth.map(|x| NumPlies(x.0 - 1)),
-                table_depth: NumPlies(param.table_depth.0 - 1),
+                table_depth: NumPlies(param.table_depth.0.saturating_sub(1)),
             };
             let (temp_bound, _, temp_data) = pos.with_move(&curr_move, |new_pos|
                 negamax_generic(new_pos,

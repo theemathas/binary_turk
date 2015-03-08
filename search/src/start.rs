@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::mem::transmute;
 
-use game::{Move, Position, Score, ScoreUnit, NumPlies};
+use game::{Move, Score, ScoreUnit, NumPlies};
 use types::{State, Cmd, Data};
 use types::Response::{self, Report};
 use depth_limited_search::depth_limited_search;
@@ -37,26 +37,21 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
         debug!("pondering finished");
     }
 
-    let search_move_pos: Vec<(Move, Position)> = {
+    let search_moves: Vec<(Move)> = {
         //let legal_moves_chan = receive_legal(state.pos.clone());
         let legal_moves = state.pos.legal_iter();
-        let search_moves: Vec<Move> = match state.param.search_moves {
+        match state.param.search_moves {
             None => legal_moves.collect(),
             Some(ref val) => legal_moves.filter(|x| val.contains(x)).collect(),
-        };
-        if search_moves.is_empty() {
-            panic!("No legal moves searched in searched position");
         }
-        search_moves.into_iter().map(|x: Move| {
-            let mut new_pos = state.pos.clone();
-            new_pos.make_move(&x);
-            (x, new_pos)
-        }).collect()
     };
+    if search_moves.is_empty() {
+        panic!("No legal moves searched in searched position");
+    }
 
     // this is just a placeholder score
     let mut best_score = Score::Value(ScoreUnit(0));
-    let mut best_move = search_move_pos[0].0.clone();
+    let mut best_move = search_moves[0].clone();
     let mut total_search_data = Data::one_node();
 
     let mut curr_depth = NumPlies(1);
@@ -68,11 +63,13 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
 
     debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
     let mut search_guard = {
-        let temp_search_move_pos = &search_move_pos;
+        let mut temp_pos = state.pos.clone();
+        let temp_search_moves = &search_moves;
         let temp_is_killed = &is_killed;
         let temp_table: &mut TranspositionTable = unsafe {transmute(&mut table) };
         thread::scoped(move ||
-        depth_limited_search(temp_search_move_pos, curr_depth, temp_table, search_tx, temp_is_killed))
+            depth_limited_search(&mut temp_pos, temp_search_moves, curr_depth,
+                                 temp_table, search_tx, temp_is_killed))
     };
 
     loop {
@@ -137,12 +134,13 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
 
                 debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
                 search_guard = {
-                    let temp_search_move_pos = &search_move_pos;
+                    let mut temp_pos = state.pos.clone();
+                    let temp_search_moves = &search_moves;
                     let temp_is_killed = &is_killed;
                     let temp_table: &mut TranspositionTable = unsafe { transmute(&mut table) };
                     thread::scoped(move ||
-                    depth_limited_search(temp_search_move_pos, curr_depth, temp_table,
-                                         new_search_tx, temp_is_killed))
+                    depth_limited_search(&mut temp_pos, temp_search_moves, curr_depth,
+                                         temp_table, new_search_tx, temp_is_killed))
                 };
             }
         }

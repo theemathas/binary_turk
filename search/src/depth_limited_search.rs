@@ -6,13 +6,14 @@ use types::Data;
 use negamax::{self, negamax};
 use transposition_table::TranspositionTable;
 
-pub fn depth_limited_search(search_move_pos: &[(Move, Position)],
+pub fn depth_limited_search(pos: &mut Position,
+                            search_moves: &[Move],
                             depth: NumPlies,
                             table: &mut TranspositionTable,
                             tx: Sender<(Score, Move, Data)>,
                             is_killed: &AtomicBool) {
-    debug_assert!(!search_move_pos.is_empty());
-    debug_assert!(depth.0 >= 1);
+    assert!(!search_moves.is_empty());
+    assert!(depth.0 >= 1);
 
     // TODO Take this draw_val value from somewhere else
     let draw_val = ScoreUnit(0);
@@ -28,17 +29,18 @@ pub fn depth_limited_search(search_move_pos: &[(Move, Position)],
     let mut prev_ans_opt: Option<(Score, Move)> = None;
     let mut prev_data = Data::one_node();
 
-    for &(ref curr_move_ref, ref curr_pos) in search_move_pos.iter() {
+    for curr_move_ref in search_moves.iter() {
         let curr_move = curr_move_ref.clone();
 
         let prev_best_score_opt = prev_ans_opt.as_ref().map(|x| x.0);
         let (temp_bound, _, temp_data) =
-            negamax(&mut curr_pos.clone(),
-                    prev_best_score_opt,
-                    None,
-                    param.clone(),
-                    table,
-                    is_killed);
+            pos.with_move(&curr_move, |new_pos|
+                negamax(&mut new_pos.clone(),
+                        prev_best_score_opt,
+                        None,
+                        param.clone(),
+                        table,
+                        is_killed));
         let curr_score = temp_bound.as_score().increment();
         let curr_data = temp_data.increment();
 

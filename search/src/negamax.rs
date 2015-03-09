@@ -49,7 +49,9 @@ pub fn negamax_root(pos: &mut Position,
                     is_killed: &AtomicBool,
                     search_moves: &[Move]) -> (Bound, Option<Move>, Data) {
     let next_depth = NumPlies(depth.0 - 1);
-    let param = Param { draw_val: draw_val, eval_depth: Some(NumPlies(1)), table_depth: depth };
+    let param = Param { draw_val: draw_val,
+                        eval_depth: Some(NumPlies(1)),
+                        table_depth: depth };
     negamax_generic(pos, alpha, beta, param, table, is_killed,
                     &mut |_| Box::new(search_moves.to_vec().into_iter()),
                     &mut |inner_pos, inner_draw_val, inner_alpha, inner_beta, inner_table| {
@@ -80,8 +82,8 @@ fn negamax_inner(pos: &mut Position,
                             eval_depth: None,
                             table_depth: NumPlies(0),
                         };
-                        let (bound, _, data) = quiescence(x, inner_alpha, inner_beta, quiescence_param,
-                                                          table, is_killed);
+                        let (bound, _, data) = quiescence(x, inner_alpha, inner_beta,
+                                                          quiescence_param, table, is_killed);
                         (bound, data)
                     },
                     &mut |_, _| None)
@@ -95,7 +97,8 @@ fn quiescence(pos: &mut Position,
               is_killed: &AtomicBool) -> (Bound, Option<Move>, Data) {
     negamax_generic(pos, alpha, beta, param, table, is_killed,
                     &mut |x| Box::new(x.legal_noisy_iter()),
-                    &mut |x, draw_val, _, _, _| (Bound::Exact(x.eval(draw_val)), Data::one_node()),
+                    &mut |x, draw_val, _, _, _|
+                        (Bound::Exact(x.eval(draw_val)), Data::one_node()),
                     &mut |x, draw_val| Some(x.eval(draw_val)))
 }
 
@@ -125,12 +128,18 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
             let lower_than_alpha = alpha.is_some() &&
                                    !table_bound.is_lower() &&
                                    table_bound.as_score() <= alpha.unwrap();
-            if lower_than_alpha { return (Bound::Upper(alpha.unwrap()), table_best_move_opt, Data::one_node()); }
+            if lower_than_alpha {
+                return (Bound::Upper(alpha.unwrap()), table_best_move_opt, Data::one_node());
+            }
             let higher_than_beta = beta.is_some() &&
                                    !table_bound.is_upper() &&
                                    table_bound.as_score() >= beta.unwrap();
-            if higher_than_beta { return (Bound::Lower(beta.unwrap()), table_best_move_opt, Data::one_node()); }
-            if table_bound.is_exact() { return (table_bound, table_best_move_opt, Data::one_node()); }
+            if higher_than_beta {
+                return (Bound::Lower(beta.unwrap()), table_best_move_opt, Data::one_node());
+            }
+            if table_bound.is_exact() {
+                return (table_bound, table_best_move_opt, Data::one_node());
+            }
         }
     }
     let table_best_move_opt = table_best_move_opt;
@@ -141,15 +150,17 @@ for<'c> H: FnMut(&'c mut Position, ScoreUnit) -> Option<Score> {
         return (bound, None, data);
     }
 
-    let (has_legal, score_opt, best_move_opt, data): (bool, Option<Score>, Option<Move>, Data) = (|| {
+    let (has_legal, score_opt, best_move_opt, data):
+        (bool, Option<Score>, Option<Move>, Data) = (|| {
         let temp = pos.clone();
         let move_iter: Box<Iterator<Item = Move>> = {
             let normal_iter = move_gen_fn(&temp);
             if let Some(ref table_move) = table_best_move_opt {
                 let is_table_move_valid = move_gen_fn(&temp).any(|y| y == *table_move);
                 if is_table_move_valid {
-                    Box::new(Some(table_move.clone()).into_iter()
-                                            .chain(normal_iter.filter(move |x| *x != *table_move)))
+                    Box::new(Some(
+                        table_move.clone()).into_iter()
+                                  .chain(normal_iter.filter(move |x| *x != *table_move)))
                 } else {
                     normal_iter
                 }

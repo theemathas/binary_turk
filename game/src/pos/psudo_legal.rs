@@ -52,7 +52,9 @@ pub fn quiet_iter<'a>(p: &'a Position) -> QuietIter<'a> {
     )))
 }
 
-fn quiet_move_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move>> {
+fn quiet_move_from_iter(p: &Position,
+                        piece_id: Piece,
+                        from: Square) -> Box<Iterator<Item = Move>> {
     if piece_id.color() != p.side_to_move() {
         Box::new(None.into_iter())
     } else {
@@ -64,7 +66,9 @@ fn quiet_move_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iter
     }
 }
 
-fn noisy_move_from_iter<'a>(p: &'a Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move> + 'a> {
+fn noisy_move_from_iter<'a>(p: &'a Position,
+                            piece_id: Piece,
+                            from: Square) -> Box<Iterator<Item = Move> + 'a> {
     if piece_id.color() != p.side_to_move() {
         Box::new(None.into_iter())
     } else {
@@ -166,7 +170,9 @@ fn reachable_from_bitboard(p: &Position, piece_id: Piece, from: Square) -> BitBo
     ans
 }
 
-fn quiet_slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move>> {
+fn quiet_slider_from_iter(p: &Position,
+                          piece_id: Piece,
+                          from: Square) -> Box<Iterator<Item = Move>> {
     let to_bitboard = reachable_from_bitboard(p, piece_id, from);
 
     let ans = to_bitboard.intersect(p.data.empty_data());
@@ -174,7 +180,9 @@ fn quiet_slider_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<It
     Box::new(ans.iter().map(move |to: Square| Move::new(from, to)))
 }
 
-fn noisy_slider_from_iter<'a>(p: &'a Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move> + 'a> {
+fn noisy_slider_from_iter<'a>(p: &'a Position,
+                              piece_id: Piece,
+                              from: Square) -> Box<Iterator<Item = Move> + 'a> {
     let to_bitboard = reachable_from_bitboard(p, piece_id, from);
 
     let ans = to_bitboard.intersect(p.data.color_data(p.side_to_move().invert()));
@@ -214,7 +222,9 @@ fn fixed_from_square_gen(from: Square, diffs: &[Diff]) -> BitBoard {
     ans
 }
 
-fn quiet_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move>> {
+fn quiet_fixed_from_iter(p: &Position,
+                         piece_id: Piece,
+                         from: Square) -> Box<Iterator<Item = Move>> {
 
     let table: &[BitBoard; 64] = &match piece_id.piece_type() {
         King => *KING_FIXED_TABLE,
@@ -226,14 +236,16 @@ fn quiet_fixed_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Ite
     Box::new(to_bits.iter().map(move |to: Square| Move::new(from, to)))
 }
 
-fn noisy_fixed_from_iter<'a>(p: &'a Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move> + 'a> {
-
+fn noisy_fixed_from_iter<'a>(p: &'a Position,
+                             piece_id: Piece,
+                             from: Square) -> Box<Iterator<Item = Move> + 'a> {
     let table: &[BitBoard; 64] = &match piece_id.piece_type() {
         King => *KING_FIXED_TABLE,
         Knight => *KNIGHT_FIXED_TABLE,
         _ => panic!(),
     };
-    let to_bits = table[from.to_id() as usize].intersect(p.data.color_data(piece_id.color().invert()));
+    let other_color = piece_id.color().invert();
+    let to_bits = table[from.to_id() as usize].intersect(p.data.color_data(other_color));
 
     Box::new(to_bits.iter().map(move |to: Square| {
         let mut curr_move = Move::new(from, to);
@@ -242,7 +254,9 @@ fn noisy_fixed_from_iter<'a>(p: &'a Position, piece_id: Piece, from: Square) -> 
     }))
 }
 
-fn quiet_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move>> {
+fn quiet_pawn_from_iter(p: &Position,
+                        piece_id: Piece,
+                        from: Square) -> Box<Iterator<Item = Move>> {
     let mut ans = Vec::new();
 
     let piece_color = piece_id.color();
@@ -278,7 +292,9 @@ fn quiet_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iter
     Box::new(ans.into_iter())
 }
 
-fn noisy_pawn_from_iter(p: &Position, piece_id: Piece, from: Square) -> Box<Iterator<Item = Move>> {
+fn noisy_pawn_from_iter(p: &Position,
+                        piece_id: Piece,
+                        from: Square) -> Box<Iterator<Item = Move>> {
     let mut ans = Vec::new();
 
     let piece_color = piece_id.color();

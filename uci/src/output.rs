@@ -24,7 +24,9 @@ pub fn engine_response_output(rx: Receiver<search::Response>, tx: SyncSender<Res
             },
             EngineReport(depth, nodes_searched, score, pv) => {
                 tx.send(Info(vec![Depth(depth), NodesSearched(nodes_searched)])).unwrap();
-                tx.send(Info(vec![InfoParam::Score(None, score), PrincipalVariation(pv)])).unwrap();
+                tx.send(Info(vec![InfoParam::Score(None, score),
+                                  PrincipalVariation(pv)]
+                            )).unwrap();
             },
         }
     }

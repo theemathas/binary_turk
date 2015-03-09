@@ -31,10 +31,14 @@ pub fn make_move(p: &mut Position, m: &Move) {
         p.set_en_passant(None);
 
         let (rook_from, rook_to) = match (curr_color, castle_side) {
-            (White, Kingside ) => (Square::new(File(7), Rank(0)), Square::new(File(5), Rank(0))),
-            (White, Queenside) => (Square::new(File(0), Rank(0)), Square::new(File(3), Rank(0))),
-            (Black, Kingside ) => (Square::new(File(7), Rank(7)), Square::new(File(5), Rank(7))),
-            (Black, Queenside) => (Square::new(File(0), Rank(7)), Square::new(File(3), Rank(7))),
+            (White, Kingside ) => (Square::new(File(7), Rank(0)),
+                                   Square::new(File(5), Rank(0))),
+            (White, Queenside) => (Square::new(File(0), Rank(0)),
+                                   Square::new(File(3), Rank(0))),
+            (Black, Kingside ) => (Square::new(File(7), Rank(7)),
+                                   Square::new(File(5), Rank(7))),
+            (Black, Queenside) => (Square::new(File(0), Rank(7)),
+                                   Square::new(File(3), Rank(7))),
         };
 
         p.remove_at(from, curr_piece);
@@ -123,10 +127,14 @@ pub fn unmake_move(p: &mut Position, m: &Move, extra_data: ExtraData) {
     if let Some(castle_side) = m.castle() {
 
         let (rook_from, rook_to) = match (curr_color, castle_side) {
-            (White, Kingside ) => (Square::new(File(7), Rank(0)), Square::new(File(5), Rank(0))),
-            (White, Queenside) => (Square::new(File(0), Rank(0)), Square::new(File(3), Rank(0))),
-            (Black, Kingside ) => (Square::new(File(7), Rank(7)), Square::new(File(5), Rank(7))),
-            (Black, Queenside) => (Square::new(File(0), Rank(7)), Square::new(File(3), Rank(7))),
+            (White, Kingside ) => (Square::new(File(7), Rank(0)),
+                                   Square::new(File(5), Rank(0))),
+            (White, Queenside) => (Square::new(File(0), Rank(0)),
+                                   Square::new(File(3), Rank(0))),
+            (Black, Kingside ) => (Square::new(File(7), Rank(7)),
+                                   Square::new(File(5), Rank(7))),
+            (Black, Queenside) => (Square::new(File(0), Rank(7)),
+                                   Square::new(File(3), Rank(7))),
         };
 
         p.remove_at(to, curr_piece);

@@ -34,8 +34,10 @@ pub fn depth_limited_search(pos: &mut Position,
     let mut data = Data::one_node();
 
     while best_score_move_opt.is_none() {
-        let curr_alpha = aspiration_width.get(alpha_window).map(|&diff| Score::Value(guess_score - diff));
-        let curr_beta  = aspiration_width.get(beta_window) .map(|&diff| Score::Value(guess_score + diff));
+        let curr_alpha = aspiration_width.get(alpha_window)
+                                         .map(|&diff| Score::Value(guess_score - diff));
+        let curr_beta  = aspiration_width.get(beta_window)
+                                         .map(|&diff| Score::Value(guess_score + diff));
         let curr_ans = negamax_root(pos, curr_alpha, curr_beta, draw_val,
                                     depth, table, is_killed, search_moves);
         if is_killed.load(Ordering::Relaxed) {

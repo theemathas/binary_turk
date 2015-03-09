@@ -110,7 +110,8 @@ pub fn eval(p: &mut Position, draw_val: ScoreUnit) -> Score {
         p.swap_side_to_move();
         let his_mobility = p.psudo_legal_iter().count();
         p.swap_side_to_move();
-        Score::Value(piece_eval + VALUE_PER_MOBILITY * (our_mobility as i32- his_mobility as i32))
+        let mobility_diff = our_mobility as i32- his_mobility as i32;
+        Score::Value(piece_eval + VALUE_PER_MOBILITY * (mobility_diff))
     }
 }
 

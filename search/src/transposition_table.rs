@@ -26,9 +26,18 @@ impl TranspositionTable {
         })
     }
     // TODO implement a better replacement scheme
-    pub fn set(&mut self, pos: &Position, depth: NumPlies, best_move_opt: Option<Move>, bound: Bound) {
+    pub fn set(&mut self,
+               pos: &Position,
+               depth: NumPlies,
+               best_move_opt: Option<Move>,
+               bound: Bound) {
         let hash = pos.hash();
         let idx = (hash.0 % (self.0.len() as u64)) as usize;
-        self.0[idx] = Some(Data { hash: hash, depth: depth, best_move_opt: best_move_opt, bound: bound });
+        self.0[idx] = Some(Data {
+            hash: hash,
+            depth: depth,
+            best_move_opt: best_move_opt,
+            bound: bound
+        });
     }
 }

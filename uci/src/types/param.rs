@@ -40,7 +40,7 @@ impl fmt::Display for IdParam {
     }
 }
 
-pub const ID_DATA: [IdParam; 2] = [IdParam::Name("chess_project"),
+pub const ID_DATA: [IdParam; 2] = [IdParam::Name("Binary Turk"),
                                    IdParam::Author("Theemathas Chirananthavat")];
 
 #[derive(PartialEq, Eq, Clone, Debug)]

@@ -1,13 +1,11 @@
 use std::sync::mpsc::{Sender, Receiver, channel};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
-use std::mem::transmute;
 
 use game::{Move, Score, ScoreUnit, NumPlies};
 use types::{State, Cmd, Data};
 use types::Response::{self, Report};
-use depth_limited_search::depth_limited_search;
-use transposition_table::TranspositionTable;
+use iterated_deepening::iterated_deepening;
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     if state.param.ponder {
@@ -53,29 +51,18 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     let mut best_score = Score::Value(ScoreUnit(0));
     let mut best_move = search_moves[0].clone();
     let mut total_search_data = Data::one_node();
-
     let mut curr_depth = NumPlies(1);
 
-    let mut table = TranspositionTable::with_capacity(10000000);
-
-    let (search_tx, mut search_rx) = channel::<(Score, Move, Data)>();
+    let (search_tx, search_rx) = channel::<(Score, Move, NumPlies, Data)>();
     let is_killed = AtomicBool::new(false);
 
+    let temp_is_killed = &is_killed;
+
     debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
-    let mut search_guard = {
-        let mut temp_pos = state.pos.clone();
-        let temp_search_moves = &search_moves;
-        let temp_is_killed = &is_killed;
-        let temp_table: &mut TranspositionTable = unsafe {transmute(&mut table) };
-        thread::scoped(move ||
-            depth_limited_search(&mut temp_pos, temp_search_moves, curr_depth,
-                                 temp_table, search_tx, temp_is_killed))
-    };
+    let search_guard = thread::scoped(move ||
+        iterated_deepening(state.pos, &search_moves, search_tx, temp_is_killed));
 
     loop {
-        // This is a hack to get around a problem in select! {}
-        // TODO remove this hack after the problem is solved
-        let mut search_rx_opt: Option<Receiver<(Score, Move, Data)>> = None;
         select! {
             val = rx.recv() => {
                 let cmd = val.ok().expect("Sender hung up while calculating");
@@ -102,49 +89,32 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
                         tx.send(Response::BestMove(best_move, None))
                           .ok().expect("output channel unexpectedly closed");
 
-                        debug!("attempting join of depth_limited_search");
+                        debug!("attempting join of iterated_deepening");
                         search_guard.join();
-                        debug!("joined depth_limited_search");
+                        debug!("joined iterated_deepening");
                         return;
                     }
                 }
             },
             search_res = search_rx.recv() => {
-                debug!("receiving result from depth_limited_search");
+                debug!("receiving result from iterated_deepening");
 
-                search_guard.join();
-
-                let (temp_best_score, temp_best_move, curr_search_data) = search_res.ok()
-                    .expect("depth_limited_search unexpectedly dropped Sender");
+                let (temp_best_score, temp_best_move,
+                     temp_depth, temp_search_data) =
+                        search_res.ok()
+                                  .expect("iterated_deepening unexpectedly dropped Sender");
 
                 best_score = temp_best_score;
                 best_move = temp_best_move;
-
-                total_search_data = total_search_data.combine(curr_search_data);
+                curr_depth = temp_depth;
+                total_search_data = temp_search_data;
 
                 tx.send(Report(curr_depth,
                                total_search_data.nodes,
                                best_score,
                                vec![best_move.clone()])).unwrap();
-
-                curr_depth.0 += 1;
-
-                let (new_search_tx, new_search_rx) = channel::<(Score, Move, Data)>();
-                search_rx_opt = Some(new_search_rx);
-
-                debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
-                search_guard = {
-                    let mut temp_pos = state.pos.clone();
-                    let temp_search_moves = &search_moves;
-                    let temp_is_killed = &is_killed;
-                    let temp_table: &mut TranspositionTable = unsafe { transmute(&mut table) };
-                    thread::scoped(move ||
-                    depth_limited_search(&mut temp_pos, temp_search_moves, curr_depth,
-                                         temp_table, new_search_tx, temp_is_killed))
-                };
             }
         }
-        if let Some(val) = search_rx_opt { search_rx = val; }
     }
 }
 

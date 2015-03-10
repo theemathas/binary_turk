@@ -1,4 +1,3 @@
-use std::sync::mpsc::Sender;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use game::{Move, Position, Score, ScoreUnit, NumPlies};
@@ -10,8 +9,7 @@ pub fn depth_limited_search(pos: &mut Position,
                             search_moves: &[Move],
                             depth: NumPlies,
                             table: &mut TranspositionTable,
-                            tx: Sender<(Score, Move, Data)>,
-                            is_killed: &AtomicBool) {
+                            is_killed: &AtomicBool) -> Option<(Score, Move, Data)> {
     assert!(!search_moves.is_empty());
     assert!(depth.0 >= 1);
 
@@ -42,7 +40,7 @@ pub fn depth_limited_search(pos: &mut Position,
                                     depth, table, is_killed, search_moves);
         if is_killed.load(Ordering::Relaxed) {
             // Thread killed. Bail out
-            return;
+            return None;
         }
         let (curr_bound, curr_best_move_opt, curr_data) = curr_ans;
         data = data.combine(curr_data);
@@ -55,5 +53,5 @@ pub fn depth_limited_search(pos: &mut Position,
     
     let (best_score, best_move) = best_score_move_opt.unwrap();
 
-    let _ = tx.send((best_score, best_move, data));
+    Some((best_score, best_move, data))
 }

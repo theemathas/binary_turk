@@ -12,6 +12,7 @@ mod types;
 
 mod start;
 
+mod iterated_deepening;
 mod depth_limited_search;
 mod negamax;
 

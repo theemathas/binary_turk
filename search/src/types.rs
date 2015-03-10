@@ -46,7 +46,7 @@ pub enum Response {
 }
 
 // TODO put actual data here
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Data {
     pub nodes: NumNodes,
 }

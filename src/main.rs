@@ -1,12 +1,11 @@
-#![feature(old_io)]
-
 extern crate env_logger;
 
 extern crate uci;
 
-use std::old_io as io;
+use std::io::{stdin, stdout};
 
 fn main() {
     env_logger::init().unwrap();
-    uci::start(io::stdin(), io::stdout());
+    //uci::start(stdin().lock(), stdout().lock());
+    uci::start(stdin(), stdout());
 }

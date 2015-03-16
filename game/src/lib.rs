@@ -1,6 +1,6 @@
 //! This module is for everything about the rules of chess.
 
-#![feature(core, collections, unicode)]
+#![feature(core, collections)]
 
 #[macro_use]
 extern crate lazy_static;

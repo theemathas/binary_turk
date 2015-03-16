@@ -1,5 +1,4 @@
-use std::old_io::LineBufferedWriter;
-use std::old_io::stdio::StdWriter;
+use std::io::{Write, LineWriter};
 use std::sync::mpsc::{Receiver, SyncSender};
 
 use search;
@@ -9,10 +8,10 @@ use search::Response::Report as EngineReport;
 use types::Response::{self, BestMove, Info};
 use InfoParam::{self, Depth, NodesSearched, PrincipalVariation};
 
-pub fn format_output(mut output: LineBufferedWriter<StdWriter>, rx: Receiver<Response>) {
+pub fn format_output<W: Write>(output: W, rx: Receiver<Response>) {
+    let mut output = LineWriter::new(output);
     for x in rx.iter() {
         writeln!(&mut output, "{}", x).ok().expect("cannot write to output");
-        output.flush().ok().expect("cannot flush output");
     }
 }
 

@@ -24,7 +24,7 @@ pub fn parse(s: &str) -> Option<Cmd> {
             "debug" => parse_on_off(&mut words).map(|val| Cmd::Debug(val)),
             "isready" => Some(Cmd::IsReady),
             "setoption" => parse_option_val(&mut words)
-                               .map(|(name, val)| Cmd::SetOption(name, Some(val))),
+                               .map(|x| Cmd::SetOption(x)),
             "register" => parse_register_vec(&mut words).map(|val| Cmd::Register(val)),
             "ucinewgame" => Some(Cmd::UciNewGame),
             "position" => parse_setup_position(&mut words)
@@ -71,7 +71,7 @@ fn parse_option_val<'a, T>(_words: &mut Peekable<T>) -> Option<options::NameAndV
 where T: Iterator<Item = &'a str> {
     debug!("dummy option parsing");
     // TODO parse options.
-    Some((options::Name::Dummy, options::Val::Spin(1)))
+    Some(options::NameAndVal::Dummy(1))
 }
 
 fn parse_register_vec<'a, T>(words: &mut Peekable<T>) -> Option<Vec<RegisterParam>>

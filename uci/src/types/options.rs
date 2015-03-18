@@ -1,19 +1,13 @@
 // TODO enumerate options.
 
-pub type NameAndVal = (Name, Val);
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub enum NameAndVal {
+    Dummy(i64),
+}
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Name {
     Dummy,
-}
-
-#[derive(PartialEq, Eq, Clone, Debug)]
-pub enum Val {
-    Check(bool),
-    Spin(i64),
-    Combo(String),
-    Button,
-    String(String),
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]

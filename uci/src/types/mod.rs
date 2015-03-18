@@ -24,7 +24,7 @@ pub enum Cmd {
     Uci,
     Debug(bool),
     IsReady,
-    SetOption(options::Name, Option<options::Val>),
+    SetOption(options::NameAndVal),
     Register(Vec<RegisterParam>),
     UciNewGame,
     SetupPosition(Position, Vec<FromTo>),
@@ -43,7 +43,7 @@ pub enum Response {
     CopyProtection(VertifyingState),
     Registration(VertifyingState),
     Info(Vec<InfoParam>),
-    ShowOption(options::Name, options::Val, options::Info),
+    ShowOption(options::NameAndVal, options::Info),
 }
 impl fmt::Display for Response {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

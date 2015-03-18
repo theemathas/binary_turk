@@ -8,7 +8,7 @@ use types::{Cmd, RegisterParam, GoParam};
 use types::options;
 
 pub fn parse(s: &str) -> Option<Cmd> {
-    let mut words = s.words().peekable();
+    let mut words = s.split(' ').peekable();
 
     let mut cmd_val: Option<Cmd> = None;
 
@@ -24,28 +24,11 @@ pub fn parse(s: &str) -> Option<Cmd> {
             "debug" => parse_on_off(&mut words).map(|val| Cmd::Debug(val)),
             "isready" => Some(Cmd::IsReady),
             "setoption" => parse_option_val(&mut words)
-                           .map(|(name, val)| Cmd::SetOption(name, Some(val))),
+                               .map(|(name, val)| Cmd::SetOption(name, Some(val))),
             "register" => parse_register_vec(&mut words).map(|val| Cmd::Register(val)),
             "ucinewgame" => Some(Cmd::UciNewGame),
-            "position" => {
-                let temp = parse_position(&mut words);
-                temp.map(|pos| {
-                    // consume everything up to and including "words"
-                    let mut curr_word = words.next();
-                    while let Some(val) = curr_word {
-                        if val == "moves" { break; }
-                        curr_word = words.next();
-                    }
-
-                    // Attempt to parse the moves
-                    let moves = match parse_move_vec(&mut words) {
-                        Some(val) => val,
-                        None => Vec::new(),
-                    };
-
-                    Cmd::SetupPosition(pos, moves)
-                })
-            },
+            "position" => parse_setup_position(&mut words)
+                              .map(|(pos, moves)| Cmd::SetupPosition(pos, moves)),
             "go" => parse_go_param_vec(&mut words).map(|val| Cmd::Go(val)),
             "stop" => Some(Cmd::Stop),
             "ponderhit" => Some(Cmd::PonderHit),
@@ -126,6 +109,27 @@ where T: Iterator<Item = &'a str> {
     debug!("parse_register_vec() returning {:?}", ans);
 
     ans
+}
+
+fn parse_setup_position<'a, T>(words: &mut Peekable<T>) -> Option<(Position, Vec<FromTo>)>
+where T: Iterator<Item = &'a str> {
+    let temp = parse_position(words);
+    temp.map(|pos| {
+        // consume everything up to and including "moves"
+        let mut curr_word = words.next();
+        while let Some(val) = curr_word {
+            if val == "moves" { break; }
+            curr_word = words.next();
+        }
+
+        // Attempt to parse the moves
+        let moves = match parse_move_vec(words) {
+            Some(val) => val,
+            None => Vec::new(),
+        };
+
+        (pos, moves)
+    })
 }
 
 fn parse_position<'a, T>(words: &mut Peekable<T>) -> Option<Position>

@@ -1,4 +1,4 @@
-#![feature(std_misc, collections, str_words)]
+#![feature(std_misc, collections)]
 
 extern crate time;
 #[macro_use]

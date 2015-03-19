@@ -174,7 +174,7 @@ where T: Iterator<Item = &'a str> {
     let mut res = Vec::<GoParam>::new();
     while let Some(next_word) = words.next() {
         match next_word {
-            "search moves" => parse_move_vec(words).map(|x| GoParam::SearchMoves(x)),
+            "searchmoves" => parse_move_vec(words).map(|x| GoParam::SearchMoves(x)),
             "ponder" => Some(GoParam::Ponder),
             "wtime"     => words.next().and_then(|s| s.parse::<i64>().ok())
                                        .map(|x| GoParam::Time(White,

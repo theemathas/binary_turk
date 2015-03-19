@@ -68,11 +68,11 @@ where I: Iterator<Item = &'a str>{
     ans
 }
 
-fn parse_option_val<'a, I>(_words: I) -> Option<options::NameAndVal>
+fn parse_option_val<'a, I>(_words: I) -> Option<options::Value>
 where I: Iterator<Item = &'a str> {
     debug!("dummy option parsing");
     // TODO parse options.
-    Some(options::NameAndVal::Dummy(1))
+    Some(options::Value::Dummy(1))
 }
 
 fn parse_register_vec<'a, I>(words: I) -> Option<Vec<RegisterParam>>

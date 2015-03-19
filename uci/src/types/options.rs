@@ -1,7 +1,7 @@
 // TODO enumerate options.
 
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub enum NameAndVal {
+pub enum Value {
     Dummy(i64),
 }
 

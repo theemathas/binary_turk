@@ -43,7 +43,7 @@ pub enum Response {
     CopyProtection(VertifyingState),
     Registration(VertifyingState),
     Info(Vec<InfoParam>),
-    ShowOption(options::Value, options::Info),
+    ShowOption(options::Info),
 }
 impl fmt::Display for Response {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -63,10 +63,7 @@ impl fmt::Display for Response {
                 for x in params.iter() { try!(write!(f, " {}", x)) }
                 Ok(())
             },
-            Response::ShowOption(..) => {
-                // TODO implement fmt::String for Response::ShowOption
-                unimplemented!()
-            },
+            Response::ShowOption(ref info) => write!(f, "option {}", *info)
         }
     }
 }

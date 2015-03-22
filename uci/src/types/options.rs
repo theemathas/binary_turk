@@ -3,6 +3,7 @@
 use std::str::{FromStr, ParseBoolError};
 use std::num::ParseIntError;
 use std::error::FromError;
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Debug)]
 pub struct ParseValueError(());
@@ -138,6 +139,16 @@ macro_rules! options_impl {
                 }
             }
         }
+
+        impl Display for Name {
+            fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+                match *self {
+                    $(
+                        Name::$name => write!(f, $repr),
+                     )+
+                }
+            }
+        }
     }
 }
 
@@ -167,4 +178,26 @@ pub enum Info {
     Combo(Name, u32, &'static[&'static str]),
     Button(Name, ()),
     String(Name, &'static str),
+}
+
+impl Display for Info {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match *self {
+            Info::Check(name, default) =>
+                write!(f, "name {} type check default {}", name, default),
+            Info::Spin(name, default, min, max) =>
+                write!(f, "name {} type spin default {} min {} max {}", name, default, min, max),
+            Info::Combo(name, default, choices) => {
+                try!(write!(f, "name {} type combo default {}", name, choices[default as usize]));
+                for s in choices {
+                    try!(write!(f, " var {}", s));
+                }
+                Ok(())
+            },
+            Info::Button(name, _) =>
+                write!(f, "name {} type button", name),
+            Info::String(name, default) =>
+                write!(f, "name {} type string default {}", name, default),
+        }
+    }
 }

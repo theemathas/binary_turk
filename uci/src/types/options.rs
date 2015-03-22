@@ -33,28 +33,28 @@ macro_rules! declare_type {
 }
 
 macro_rules! info_impl {
-    (Check()) => { Info::Check };
-    (Spin($min:expr, $max:expr)) => { Info::Spin($min, $max) };
-    (Combo($($val:expr),+)) => { Info::Combo(&[$($val,)+]) };
-    (Button()) => { Info::Button };
-    (String()) => { Info::String };
+    (Check() = $default:expr) => { Info::Check($default) };
+    (Spin($min:expr, $max:expr) = $default:expr) => { Info::Spin($default, $min, $max) };
+    (Combo($($val:expr),+) = $default:expr) => { Info::Combo($default, &[$($val,)+]) };
+    (Button() = $default:expr) => { Info::Button($default) };
+    (String() = $default:expr) => { Info::String($default) };
 }
 
 macro_rules! parse_value {
     ($name:expr, Combo, $value_string:expr) => {{
         let temp = $name as usize; // work around an ICE
         let combo_list: &[&'static str] = match INFO[temp] {
-            Info::Combo(x) => &x,
+            Info::Combo(_, x) => &x,
             _ => unreachable!(),
         };
-        combo_list.position_elem(&&*$value_string).map(|x| x as u32).ok_or(ParseValueError(()))
+        combo_list.position_elem(&&*$value_string).map_or(Err(ParseValueError(())), |x| Ok(x as u32))
     }};
     ($name:expr, Button, $value_string:expr) => { Ok::<(), ParseValueError>(()) };
     ($name:expr, Spin, $value_string:expr) => {{
         let val: i64 = try!($value_string.parse());
         let temp = $name as usize; // work around an ICE
         let (min_val, max_val): (i64, i64) = match INFO[temp] {
-            Info::Spin(x, y) => (x, y),
+            Info::Spin(_, x, y) => (x, y),
             _ => unreachable!(),
         };
         if val >= min_val && val <= max_val {
@@ -71,7 +71,7 @@ macro_rules! parse_value {
 macro_rules! options_impl {
     (($num_opt:expr) options
      $(
-         $name:ident ($repr:expr) : $kind:ident ($($info:tt),*),
+         $name:ident ($repr:expr) : $kind:ident ($($info:tt),*) = $default:expr,
       )+) => {
 
         $(declare_type!($name, $kind);)+
@@ -135,18 +135,18 @@ macro_rules! options_impl {
         }
 
         const INFO: [Info; $num_opt] = [$(
-            info_impl!($kind($($info),*)),
+            info_impl!($kind($($info),*) = $default),
         )+];
     }
 }
 
 options_impl!{
     (1) options
-    Hash("hash"): Spin (1, 1024),
-    //TestCheck("testcheck"): Check (),
-    //TestCombo("testcombo"): Combo ("foo", "bar", "baz"),
-    //TestButton("testbutton"): Button (),
-    //TestString("teststring"): String (),
+    Hash("hash"): Spin (1, 1024) = 1,
+    //TestCheck("testcheck"): Check () = false,
+    //TestCombo("testcombo"): Combo ("foo", "bar", "baz") = 0,
+    //TestButton("testbutton"): Button () = (),
+    //TestString("teststring"): String () = "something",
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
@@ -158,11 +158,12 @@ pub enum Type {
     String,
 }
 
+// The first fields of each variant are the default values
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum Info {
-    Check,
-    Spin(i64, i64),
-    Combo(&'static[&'static str]),
-    Button,
-    String,
+    Check(bool),
+    Spin(i64, i64, i64),
+    Combo(u32, &'static[&'static str]),
+    Button(()),
+    String(&'static str),
 }

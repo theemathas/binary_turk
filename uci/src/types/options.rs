@@ -50,6 +50,19 @@ macro_rules! parse_value {
         combo_list.position_elem(&&*$value_string).map(|x| x as u32).ok_or(ParseValueError(()))
     }};
     ($name:expr, Button, $value_string:expr) => { Ok::<(), ParseValueError>(()) };
+    ($name:expr, Spin, $value_string:expr) => {{
+        let val: i64 = try!($value_string.parse());
+        let temp = $name as usize; // work around an ICE
+        let (min_val, max_val): (i64, i64) = match INFO[temp] {
+            Info::Spin(x, y) => (x, y),
+            _ => unreachable!(),
+        };
+        if val >= min_val && val <= max_val {
+            Ok(val)
+        } else {
+            Err(ParseValueError(()))
+        }
+    }};
     ($name:expr, $kind:ident, $value_string:expr) => {
         $value_string.parse()
     };

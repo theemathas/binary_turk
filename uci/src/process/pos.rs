@@ -1,7 +1,8 @@
 use game::{Position, FromTo};
 use search;
+use state::State;
 
-pub fn setup_new(state: &mut Option<search::State>,
+pub fn setup_new(state: &mut State,
                  mut pos: Position,
                  mut from_to_vec: Vec<FromTo>) {
     let mut prev_pos = None;
@@ -12,7 +13,7 @@ pub fn setup_new(state: &mut Option<search::State>,
         pos.make_move(&temp_move);
         prev_move = Some(temp_move);
     }
-    *state = Some(search::State {
+    state.search_state = Some(search::State {
         pos: pos,
         prev_pos: prev_pos,
         prev_move: prev_move,
@@ -20,7 +21,7 @@ pub fn setup_new(state: &mut Option<search::State>,
     });
 }
 
-pub fn setup_same(state: &mut Option<search::State>,
+pub fn setup_same(state: &mut State,
                   pos: Position,
                   from_to_vec: Vec<FromTo>) {
     // TODO setup same game (currently just does new game)

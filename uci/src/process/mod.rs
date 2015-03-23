@@ -57,15 +57,11 @@ pub fn process(state: &mut State,
                             unimplemented!();
                         },
                         Cmd::UciNewGame => {
-                            *state = State {
-                                mode: Mode::NewGame,
-                                ucinewgame_support: true,
-                                ..State::new()
-                            };
+                            state.reset_new_game()
                         },
                         Cmd::SetupPosition(pos, from_to_vec) => {
                             if state.ucinewgame_support {
-                                pos::setup_same(&mut state.search_state, pos, from_to_vec);
+                                pos::setup_same(state, pos, from_to_vec);
                                 state.mode = Mode::Ready;
                             } else {
                                 process(state, Cmd::UciNewGame, output, cmd_tx);
@@ -79,7 +75,7 @@ pub fn process(state: &mut State,
                 },
                 Mode::NewGame => {
                     if let Cmd::SetupPosition(pos, from_to_vec) = cmd {
-                        pos::setup_new(&mut state.search_state, pos, from_to_vec);
+                        pos::setup_new(state, pos, from_to_vec);
                         state.mode = Mode::Ready;
                     }
                 },

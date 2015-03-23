@@ -3,6 +3,7 @@ use std::sync::mpsc::SyncSender;
 
 use search;
 use timer::Timer;
+use types::options;
 
 pub use self::mode::Mode;
 
@@ -18,6 +19,7 @@ pub struct State<'a> {
     pub timer: Timer,
     pub timer_kill_tx: Option<SyncSender<()>>,
     pub ucinewgame_support: bool,
+    pub options: options::Data,
 }
 impl<'a> State<'a> {
     pub fn new() -> State<'a> {
@@ -31,6 +33,15 @@ impl<'a> State<'a> {
             timer: Timer::new(),
             timer_kill_tx: None,
             ucinewgame_support: false,
+            options: options::Data::new(),
+        }
+    }
+    pub fn reset_new_game(&mut self) {
+        *self = State {
+            mode: Mode::NewGame,
+            ucinewgame_support: true,
+            options: self.options.clone(),
+            ..State::new()
         }
     }
 }

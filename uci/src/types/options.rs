@@ -26,11 +26,16 @@ impl FromError<()> for ParseValueError {
 }
 
 macro_rules! declare_type {
-    ($name:ident, Check) =>  { type $name = bool; };
-    ($name:ident, Spin)  =>  { type $name = i64; };
-    ($name:ident, Combo) =>  { type $name = u32; };
-    ($name:ident, Button) => { type $name = (); };
-    ($name:ident, String) => { type $name = String; };
+    ($name:ident, Check) =>  { pub type $name = bool; };
+    ($name:ident, Spin)  =>  { pub type $name = i64; };
+    ($name:ident, Combo) =>  { pub type $name = u32; };
+    ($name:ident, Button) => { pub type $name = (); };
+    ($name:ident, String) => { pub type $name = String; };
+}
+
+macro_rules! to_owned {
+    ($value:expr, String) => { $value.to_string() };
+    ($value:expr, $kind:ident) => { $value };
 }
 
 macro_rules! info_impl {
@@ -70,17 +75,18 @@ macro_rules! parse_value {
 }
 
 macro_rules! options_impl {
-    // $repr is the representation as a string
     (($num_opt:expr) options
      $(
-         $name:ident ($repr:expr) : $kind:ident ($($info:tt),*) = $default:expr,
+         $name:ident ($field_name:ident, $str:expr) : $kind:ident ($($info:tt),*) = $default:expr,
       )+) => {
 
-        $(declare_type!($name, $kind);)+
+        mod type_of {
+            $(declare_type!($name, $kind);)+
+        }
 
         #[derive(PartialEq, Eq, Clone, Debug)]
         pub enum Value {
-            $($name($name),)+
+            $($name(type_of::$name),)+
         }
 
         #[derive(PartialEq, Eq, Copy, Clone, Debug)]
@@ -88,9 +94,25 @@ macro_rules! options_impl {
             $($name,)+
         }
 
-        const INFO: [Info; $num_opt] = [$(
+        pub const INFO: [Info; $num_opt] = [$(
             info_impl!($name: $kind($($info),*) = $default),
         )+];
+
+        #[derive(Clone, Debug)]
+        pub struct Data {
+            $(
+                pub $field_name: type_of::$name,
+             )+
+        }
+        impl Data {
+            pub fn new() -> Data {
+                Data {
+                    $(
+                        $field_name: to_owned!($default, $kind),
+                     )+
+                }
+            }
+        }
 
         impl FromStr for Value {
             type Err = ParseValueError;
@@ -133,7 +155,7 @@ macro_rules! options_impl {
             fn from_str(s: &str) -> Result<Self, ParseNameError> {
                 match s {
                     $(
-                        $repr => Ok(Name::$name),
+                        $str => Ok(Name::$name),
                      )+
                     _ => Err(ParseNameError(())),
                 }
@@ -144,7 +166,7 @@ macro_rules! options_impl {
             fn fmt(&self, f: &mut Formatter) -> fmt::Result {
                 match *self {
                     $(
-                        Name::$name => write!(f, $repr),
+                        Name::$name => write!(f, $str),
                      )+
                 }
             }
@@ -154,11 +176,11 @@ macro_rules! options_impl {
 
 options_impl!{
     (5) options
-    Hash("hash"): Spin (1, 1024) = 1,
-    TestCheck("testcheck"): Check () = false,
-    TestCombo("testcombo"): Combo ("foo", "bar", "baz") = 0,
-    TestButton("testbutton"): Button () = (),
-    TestString("teststring"): String () = "something",
+    Hash(hash_size, "hash"): Spin (1, 1024) = 1,
+    TestCheck(test_check, "testcheck"): Check () = false,
+    TestCombo(test_combo, "testcombo"): Combo ("foo", "bar", "baz") = 0,
+    TestButton(test_button, "testbutton"): Button () = (),
+    TestString(test_string, "teststring"): String () = "something",
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]

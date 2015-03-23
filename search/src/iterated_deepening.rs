@@ -8,13 +8,13 @@ use depth_limited_search::depth_limited_search;
 
 pub fn iterated_deepening(pos: Position,
                           search_moves: &[Move],
+                          mut table: TranspositionTable,
                           tx: Sender<(Score, Move, NumPlies, Data)>,
                           is_killed: &AtomicBool) {
     let mut best_score;
     let mut best_move;
     let mut total_search_data = Data::one_node();
     let mut curr_depth = NumPlies(1);
-    let mut table = TranspositionTable::with_capacity(10000000);
 
     while !is_killed.load(Ordering::SeqCst) {
         debug!("Starting depth limited search with depth = {} plies", curr_depth.0);

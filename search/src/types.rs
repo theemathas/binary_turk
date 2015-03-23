@@ -19,15 +19,17 @@ pub struct Param {
     pub depth: Option<NumPlies>,
     pub nodes: Option<NumNodes>,
     pub mate: Option<NumMoves>,
+    pub hash_size: usize,
 }
 impl Param {
-    pub fn new() -> Self {
+    pub fn new(hash_size: usize) -> Self {
         Param {
             ponder: false,
             search_moves: None,
             depth: None,
             nodes: None,
             mate: None,
+            hash_size: hash_size,
         }
     }
 }

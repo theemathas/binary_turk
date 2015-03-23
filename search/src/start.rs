@@ -1,11 +1,13 @@
 use std::sync::mpsc::{Sender, Receiver, channel};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
+use std::mem::size_of;
 
 use game::{Move, Score, ScoreUnit, NumPlies};
 use types::{State, Cmd, Data};
 use types::Response::{self, Report};
 use iterated_deepening::iterated_deepening;
+use transposition_table::{self, TranspositionTable};
 
 pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     if state.param.ponder {
@@ -52,6 +54,9 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     let mut best_move = search_moves[0].clone();
     let mut total_search_data = Data::one_node();
     let mut curr_depth = NumPlies(1);
+    let table_capacity = state.param.hash_size /
+                         size_of::<Option<transposition_table::Data>>();
+    let table = TranspositionTable::with_capacity(table_capacity);
 
     let (search_tx, search_rx) = channel::<(Score, Move, NumPlies, Data)>();
     let is_killed = AtomicBool::new(false);
@@ -60,7 +65,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
 
     debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
     let search_guard = thread::scoped(move ||
-        iterated_deepening(state.pos, &search_moves, search_tx, temp_is_killed));
+        iterated_deepening(state.pos, &search_moves, table, search_tx, temp_is_killed));
 
     loop {
         select! {

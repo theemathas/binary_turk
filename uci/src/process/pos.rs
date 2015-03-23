@@ -17,7 +17,7 @@ pub fn setup_new(state: &mut State,
         pos: pos,
         prev_pos: prev_pos,
         prev_move: prev_move,
-        param: search::Param::new(),
+        param: search::Param::new((state.options.hash_size*(1<<20)) as usize),
     });
 }
 

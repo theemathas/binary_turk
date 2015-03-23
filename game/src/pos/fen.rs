@@ -68,7 +68,7 @@ pub fn fen_to_position(fen: &str) -> Result<Position, ParsePosError> {
             }
         }
     }
-    let side_to_move = fields[1].char_at(0);
+    let side_to_move = fields[1].chars().next().unwrap();
     match side_to_move {
         'w' => pos.set_side_to_move(White),
         'b' => pos.set_side_to_move(Black),
@@ -84,7 +84,7 @@ pub fn fen_to_position(fen: &str) -> Result<Position, ParsePosError> {
             _ => {}
         }
     }
-    let en_passant_char = fields[3].char_at(0);
+    let en_passant_char = fields[3].chars().next().unwrap();
     if en_passant_char != '-' {
         pos.set_en_passant(Some(File((en_passant_char as u8 - b'a') as i32)));
     }

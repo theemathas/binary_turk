@@ -112,6 +112,13 @@ macro_rules! options_impl {
                      )+
                 }
             }
+            pub fn set_value(&mut self, val: Value) {
+                match val {
+                    $(
+                        Value::$name(x) => self.$field_name = x,
+                     )+
+                }
+            }
         }
 
         impl FromStr for Value {

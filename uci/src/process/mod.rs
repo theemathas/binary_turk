@@ -51,10 +51,9 @@ pub fn process(state: &mut State,
                 },
                 Mode::Wait => {
                     match cmd {
-                        Cmd::SetOption(..) => {
+                        Cmd::SetOption(val) => {
                             // TODO maybe initialize
-                            // TODO set options
-                            unimplemented!();
+                            state.options.set_value(val);
                         },
                         Cmd::UciNewGame => {
                             state.reset_new_game()

@@ -8,6 +8,7 @@ use timer::Timer;
 use types::{Cmd, Response, ID_DATA};
 use state::{State, Mode};
 use output::engine_response_output;
+use types::options;
 
 use self::time_start::time_start;
 
@@ -41,6 +42,10 @@ pub fn process(state: &mut State,
                     if cmd == Cmd::Uci {
                         for x in ID_DATA.iter() {
                             output.send(Response::Id(x.clone()))
+                                  .ok().expect("output channel closed");
+                        }
+                        for x in &options::INFO {
+                            output.send(Response::ShowOption(x.clone()))
                                   .ok().expect("output channel closed");
                         }
                         // TODO print option list

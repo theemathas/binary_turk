@@ -13,9 +13,6 @@ pub fn depth_limited_search(pos: &mut Position,
     assert!(!search_moves.is_empty());
     assert!(depth.0 >= 1);
 
-    // TODO Take this draw_val value from somewhere else
-    let draw_val = ScoreUnit(0);
-
     let guess_score = table.get(pos).map_or(ScoreUnit(0), |x| {
         if let Bound::Exact(Score::Value(val)) = x.bound {
             val
@@ -36,7 +33,7 @@ pub fn depth_limited_search(pos: &mut Position,
                                          .map(|&diff| Score::Value(guess_score - diff));
         let curr_beta  = aspiration_width.get(beta_window)
                                          .map(|&diff| Score::Value(guess_score + diff));
-        let curr_ans = negamax_root(pos, curr_alpha, curr_beta, draw_val,
+        let curr_ans = negamax_root(pos, curr_alpha, curr_beta,
                                     depth, table, is_killed, search_moves);
         if is_killed.load(Ordering::Relaxed) {
             // Thread killed. Bail out

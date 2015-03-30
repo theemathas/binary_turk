@@ -95,11 +95,11 @@ impl PartialOrd for Score {
 }
 
 /// Evaluates the position without searching.
-pub fn eval(p: &mut Position, draw_val: ScoreUnit) -> Score {
+pub fn eval(p: &mut Position) -> Score {
     if p.is_checkmated() {
         Score::LoseIn(NumMoves(0))
     } else if p.is_stalemated() {
-        Score::Value(draw_val)
+        Score::Value(ScoreUnit(0))
     } else {
         let c = p.side_to_move();
         // TODO change fold() to sum() when possible

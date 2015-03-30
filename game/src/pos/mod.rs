@@ -196,8 +196,8 @@ impl Position {
         mate::has_legal_moves(self)
     }
 
-    pub fn eval(&mut self, draw_val: ScoreUnit) -> Score {
-        eval::eval(self, draw_val)
+    pub fn eval(&mut self) -> Score {
+        eval::eval(self)
     }
 
     pub fn with_move<T, F: FnOnce(&mut Position) -> T>(&mut self, curr_move: &Move,f: F) -> T {

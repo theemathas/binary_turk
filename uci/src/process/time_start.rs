@@ -9,16 +9,13 @@ pub fn time_start(state: &mut State, cmd_tx: SyncSender<Cmd>) {
     let c = state.search_state.as_ref()
                  .expect("invalid search_state")
                  .pos.side_to_move();
-    let (timer_kill_tx, timer_kill_rx) = sync_channel::<()>(0);
     let (time_out_tx, time_out_rx) = sync_channel::<TimeOut>(0);
 
-    state.timer.clone().start(c, time_out_tx, timer_kill_rx);
+    state.timer.clone().start(c, time_out_tx);
     thread::spawn(move || {
         let recv_res = time_out_rx.recv();
         if recv_res.is_ok() {
             cmd_tx.send(Cmd::Stop).unwrap();
         }
     });
-
-    state.timer_kill_tx = Some(timer_kill_tx);
 }

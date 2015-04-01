@@ -1,9 +1,9 @@
-#![feature(std_misc, old_io)]
+#![feature(std_misc, thread_sleep)]
 
 extern crate game;
 
 use std::time::Duration;
-use std::sync::mpsc::{SyncSender, Receiver};
+use std::sync::mpsc::SyncSender;
 use std::thread;
 
 use game::{Color, NumMoves};
@@ -24,8 +24,8 @@ impl Timer {
         // TODO what is the right default value for Timer?
         Timer::Infinite
     }
-    pub fn start(self, c: Color, tx: SyncSender<TimeOut>, rx_kill: Receiver<()>) {
-        thread::spawn(move || control::start(self, c, tx, rx_kill));
+    pub fn start(self, c: Color, tx: SyncSender<TimeOut>) {
+        thread::spawn(move || control::start(self, c, tx));
     }
 
     pub fn time(&mut self, c: Color, val: Duration) -> &mut Timer {

@@ -128,9 +128,6 @@ pub fn process(state: &mut State,
                             state.start_search_time = None;
                             state.start_move_time = None;
                             state.timer = Timer::new();
-                            if let Some(timer_kill_tx) = state.timer_kill_tx.take() {
-                                let _ = timer_kill_tx.send(());
-                            }
                             state.mode = Mode::Wait;
                         },
                         _ => {},

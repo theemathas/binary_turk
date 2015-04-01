@@ -5,12 +5,12 @@ use std::thread;
 use std::mem::size_of;
 
 use game::{Move, Score, ScoreUnit, NumPlies};
-use types::{State, Cmd, Data};
-use types::Response::{self, Report};
+use types::{State, Cmd, Data, Report, BestMove};
 use iterated_deepening::iterated_deepening;
 use transposition_table::{self, TranspositionTable};
 
-pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
+pub fn start(mut state: State, rx: Receiver<Cmd>,
+             tx: Sender<Report>) -> BestMove {
     if state.param.ponder {
         debug!("pondering, waiting for next command");
         // Actually should ponder, but now just waits for our move.
@@ -92,11 +92,9 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
                                        total_search_data.nodes,
                                        best_score,
                                        vec![best_move.clone()])).unwrap();
-                        tx.send(Response::BestMove(best_move, None))
-                          .ok().expect("output channel unexpectedly closed");
 
                         debug!("search stopping");
-                        return;
+                        return BestMove(best_move, None);
                     }
                 }
             },

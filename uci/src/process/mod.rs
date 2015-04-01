@@ -88,7 +88,7 @@ pub fn process(state: &mut State,
                     if let Cmd::Go(param) = cmd {
                         go_param::setup(state, param);
                         let (search_tx, search_rx) = sync_channel::<search::Cmd>(0);
-                        let (response_tx, response_rx) = channel::<search::Response>();
+                        let (response_tx, response_rx) = channel::<search::Report>();
                         let search_state = state.search_state.as_ref().unwrap().clone();
                         let output = output.clone();
                         let temp = thread::scoped(move ||
@@ -123,12 +123,14 @@ pub fn process(state: &mut State,
                         Cmd::Stop => {
                             state.search_tx.as_ref().unwrap().send(search::Cmd::Stop)
                                  .ok().expect("state.search_tx was closed");
-                            state.search_guard.take().unwrap().join();
                             state.search_tx = None;
                             state.start_search_time = None;
                             state.start_move_time = None;
                             state.timer = Timer::new();
                             state.mode = Mode::Wait;
+                            let search::BestMove(best_move, ponder_move) =
+                                state.search_guard.take().unwrap().join();
+                            output.send(Response::BestMove(best_move, ponder_move)).unwrap();
                         },
                         _ => {},
                     }

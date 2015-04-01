@@ -9,9 +9,9 @@ pub use self::mode::Mode;
 
 mod mode;
 
-pub struct State<'a> {
+pub struct State {
     pub search_state: Option<search::State>,
-    pub search_guard: Option<JoinGuard<'a, ()>>,
+    pub search_guard: Option<JoinGuard<'static, search::BestMove>>,
     pub search_tx: Option<SyncSender<search::Cmd>>,
     pub mode: Mode,
     pub start_search_time: Option<u64>,
@@ -20,8 +20,8 @@ pub struct State<'a> {
     pub ucinewgame_support: bool,
     pub options: options::Data,
 }
-impl<'a> State<'a> {
-    pub fn new() -> State<'a> {
+impl State {
+    pub fn new() -> State {
         State {
             search_state: None,
             search_guard: None,

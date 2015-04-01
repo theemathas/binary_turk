@@ -42,10 +42,10 @@ pub enum Cmd {
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub enum Response {
-    BestMove(Move, Option<Move>),
-    Report(NumPlies, NumNodes, Score, Vec<Move>),
-}
+pub struct BestMove(pub Move, pub Option<Move>);
+
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub struct Report(pub NumPlies, pub NumNodes, pub Score, pub Vec<Move>);
 
 // TODO put actual data here
 #[derive(Clone, Debug)]

@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use game::{Move, Position, Score, ScoreUnit, NumPlies};
-use types::Data;
+use types::InnerData;
 use negamax::{negamax_root, Bound};
 use transposition_table::TranspositionTable;
 
@@ -9,7 +9,7 @@ pub fn depth_limited_search(pos: &mut Position,
                             search_moves: &[Move],
                             depth: NumPlies,
                             table: &mut TranspositionTable,
-                            is_killed: &AtomicBool) -> Option<(Score, Move, Data)> {
+                            is_killed: &AtomicBool) -> Option<(Score, Move, InnerData)> {
     assert!(!search_moves.is_empty());
     assert!(depth.0 >= 1);
 
@@ -26,7 +26,7 @@ pub fn depth_limited_search(pos: &mut Position,
     let mut alpha_window = 0;
     let mut beta_window = 0;
     let mut best_score_move_opt = None;
-    let mut data = Data::one_node();
+    let mut data = InnerData::one_node();
 
     while best_score_move_opt.is_none() {
         let curr_alpha = aspiration_width.get(alpha_window)

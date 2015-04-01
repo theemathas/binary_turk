@@ -5,7 +5,8 @@ use std::thread;
 use std::mem::size_of;
 
 use game::{Move, Score, ScoreUnit, NumPlies};
-use types::{State, Cmd, Data, Report, BestMove};
+
+use types::{State, Cmd, Data, Report, BestMove, NumNodes};
 use iterated_deepening::iterated_deepening;
 use transposition_table::{self, TranspositionTable};
 
@@ -50,21 +51,20 @@ pub fn start(mut state: State, rx: Receiver<Cmd>,
         panic!("No legal moves searched in searched position");
     }
 
-    // this is just a placeholder score
-    let mut best_score = Score::Value(ScoreUnit(0));
-    let mut best_move = search_moves[0].clone();
-    let mut total_search_data = Data::one_node();
-    let mut curr_depth = NumPlies(1);
+    // this is just a placeholder report
+    let mut last_report = Report { data: Data { nodes: NumNodes(0), depth: NumPlies(0) },
+                                   score: Score::Value(ScoreUnit(0)),
+                                   pv: vec![search_moves[0].clone()] };
     let table_capacity = state.param.hash_size /
                          size_of::<Option<transposition_table::Data>>();
     let table = TranspositionTable::with_capacity(table_capacity);
 
-    let (search_tx, search_rx) = channel::<(Score, Move, NumPlies, Data)>();
+    let (search_tx, search_rx) = channel::<Report>();
     let is_killed = Arc::new(AtomicBool::new(false));
 
     let temp_is_killed = is_killed.clone();
 
-    debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
+    debug!("Starting iterated deepening search");
     thread::spawn(move ||
         iterated_deepening(state.pos, &search_moves, table, search_tx, temp_is_killed));
 
@@ -88,33 +88,20 @@ pub fn start(mut state: State, rx: Receiver<Cmd>,
                         is_killed.store(true, Ordering::SeqCst);
 
                         debug!("reporting result");
-                        tx.send(Report(curr_depth,
-                                       total_search_data.nodes,
-                                       best_score,
-                                       vec![best_move.clone()])).unwrap();
+                        tx.send(last_report.clone()).unwrap();
 
                         debug!("search stopping");
-                        return BestMove(best_move, None);
+                        return BestMove(last_report.pv[0].clone(), None);
                     }
                 }
             },
             search_res = search_rx.recv() => {
                 debug!("receiving result from iterated_deepening");
 
-                let (temp_best_score, temp_best_move,
-                     temp_depth, temp_search_data) =
-                        search_res.ok()
-                                  .expect("iterated_deepening unexpectedly dropped Sender");
+                last_report = search_res.ok()
+                                        .expect("iterated_deepening unexpectedly dropped Sender");
 
-                best_score = temp_best_score;
-                best_move = temp_best_move;
-                curr_depth = temp_depth;
-                total_search_data = temp_search_data;
-
-                tx.send(Report(curr_depth,
-                               total_search_data.nodes,
-                               best_score,
-                               vec![best_move.clone()])).unwrap();
+                tx.send(last_report.clone()).unwrap();
             }
         }
     }

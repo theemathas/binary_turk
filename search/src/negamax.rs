@@ -3,7 +3,7 @@ use std::cmp::max;
 use std::num::Int;
 
 use game::{Position, Move, Score, ScoreUnit, NumPlies};
-use types::{Data};
+use types::InnerData;
 
 use transposition_table::TranspositionTable;
 
@@ -45,7 +45,7 @@ pub fn negamax_root(pos: &mut Position,
                     depth: NumPlies,
                     table: &mut TranspositionTable,
                     is_killed: &AtomicBool,
-                    search_moves: &[Move]) -> (Bound, Option<Move>, Data) {
+                    search_moves: &[Move]) -> (Bound, Option<Move>, InnerData) {
     let next_depth = NumPlies(depth.0 - 1);
     let param = Param { eval_depth: Some(NumPlies(1)),
                         table_depth: depth };
@@ -69,7 +69,7 @@ fn negamax_inner(pos: &mut Position,
                  beta: Option<Score>,
                  param: Param,
                  table: &mut TranspositionTable,
-                 is_killed: &AtomicBool) -> (Bound, Option<Move>, Data) {
+                 is_killed: &AtomicBool) -> (Bound, Option<Move>, InnerData) {
     negamax_generic(pos, alpha, beta, param, table, is_killed,
                     &mut |x| Box::new(x.legal_iter()),
                     &mut |x, inner_alpha, inner_beta, table| {
@@ -89,11 +89,11 @@ fn quiescence(pos: &mut Position,
               beta: Option<Score>,
               param: Param,
               table: &mut TranspositionTable,
-              is_killed: &AtomicBool) -> (Bound, Option<Move>, Data) {
+              is_killed: &AtomicBool) -> (Bound, Option<Move>, InnerData) {
     negamax_generic(pos, alpha, beta, param, table, is_killed,
                     &mut |x| Box::new(x.legal_noisy_iter()),
                     &mut |x, _, _, _|
-                        (Bound::Exact(x.eval()), Data::one_node()),
+                        (Bound::Exact(x.eval()), InnerData::one_node()),
                     &mut |x| Some(x.eval()))
 }
 
@@ -106,13 +106,13 @@ fn negamax_generic<F, G, H>(pos: &mut Position,
                             is_killed: &AtomicBool,
                             move_gen_fn: &mut F,
                             eval_fn: &mut G,
-                            stand_pat_fn: &mut H) -> (Bound, Option<Move>, Data) where
+                            stand_pat_fn: &mut H) -> (Bound, Option<Move>, InnerData) where
 for<'a> F: FnMut(&'a Position) -> Box<Iterator<Item = Move> + 'a>,
 for<'b> G: FnMut(&'b mut Position, Option<Score>, Option<Score>,
-                 &mut TranspositionTable) -> (Bound, Data),
+                 &mut TranspositionTable) -> (Bound, InnerData),
 for<'c> H: FnMut(&'c mut Position) -> Option<Score> {
     if is_killed.load(Ordering::Relaxed) {
-        return (Bound::Exact(Score::Value(ScoreUnit(0))), None, Data::one_node());
+        return (Bound::Exact(Score::Value(ScoreUnit(0))), None, InnerData::one_node());
     }
 
     let mut table_best_move_opt = None;
@@ -124,16 +124,16 @@ for<'c> H: FnMut(&'c mut Position) -> Option<Score> {
                                    !table_bound.is_lower() &&
                                    table_bound.as_score() <= alpha.unwrap();
             if lower_than_alpha {
-                return (Bound::Upper(alpha.unwrap()), table_best_move_opt, Data::one_node());
+                return (Bound::Upper(alpha.unwrap()), table_best_move_opt, InnerData::one_node());
             }
             let higher_than_beta = beta.is_some() &&
                                    !table_bound.is_upper() &&
                                    table_bound.as_score() >= beta.unwrap();
             if higher_than_beta {
-                return (Bound::Lower(beta.unwrap()), table_best_move_opt, Data::one_node());
+                return (Bound::Lower(beta.unwrap()), table_best_move_opt, InnerData::one_node());
             }
             if table_bound.is_exact() {
-                return (table_bound, table_best_move_opt, Data::one_node());
+                return (table_bound, table_best_move_opt, InnerData::one_node());
             }
         }
     }
@@ -146,7 +146,7 @@ for<'c> H: FnMut(&'c mut Position) -> Option<Score> {
     }
 
     let (has_legal, score_opt, best_move_opt, data):
-        (bool, Option<Score>, Option<Move>, Data) = (|| {
+        (bool, Option<Score>, Option<Move>, InnerData) = (|| {
         let temp = pos.clone();
         let move_iter: Box<Iterator<Item = Move>> = {
             let normal_iter = move_gen_fn(&temp);
@@ -179,12 +179,12 @@ for<'c> H: FnMut(&'c mut Position) -> Option<Score> {
 
             if let Some(beta_val) = beta {
                 if new_score >= beta_val {
-                    return (true, beta, None, Data::one_node());
+                    return (true, beta, None, InnerData::one_node());
                 }
             }
         }
 
-        let mut prev_data = Data::one_node();
+        let mut prev_data = InnerData::one_node();
 
         for curr_move in move_iter {
 

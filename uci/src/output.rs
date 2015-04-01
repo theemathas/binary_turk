@@ -14,8 +14,8 @@ pub fn format_output<W: Write>(output: W, rx: Receiver<Response>) {
 }
 
 pub fn engine_response_output(rx: Receiver<search::Report>, tx: SyncSender<Response>) {
-    for search::Report(depth, nodes_searched, score, pv) in rx.iter() {
-        tx.send(Info(vec![Depth(depth), NodesSearched(nodes_searched)])).unwrap();
+    for search::Report { data, score, pv } in rx.iter() {
+        tx.send(Info(vec![Depth(data.depth), NodesSearched(data.nodes)])).unwrap();
         tx.send(Info(vec![InfoParam::Score(None, score),
                           PrincipalVariation(pv)]
                     )).unwrap();

@@ -44,20 +44,30 @@ pub enum Cmd {
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct BestMove(pub Move, pub Option<Move>);
 
-#[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Report(pub NumPlies, pub NumNodes, pub Score, pub Vec<Move>);
+#[derive(Clone, Debug)]
+pub struct Report {
+    pub data: Data,
+    pub score: Score,
+    pub pv: Vec<Move>,
+}
 
-// TODO put actual data here
 #[derive(Clone, Debug)]
 pub struct Data {
     pub nodes: NumNodes,
+    pub depth: NumPlies,
 }
-impl Data {
-    pub fn one_node() -> Data { Data { nodes: NumNodes(1) } }
-    pub fn combine(self, other: Data) -> Data {
-        Data { nodes: NumNodes(self.nodes.0 + other.nodes.0) }
+
+// TODO put actual data here
+#[derive(Clone, Debug)]
+pub struct InnerData {
+    pub nodes: NumNodes,
+}
+impl InnerData {
+    pub fn one_node() -> InnerData { InnerData { nodes: NumNodes(1) } }
+    pub fn combine(self, other: InnerData) -> InnerData {
+        InnerData { nodes: NumNodes(self.nodes.0 + other.nodes.0) }
     }
-    pub fn increment(self) -> Data {
-        Data { nodes: NumNodes(self.nodes.0 + 1) }
+    pub fn increment(self) -> InnerData {
+        InnerData { nodes: NumNodes(self.nodes.0 + 1) }
     }
 }

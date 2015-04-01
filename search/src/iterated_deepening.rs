@@ -2,19 +2,20 @@ use std::sync::mpsc::Sender;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
-use game::{Position, Move, Score, NumPlies};
-use types::Data;
+use game::{Position, Move, NumPlies};
+
+use types::{InnerData, Data, Report};
 use transposition_table::TranspositionTable;
 use depth_limited_search::depth_limited_search;
 
 pub fn iterated_deepening(pos: Position,
                           search_moves: &[Move],
                           mut table: TranspositionTable,
-                          tx: Sender<(Score, Move, NumPlies, Data)>,
+                          tx: Sender<Report>,
                           is_killed: Arc<AtomicBool>) {
     let mut best_score;
     let mut best_move;
-    let mut total_search_data = Data::one_node();
+    let mut total_search_data = InnerData::one_node();
     let mut curr_depth = NumPlies(1);
 
     while !is_killed.load(Ordering::SeqCst) {
@@ -30,7 +31,9 @@ pub fn iterated_deepening(pos: Position,
         best_move = temp_best_move;
         total_search_data = total_search_data.combine(curr_search_data);
 
-        let _ = tx.send((best_score, best_move, curr_depth, total_search_data.clone()));
+        let _ = tx.send(Report { data: Data { nodes: total_search_data.nodes, depth: curr_depth },
+                                 score: best_score,
+                                 pv: vec![best_move] });
 
         curr_depth.0 += 1;
     }

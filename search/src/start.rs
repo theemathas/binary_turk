@@ -1,5 +1,6 @@
 use std::sync::mpsc::{Sender, Receiver, channel};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::thread;
 use std::mem::size_of;
 
@@ -59,12 +60,12 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
     let table = TranspositionTable::with_capacity(table_capacity);
 
     let (search_tx, search_rx) = channel::<(Score, Move, NumPlies, Data)>();
-    let is_killed = AtomicBool::new(false);
+    let is_killed = Arc::new(AtomicBool::new(false));
 
-    let temp_is_killed = &is_killed;
+    let temp_is_killed = is_killed.clone();
 
     debug!("Starting depth limited search with depth = {} plies", curr_depth.0);
-    let search_guard = thread::scoped(move ||
+    thread::spawn(move ||
         iterated_deepening(state.pos, &search_moves, table, search_tx, temp_is_killed));
 
     loop {
@@ -94,9 +95,7 @@ pub fn start(mut state: State, rx: Receiver<Cmd>, tx:Sender<Response>) {
                         tx.send(Response::BestMove(best_move, None))
                           .ok().expect("output channel unexpectedly closed");
 
-                        debug!("attempting join of iterated_deepening");
-                        search_guard.join();
-                        debug!("joined iterated_deepening");
+                        debug!("search stopping");
                         return;
                     }
                 }

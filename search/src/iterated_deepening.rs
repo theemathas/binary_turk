@@ -1,5 +1,6 @@
 use std::sync::mpsc::Sender;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 use game::{Position, Move, Score, NumPlies};
 use types::Data;
@@ -10,7 +11,7 @@ pub fn iterated_deepening(pos: Position,
                           search_moves: &[Move],
                           mut table: TranspositionTable,
                           tx: Sender<(Score, Move, NumPlies, Data)>,
-                          is_killed: &AtomicBool) {
+                          is_killed: Arc<AtomicBool>) {
     let mut best_score;
     let mut best_move;
     let mut total_search_data = Data::one_node();

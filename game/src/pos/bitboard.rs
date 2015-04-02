@@ -1,6 +1,5 @@
 //! Implements a bitboard for a single piece.
 
-use std::num::Int;
 use std::ops::Not;
 
 use square::Square;

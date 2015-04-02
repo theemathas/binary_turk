@@ -2,7 +2,6 @@
 
 use std::str::FromStr;
 use std::fmt;
-use std::num::SignedInt;
 use std::error::FromError;
 
 use piece::{self, Piece, Queen, Bishop, Knight, Rook, King, Pawn};

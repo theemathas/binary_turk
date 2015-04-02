@@ -1,6 +1,5 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::cmp::max;
-use std::num::Int;
 
 use game::{Position, Move, Score, ScoreUnit, NumPlies};
 use types::InnerData;

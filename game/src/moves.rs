@@ -2,7 +2,6 @@
 
 use std::str::FromStr;
 use std::fmt;
-use std::error::FromError;
 
 use piece::{self, Piece, Queen, Bishop, Knight, Rook, King, Pawn};
 use square::{Square, File, ParseSquareError};
@@ -90,8 +89,8 @@ impl fmt::Display for Move {
 }
 
 pub struct ParseFromToError(());
-impl FromError<ParseSquareError> for ParseFromToError {
-    fn from_error(_: ParseSquareError) -> Self { ParseFromToError(()) }
+impl From<ParseSquareError> for ParseFromToError {
+    fn from(_: ParseSquareError) -> Self { ParseFromToError(()) }
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]

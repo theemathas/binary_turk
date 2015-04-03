@@ -2,16 +2,15 @@
 
 use std::str::FromStr;
 use std::fmt;
-use std::error::FromError;
 
 pub struct ParseFileError(());
 pub struct ParseRankError(());
 pub struct ParseSquareError(());
-impl FromError<ParseFileError> for ParseSquareError {
-    fn from_error(_: ParseFileError) -> Self { ParseSquareError(()) }
+impl From<ParseFileError> for ParseSquareError {
+    fn from(_: ParseFileError) -> Self { ParseSquareError(()) }
 }
-impl FromError<ParseRankError> for ParseSquareError {
-    fn from_error(_: ParseRankError) -> Self { ParseSquareError(()) }
+impl From<ParseRankError> for ParseSquareError {
+    fn from(_: ParseRankError) -> Self { ParseSquareError(()) }
 }
 
 // File and Rank are 0-based.

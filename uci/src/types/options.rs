@@ -2,7 +2,6 @@
 
 use std::str::{FromStr, ParseBoolError};
 use std::num::ParseIntError;
-use std::error::FromError;
 use std::fmt::{self, Display, Formatter};
 
 #[derive(Debug)]
@@ -11,18 +10,18 @@ pub struct ParseValueError(());
 #[derive(Debug)]
 pub struct ParseNameError(());
 
-impl FromError<ParseNameError> for ParseValueError {
-    fn from_error(_: ParseNameError) -> Self { ParseValueError(()) }
+impl From<ParseNameError> for ParseValueError {
+    fn from(_: ParseNameError) -> Self { ParseValueError(()) }
 }
-impl FromError<ParseIntError> for ParseValueError {
-    fn from_error(_: ParseIntError) -> Self { ParseValueError(()) }
+impl From<ParseIntError> for ParseValueError {
+    fn from(_: ParseIntError) -> Self { ParseValueError(()) }
 }
-impl FromError<ParseBoolError> for ParseValueError {
-    fn from_error(_: ParseBoolError) -> Self { ParseValueError(()) }
+impl From<ParseBoolError> for ParseValueError {
+    fn from(_: ParseBoolError) -> Self { ParseValueError(()) }
 }
 // Required since String implements FromStr with Error = ()
-impl FromError<()> for ParseValueError {
-    fn from_error(_: ()) -> Self { ParseValueError(()) }
+impl From<()> for ParseValueError {
+    fn from(_: ()) -> Self { ParseValueError(()) }
 }
 
 macro_rules! declare_type {

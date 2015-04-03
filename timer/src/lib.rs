@@ -1,4 +1,4 @@
-#![feature(std_misc, thread_sleep)]
+#![feature(std_misc)]
 
 extern crate game;
 

@@ -10,10 +10,10 @@ pub fn setup(state: &mut State, mut data: Vec<GoParam>) {
     let ref mut timer = state.timer;
     let ref mut param = search_state.param;
     let ref pos = search_state.pos;
-    for go_param in data.drain() {
+    for go_param in data.drain(..) {
         match go_param {
             GoParam::SearchMoves(mut from_to_vec) => {
-                let move_vec: Vec<Move> = from_to_vec.drain()
+                let move_vec: Vec<Move> = from_to_vec.drain(..)
                                                      .map(|x| x.to_move_with_pos(pos))
                                                      .collect();
                 param.search_moves = Some(move_vec);

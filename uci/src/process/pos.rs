@@ -7,7 +7,7 @@ pub fn setup_new(state: &mut State,
                  mut from_to_vec: Vec<FromTo>) {
     let mut prev_pos = None;
     let mut prev_move = None;
-    for x in from_to_vec.drain() {
+    for x in from_to_vec.drain(..) {
         let temp_move = x.to_move_with_pos(&pos);
         prev_pos = Some(pos.clone());
         pos.make_move(&temp_move);

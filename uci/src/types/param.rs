@@ -68,7 +68,8 @@ impl fmt::Display for InfoParam {
         match *self {
             InfoParam::Depth(val)          => write!(f, "depth {}", val.0),
             InfoParam::SelDepth(val)       => write!(f, "seldepth {}", val.0),
-            InfoParam::TimeSearched(val)   => write!(f, "time {}", val.num_milliseconds()),
+            InfoParam::TimeSearched(val)   => write!(f, "time {}", val.secs() as u32 * 1000 +
+                                                                   val.extra_nanos() / 1000000),
             InfoParam::NodesSearched(val)  => write!(f, "nodes {}", val.0),
             InfoParam::PrincipalVariation(ref moves) => {
                 try!(write!(f, "pv"));

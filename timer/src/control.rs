@@ -15,7 +15,7 @@ pub fn start(data: Timer, c: Color, tx: SyncSender<TimeOut>) {
         },
         Timer::Remain(val) => {
             // TODO what is the right default value for base time?
-            let base = val.time(c).unwrap_or(Duration::zero());
+            let base = val.time(c).unwrap_or(Duration::new(0, 0));
             let inc = val.inc(c);
             let val = calc_time(base, inc);
             send_after(val, tx);
@@ -24,7 +24,7 @@ pub fn start(data: Timer, c: Color, tx: SyncSender<TimeOut>) {
 }
 
 fn send_after(delay: Duration, tx: SyncSender<TimeOut>) {
-    thread::sleep_ms(delay.num_milliseconds() as u32);
+    thread::sleep_ms(delay.secs() as u32 * 1000 + delay.extra_nanos() / 1000000);
     let _ = tx.send(TimeOut(()));
 }
 

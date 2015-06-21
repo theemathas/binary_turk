@@ -1,4 +1,4 @@
-#![feature(std_misc, collections, scoped, str_parse_error, collections_drain)]
+#![feature(scoped, str_parse_error, duration, slice_position_elem, drain)]
 
 extern crate time;
 #[macro_use]

@@ -1,4 +1,4 @@
-#![feature(std_misc)]
+#![feature(duration)]
 
 extern crate game;
 
@@ -82,8 +82,8 @@ impl RemainData {
         RemainData {
             w_time: None,
             b_time: None,
-            w_inc: Duration::zero(),
-            b_inc: Duration::zero(),
+            w_inc: Duration::new(0, 0),
+            b_inc: Duration::new(0, 0),
             moves_to_go: None,
         }
     }

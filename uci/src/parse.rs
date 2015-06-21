@@ -178,18 +178,18 @@ where I: Iterator<Item = &'a str> {
         match next_word {
             "searchmoves" => parse_from_to_vec(&mut words).map(|x| GoParam::SearchMoves(x)),
             "ponder" => Some(GoParam::Ponder),
-            "wtime"     => words.next().and_then(|s| s.parse::<i64>().ok())
+            "wtime"     => words.next().and_then(|s| s.parse::<u64>().ok())
                                        .map(|x| GoParam::Time(White,
-                                                              Duration::milliseconds(x))),
-            "btime"     => words.next().and_then(|s| s.parse::<i64>().ok())
+                                                              Duration::from_millis(x))),
+            "btime"     => words.next().and_then(|s| s.parse::<u64>().ok())
                                        .map(|x| GoParam::Time(Black,
-                                                              Duration::milliseconds(x))),
-            "winc"      => words.next().and_then(|s| s.parse::<i64>().ok())
+                                                              Duration::from_millis(x))),
+            "winc"      => words.next().and_then(|s| s.parse::<u64>().ok())
                                        .map(|x| GoParam::IncTime(White,
-                                                                 Duration::milliseconds(x))),
-            "binc"      => words.next().and_then(|s| s.parse::<i64>().ok())
+                                                                 Duration::from_millis(x))),
+            "binc"      => words.next().and_then(|s| s.parse::<u64>().ok())
                                        .map(|x| GoParam::IncTime(Black,
-                                                                 Duration::milliseconds(x))),
+                                                                 Duration::from_millis(x))),
             "movestogo" => words.next().and_then(|s| s.parse::<u32>().ok())
                                        .map(|x| GoParam::MovesToGo(NumMoves(x))),
             "depth"     => words.next().and_then(|s| s.parse::<u32>().ok())
@@ -198,8 +198,8 @@ where I: Iterator<Item = &'a str> {
                                        .map(|x| GoParam::Nodes(NumNodes(x))),
             "mate"      => words.next().and_then(|s| s.parse::<u32>().ok())
                                        .map(|x| GoParam::Mate(NumMoves(x))),
-            "movetime"  => words.next().and_then(|s| s.parse::<i64>().ok())
-                                       .map(|x| GoParam::MoveTime(Duration::milliseconds(x))),
+            "movetime"  => words.next().and_then(|s| s.parse::<u64>().ok())
+                                       .map(|x| GoParam::MoveTime(Duration::from_millis(x))),
             "infinite" => Some(GoParam::Infinite),
             _ => None,
         }.map(|val| res.push(val));

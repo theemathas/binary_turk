@@ -1,4 +1,4 @@
-use std::thread::JoinGuard;
+use std::thread::JoinHandle;
 use std::sync::mpsc::SyncSender;
 
 use search;
@@ -11,7 +11,7 @@ mod mode;
 
 pub struct State {
     pub search_state: Option<search::State>,
-    pub search_guard: Option<JoinGuard<'static, search::BestMove>>,
+    pub search_guard: Option<JoinHandle<search::BestMove>>,
     pub search_tx: Option<SyncSender<search::Cmd>>,
     pub mode: Mode,
     pub start_search_time: Option<u64>,

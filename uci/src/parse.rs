@@ -71,7 +71,7 @@ where I: Iterator<Item = &'a str>{
 fn parse_option_val<'a, I>(words: I) -> Option<options::Value>
 where I: Iterator<Item = &'a str> {
     debug!("Parsing option");
-    let ans = words.collect::<Vec<_>>().connect(" ").trim().parse().ok();
+    let ans = words.collect::<Vec<_>>().join(" ").trim().parse().ok();
     debug!("parse_option_val() returning {:?}", ans);
     ans
 }
@@ -98,7 +98,7 @@ where I: Iterator<Item = &'a str> {
                         None => break,
                     }
                 }
-                Some(RegisterParam::Name(name_vec.connect(" ")))
+                Some(RegisterParam::Name(name_vec.join(" ")))
             },
             "code" => words.next().map( |x| RegisterParam::Code(x.to_string())),
             _ => None,
@@ -143,7 +143,7 @@ where I: Iterator<Item = &'a str> {
         words.next();
         let six_words: Vec<_> = words.by_ref().take(6).collect();
         debug!("parse_position(): six_words = {:?}", six_words);
-        six_words.connect(" ").parse::<Position>().ok()
+        six_words.join(" ").parse::<Position>().ok()
     } else {
         None
     };

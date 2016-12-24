@@ -53,7 +53,8 @@ macro_rules! parse_value {
             Info::Combo(_, _, x) => &x,
             _ => unreachable!(),
         };
-        combo_list.position_elem(&&*$value_string).map_or(Err(ParseValueError(())), |x| Ok(x as u32))
+        combo_list.iter().position(|x| *x == $value_string)
+            .map_or(Err(ParseValueError(())), |x| Ok(x as u32))
     }};
     ($name:expr, Button, $value_string:expr) => { Ok::<(), ParseValueError>(()) };
     ($name:expr, Spin, $value_string:expr) => {{
@@ -144,8 +145,8 @@ macro_rules! options_impl {
                     }
                 }
 
-                let name_string  =  name_vec.connect(" ").trim().to_string();
-                let value_string = value_vec.connect(" ").trim().to_string();
+                let name_string  =  name_vec.join(" ").trim().to_string();
+                let value_string = value_vec.join(" ").trim().to_string();
 
                 let name: Name = try!(name_string.parse());
                 Ok(match name {

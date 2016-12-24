@@ -1,5 +1,3 @@
-#![feature(scoped, str_parse_error, duration, slice_position_elem, drain)]
-
 extern crate time;
 #[macro_use]
 extern crate log;

@@ -1,5 +1,3 @@
-#![feature(duration)]
-
 extern crate game;
 
 use std::time::Duration;

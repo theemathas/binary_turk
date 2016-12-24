@@ -91,7 +91,7 @@ pub fn process(state: &mut State,
                         let (response_tx, response_rx) = channel::<search::Report>();
                         let search_state = state.search_state.as_ref().unwrap().clone();
                         let output = output.clone();
-                        let temp = thread::scoped(move ||
+                        let temp = thread::spawn(move ||
                             search::start(search_state, search_rx, response_tx));
                         thread::spawn(move || engine_response_output(response_rx, output));
 
@@ -129,7 +129,7 @@ pub fn process(state: &mut State,
                             state.timer = Timer::new();
                             state.mode = Mode::Wait;
                             let search::BestMove(best_move, ponder_move) =
-                                state.search_guard.take().unwrap().join();
+                                state.search_guard.take().unwrap().join().unwrap();
                             output.send(Response::BestMove(best_move, ponder_move)).unwrap();
                         },
                         _ => {},

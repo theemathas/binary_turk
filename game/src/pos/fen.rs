@@ -30,7 +30,7 @@ pub fn fen_to_position(fen: &str) -> Result<Position, ParsePosError> {
                         None => return Err(ParsePosError("invalid character in fen")),
                     }
                 };
-                for _ in (0..val) {
+                for _ in 0..val {
                     pos_str.push('1')
                 }
             }

@@ -24,7 +24,7 @@ pub fn start(data: Timer, c: Color, tx: SyncSender<TimeOut>) {
 }
 
 fn send_after(delay: Duration, tx: SyncSender<TimeOut>) {
-    thread::sleep_ms(delay.secs() as u32 * 1000 + delay.extra_nanos() / 1000000);
+    thread::sleep(delay);
     let _ = tx.send(TimeOut(()));
 }
 
